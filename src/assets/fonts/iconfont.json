@@ -1,0 +1,65 @@
+{
+  "id": "1699434",
+  "name": "icon",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "681778",
+      "name": "eyes",
+      "font_class": "eyes",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "922811",
+      "name": "数据",
+      "font_class": "shuju",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "7168798",
+      "name": "监控",
+      "font_class": "jiankong",
+      "unicode": "e61f",
+      "unicode_decimal": 58911
+    },
+    {
+      "icon_id": "11332735",
+      "name": "页",
+      "font_class": "ye",
+      "unicode": "ed65",
+      "unicode_decimal": 60773
+    },
+    {
+      "icon_id": "12205529",
+      "name": "设 置",
+      "font_class": "shezhi",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "13344176",
+      "name": "警告",
+      "font_class": "jinggao",
+      "unicode": "e939",
+      "unicode_decimal": 59705
+    },
+    {
+      "icon_id": "13441164",
+      "name": "列表-详情x 表格",
+      "font_class": "liebiao-xiangqingxbiaoge",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "4137909",
+      "name": "地球",
+      "font_class": "shijie",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    }
+  ]
+}

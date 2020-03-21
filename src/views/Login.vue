@@ -117,6 +117,7 @@ export default {
                    }
                    else{
                        this.$message.error('验证码错误');
+                       this.formData.identify='';
                        this.generateIdentify();
                    }
                 }
@@ -152,7 +153,7 @@ export default {
     background-color: #ecf0f5;
 }
 .form-wapper {
-    height: 350px;
+    height: 330px;
     width: 450px;
     position: absolute;
     top: 50%;
@@ -162,7 +163,7 @@ export default {
     border-radius: 4px;
 }
 .el-form {
-    margin-top: 100px;
+    margin-top: 90px;
     padding: 0 10px;
     .btns {
         display: flex;

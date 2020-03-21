@@ -3,6 +3,11 @@ import VueRouter from 'vue-router';
 
 const Login = () => import('views/Login');
 const Home = () => import('views/Home');
+const DeviceQuery= ()=> import('components/general_show/DeviceQuery')
+const General =()=> import('views/General')
+
+
+const Profile =()=>import('components/base_set/Profile')
 Vue.use(VueRouter);
 
 const routes = [
@@ -16,12 +21,29 @@ const routes = [
     },
     {
         path: '/home',
-        component: Home
+        component: Home,
+        children:[
+            {
+                path:'',
+                redirect:'general'
+            },
+            {
+                path:'general',
+                component:General
+            },
+            {
+                path:'device_query',
+                component:DeviceQuery
+            },{
+                path:'person_info:id',
+                component:Profile
+            }
+        ]
     }
 ];
 
 const router = new VueRouter({
-    mode: 'history',
+    mode: 'hash',
     routes
 });
 //设置 导航守卫
@@ -31,7 +53,7 @@ router.beforeEach((to,from,next)=>{
     const token=sessionStorage.getItem('token');
     //没有登录，强制 跳转 登录页面， 禁止 未登录 通过url 进入页面
     if(!token)
-    return next('/login');
+    return next('/login  ');
     next();
   })
   

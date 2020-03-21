@@ -17,6 +17,7 @@ export default {
 
 <style>
 @import url(./assets/css/base.css);
+@import url(./assets/fonts/iconfont.css);
 #app{
   height: 100%;
 }
