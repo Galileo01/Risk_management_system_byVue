@@ -1,6 +1,6 @@
 <template>
     <div class="general">
-        <BreadNav :texts="['企业介绍']" />
+        <BreadNav :texts="['企业履历']" />
         <div class="content">
             <div class="record">
                 <h2>{{ record.company }}</h2>
@@ -17,7 +17,60 @@
                 </p>
             </div>
             <div class="points">
-                <div class="show_box"></div>
+                <div class="show_box">
+                    <el-button
+                        icon="el-icon-menu"
+                        circle
+                        type="primary"
+                        @click="boxVisible = true"
+                        class="open_btn"
+                    ></el-button>
+                    <el-popover
+                        placement="top"
+                        width="200"
+                        v-model="boxVisible"
+                    >
+                        <el-button
+                            icon="el-icon-close"
+                            type="danger"
+                            circle
+                            size="mini"
+                            class="close_btn"
+                              @click="boxVisible = false"
+                        ></el-button>
+                        <h3>各种隐患的个数</h3>
+                        <p>
+                            隐患总数<span class="danger_total">{{
+                                record.total
+                            }}</span>
+                            个
+                        </p>
+                        <p>
+                            已治理的隐患<span class="danger_solved">{{
+                                record.solved
+                            }}</span>
+                            个
+                        </p>
+                        <p>
+                            未治理的隐患<span class="danger_unso">{{
+                                record.total - record.solved
+                            }}</span>
+                            个
+                        </p>
+                        <p>
+                            等级一的隐患<span>{{ record.level1 }} </span>个
+                        </p>
+                        <p>
+                            等级二的隐患<span>{{ record.level2 }}</span> 个
+                        </p>
+                        <p>
+                            等级三的隐患<span>{{ record.level3 }}</span> 个
+                        </p>
+                        <p>
+                            等级四的隐患<span>{{ record.level4 }}</span> 个
+                        </p>
+                    </el-popover>
+                </div>
                 <el-amap
                     vid="amapDemo"
                     class="amap"
@@ -41,7 +94,6 @@
                         :content="'等级' + item.level"
                         :key="100 + index"
                         :visible="item.visible"
-                        
                     />
                 </el-amap>
             </div>
@@ -57,7 +109,8 @@ export default {
             record: {},
             positions: [],
             center: [105.757223, 29.33282],
-            events: {}
+            events: {},
+            boxVisible: true
         };
     },
     computed: {},
@@ -114,16 +167,17 @@ export default {
             this.events = {
                 click(event) {
                     const vid = event.target.F.vid;
-              // 高德地图只支持同时一个信息窗体的显示。
-                    self.positions[vid].visible=false;
+                    // 高德地图只支持同时一个信息窗体的显示。
+                    self.positions[vid].visible = false;
 
                     //dom 更新完之后才 显示
-                    self.$nextTick(()=>{
-                       self.positions[vid].visible=true;//点击 显示
-                    })
+                    self.$nextTick(() => {
+                        self.positions[vid].visible = true; //点击 显示
+                    });
                 }
             };
-        }
+        },
+        showBox() {}
     },
     created() {
         this.getData();
@@ -151,15 +205,44 @@ export default {
 .points {
     display: flex;
     .show_box {
-        width: 150px;
-        height: 300px;
-        border: 1px solid black;
         margin-right: 10px;
+        position: absolute;
+        z-index: 2;
+        /deep/ .el-popover {
+            top: 10px;
+            p {
+                display: flex;
+                span {
+                    margin-left: 70px;
+                    margin-right: 10px;
+                }
+                .danger_total {
+                    color: #f56c6c;
+                    margin-left: 100px;
+                }
+                .danger_solved {
+                    color: #67c23a;
+                }
+                .danger_unso {
+                    color: #f56c6c;
+                }
+            }
+        }
+        .open_btn{
+            margin-top: 10px;
+        }
+        .close_btn {
+            position: absolute;
+            top: -8px;
+            right: -9px;
+            padding: 4px;
+            border: 1px;
+        }
     }
     .amap {
         height: 520px;
         // width: 1160px;
-         width: calc(100% - 180px);
+        width: calc(100% - 10px);
         // margin-ma: 0 auto;
     }
 }

@@ -18,7 +18,7 @@
                                 alt=""
                             />
                         </el-tooltip>
-                        <span>{{userInfo.username}}</span>
+                        <span>{{ userInfo.username }}</span>
                     </div>
                     <el-button size="mini" type="danger" @click="logout"
                         >退出</el-button
@@ -51,10 +51,10 @@ export default {
             //侧边栏 菜单
             menulist: [],
             iconlist: [], //菜单 icon 类名,
-            isCollapse: false ,//是否折叠
-            userInfo:{
-                username:'admin',
-                id:'666'
+            isCollapse: false, //是否折叠
+            userInfo: {
+                username: 'admin',
+                id: '666'
             }
         };
     },
@@ -75,9 +75,25 @@ export default {
         }
     },
     methods: {
-        logout() {
-            window.sessionStorage.removeItem('token');
-            this.$router.push('/login');
+        async logout() {
+            const result = await this.$confirm(
+                '此操作将退出此系统, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }
+            ).catch(error => error);
+            console.log(result);
+
+            if (result === 'cancel') {
+                this.$message.info('操作取消');
+            } else {
+                window.sessionStorage.removeItem('token');
+                this.$router.push('/login');
+                this.$message.success('成功退出');
+            }
         },
         collapse() {
             this.isCollapse = !this.isCollapse;
@@ -322,8 +338,14 @@ export default {
     height: 28px;
     display: flex;
     justify-content: space-around;
+    text-align: center;
     i {
-        margin: 4px 0;
+        margin: 2px 0;
+        border-radius: 50%;
+        background-color: #fff;
+        height: 24px;
+        width: 24px;
+        line-height: 24px;
     }
 }
 .el-main {
@@ -337,6 +359,7 @@ export default {
     align-items: center;
     .avator {
         margin-right: 30px;
+        cursor: pointer;
         img {
             height: 34px;
             width: 34px;

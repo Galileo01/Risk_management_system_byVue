@@ -53,7 +53,7 @@ router.beforeEach((to,from,next)=>{
     const token=sessionStorage.getItem('token');
     //没有登录，强制 跳转 登录页面， 禁止 未登录 通过url 进入页面
     if(!token)
-    return next('/login  ');
+    return next('/login');
     next();
   })
   
