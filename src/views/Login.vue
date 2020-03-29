@@ -64,7 +64,7 @@ export default {
             formData: {
                 username: '',
                 password: '',
-                identify:''
+                identify: ''
             },
             rules: {
                 username: [
@@ -89,12 +89,11 @@ export default {
                         trigger: 'blur'
                     }
                 ],
-                identify:[
+                identify: [
                     { required: true, message: '请输入验证码', trigger: 'blur' }
                 ]
             },
-            identifyCode:'1234',// 验证码
-            
+            identifyCode: '1234' // 验证码
         };
     },
     methods: {
@@ -103,37 +102,44 @@ export default {
         },
         login() {
             this.$refs.form.validate(valid => {
-                if (valid) { //基本验证 通过
-                   if(this.identifyCode===this.formData.identify)//验证码 正确
-                   {
-                        if (this.formData.password === '123456') { // 验证成功
-                         window.sessionStorage.setItem('token',this.identifyCode);// 模拟设置 token 
-                        this.$router.push('/home');
-                        this.$message.success('登录成功');
-                       
+                if (valid) {
+                    //基本验证 通过
+                    if (this.identifyCode === this.formData.identify) {
+                        //验证码 正确
+                        if (this.formData.password === '123456') {
+                            // 验证成功
+                            window.sessionStorage.setItem(
+                                'token',
+                                this.identifyCode
+                            ); // 模拟设置 token
+                            this.$store.commit('getUserdata', {
+                                id: this.identifyCode + '',
+                                token: this.identifyCode,
+                                role: 1
+                            });
+                            this.$router.push('/home');
+                            this.$message.success('登录成功');
+                        } else {
+                            this.$message.error('用户名或密码错误');
+                        }
                     } else {
-                        this.$message.error('用户名或密码错误');
+                        this.$message.error('验证码错误');
+                        this.formData.identify = '';
+                        this.generateIdentify();
                     }
-                   }
-                   else{
-                       this.$message.error('验证码错误');
-                       this.formData.identify='';
-                       this.generateIdentify();
-                   }
                 }
             });
         },
-        generateIdentify(){
-            let count=1;
-            let code='';
-            while(count<=4)
-            {
-                const num = Math.floor((Math.random()*10));
-                code+=num;
+        generateIdentify() {
+            let count = 1;
+            let code = '';
+            while (count <= 4) {
+                const num = Math.floor(Math.random() * 10);
+                code += num;
                 count++;
             }
-            this.identifyCode=code;
-        },
+            this.identifyCode = code;
+        }
     },
     created() {
         //随机生成 数字 验证码
@@ -149,7 +155,6 @@ export default {
 .login {
     width: 100%;
     height: 100%;
-    background-color: #2b4b6b;
     background-color: #ecf0f5;
 }
 .form-wapper {

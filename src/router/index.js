@@ -5,7 +5,7 @@ const Login = () => import('views/Login');
 const Home = () => import('views/Home');
 const DeviceQuery= ()=> import('components/general_show/DeviceQuery')
 const General =()=> import('views/General')
-
+const R_TaskAllocate= ()=>import('views/TaskAllocate')
 
 const Profile =()=>import('components/base_set/Profile')
 Vue.use(VueRouter);
@@ -37,6 +37,9 @@ const routes = [
             },{
                 path:'person_info:id',
                 component:Profile
+            },{
+                path:'routine_task_allocate',
+                component:R_TaskAllocate
             }
         ]
     }

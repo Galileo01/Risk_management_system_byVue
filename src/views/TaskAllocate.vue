@@ -1,8 +1,8 @@
 <template>
-    <div class="device_query">
-        <BreadNav :texts="['综合浏览', '设备浏览']" />
+    <div class="r_allocate">
+        <BreadNav :texts="['日常任务', '任务分配']" />
         <el-card>
-            <el-row>
+            <el-row >
                 <el-col :span="8"
                     ><el-input placeholder="输入关键词">
                         <el-button
@@ -10,8 +10,12 @@
                             icon="el-icon-search"
                         ></el-button></el-input
                 ></el-col>
+                <el-col :span="8" :offset="4" class="all-btns">
+                    <el-button type="primary" @click="all_all">分配全部</el-button>
+                    <el-button type="primary" @click="all_checked">分配选中</el-button>
+                </el-col>
             </el-row>
-            <DeviceTable :tableData="tableData" @showdetail="showDetail" />
+            <DeviceTable :tableData="tableData" @showdetail="showDetail" :sectional="true"/>
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -24,18 +28,21 @@
             </el-pagination>
         </el-card>
         <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
+        <AllocateDialog :dialogVisible.sync="allocateVisible" ref="all_dia"/>
     </div>
 </template>
 
 <script>
-import DeviceTable from './DeviceTable';
-import DeviceDetail from './DeviceDetail';
+import DeviceTable from 'components/general_show/DeviceTable';
+import DeviceDetail from 'components/general_show/DeviceDetail';
+import AllocateDialog from 'components/routine_task/AllocateDialog'
 export default {
-    name: 'DeviceQuery',
+    name: 'TaskAllocate',
     data() {
         return {
             tableData: [],
             detailVisible: false,
+            allocateVisible:false,
             detailnum: '', //显示详情的 编号
             query: {
                 page: 1,
@@ -46,7 +53,8 @@ export default {
     },
     methods: {
         getTableData() {
-            this.tableData = [
+            //获得所哟设备数据
+            const tableData=[
                 {
                     number: 'D001',
                     status: 'good',
@@ -127,6 +135,11 @@ export default {
                     address: '巡线点3'
                 }
             ];
+            //循环遍历，为每一个 数据添加
+            tableData.forEach(val=>{
+                val.checked=false;
+            })
+            this.tableData = tableData;
             this.query = {
                 page: 1,
                 size: 10,
@@ -139,24 +152,37 @@ export default {
             this.detailnum = num;
             this.detailVisible = true;
         },
-        //底部分页 更改size 和 page  触发 获取 新数据
+        //底部分页 更改size 和 page  触发 更改 tableData 数据
         handleSizeChange(){},
-        handleCurrentChange(){}
+        handleCurrentChange(){},
+        all_checked(){
+            // console.log(this.$refs.all_dia.formData);
+           this.allocateVisible=true; 
+        },
+        all_all(){
+             this.allocateVisible=true; 
+        }
     },
     created() {
         this.getTableData();
     },
     components: {
         DeviceTable,
-        DeviceDetail
+        DeviceDetail,
+        AllocateDialog
     }
 };
 </script>
 
 <style scoped lang="less">
-.device_query {
+.r_allocate {
   /deep/  .el-pagination {
         margin-top: 10px 
+    }
+    .all-btns{
+        .el-button{
+            margin-left: 50px;
+        }
     }
 }
 </style>

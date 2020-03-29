@@ -28,7 +28,12 @@ import {
     TabPane,
     Carousel,
     CarouselItem,
-    Pagination
+    Pagination,
+    Select,
+    Option,
+    DatePicker,
+    Checkbox,
+    CheckboxGroup
 } from 'element-ui';
 
 Vue.use(Button);
@@ -58,6 +63,11 @@ Vue.use(TabPane)
 Vue.use(Carousel)
 Vue.use(CarouselItem)
 Vue.use(Pagination)
+Vue.use(Checkbox)
+Vue.use(CheckboxGroup)
+Vue.use(Select)
+Vue.use(Option)
+Vue.use(DatePicker)
 //挂载 全局的 方法
 Vue.prototype.$message = Message;
 Vue.prototype.$confirm=MessageBox.confirm;

@@ -70,7 +70,7 @@ export default {
             if (this.isCollapse) {
                 return '50px';
             } else {
-                return '160px';
+                return '150px';
             }
         }
     },
@@ -116,12 +116,6 @@ export default {
                         id: 101,
                         authName: '设备查询',
                         path: 'home/device_query',
-                        children: []
-                    },
-                    {
-                        id: 102,
-                        authName: '地图浏览',
-                        path: 'home/map_browser',
                         children: []
                     }
                 ]
@@ -320,6 +314,7 @@ export default {
     .logo-wapper {
         display: flex;
         height: 50px;
+        align-items: center;
     }
     .logo {
         height: 40px;

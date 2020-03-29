@@ -1,5 +1,6 @@
 <template>
-    <el-table :data="tableData" border :cellStyle="{padding:'3px'}">
+    <el-table :data="tableData" border :cellStyle="{padding:'3px'}" @select="select">
+        <el-table-column type="selection" v-if="sectional"></el-table-column>
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="number" label="设备编号">
             <template v-slot="{row}">
@@ -23,10 +24,19 @@
 export default {
     name: 'DeviceTable',
     props: {
-        tableData: Array
+        tableData: Array,
+        sectional:{
+            type:Boolean,
+            default:false
+        }
+
     },
     methods:{
-        
+        select(selection,row){
+            if(!this.sectional) 
+            return ;
+            row.checked=!row.checked; //在这里更改 ，会影响到 父组件 TaskAllocate 
+        }
     }
 };
 </script>
