@@ -18,7 +18,7 @@ Amap.initAMapApiLoader({
   // 申请的高德key
   key: '6e350de4372aea6e14e89161fe4816c0',
   // 插件集合
-  plugin: ['']
+  plugin: ['ToolBar','MapType']
 });
 new Vue({
   router,

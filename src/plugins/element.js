@@ -33,7 +33,9 @@ import {
     Option,
     DatePicker,
     Checkbox,
-    CheckboxGroup
+    CheckboxGroup,
+    Collapse,
+    CollapseItem
 } from 'element-ui';
 
 Vue.use(Button);
@@ -47,27 +49,29 @@ Vue.use(Main);
 Vue.use(Menu);
 Vue.use(Submenu);
 Vue.use(MenuItem);
-Vue.use(Breadcrumb)
-Vue.use(BreadcrumbItem)
-Vue.use(Tooltip)
-Vue.use(Card)
-Vue.use(Row)
-Vue.use(Col)
-Vue.use(Table)
-Vue.use(TableColumn)
-Vue.use(Popover)
-Vue.use(Tag)
-Vue.use(Dialog)
-Vue.use(Tabs)
-Vue.use(TabPane)
-Vue.use(Carousel)
-Vue.use(CarouselItem)
-Vue.use(Pagination)
-Vue.use(Checkbox)
-Vue.use(CheckboxGroup)
-Vue.use(Select)
-Vue.use(Option)
-Vue.use(DatePicker)
+Vue.use(Breadcrumb);
+Vue.use(BreadcrumbItem);
+Vue.use(Tooltip);
+Vue.use(Card);
+Vue.use(Row);
+Vue.use(Col);
+Vue.use(Table);
+Vue.use(TableColumn);
+Vue.use(Popover);
+Vue.use(Tag);
+Vue.use(Dialog);
+Vue.use(Tabs);
+Vue.use(TabPane);
+Vue.use(Carousel);
+Vue.use(CarouselItem);
+Vue.use(Pagination);
+Vue.use(Checkbox);
+Vue.use(CheckboxGroup);
+Vue.use(Select);
+Vue.use(Option);
+Vue.use(DatePicker);
+Vue.use(Collapse)
+Vue.use(CollapseItem)
 //挂载 全局的 方法
 Vue.prototype.$message = Message;
-Vue.prototype.$confirm=MessageBox.confirm;
+Vue.prototype.$confirm = MessageBox.confirm;

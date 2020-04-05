@@ -36,7 +36,7 @@
                         :isCollapse="isCollapse"
                     ></HomeAsideMenu
                 ></el-aside>
-                <el-main><router-view></router-view></el-main>
+                <el-main><router-view ></router-view></el-main>
             </el-container>
         </el-container>
     </div>
@@ -52,10 +52,7 @@ export default {
             menulist: [],
             iconlist: [], //菜单 icon 类名,
             isCollapse: false, //是否折叠
-            userInfo: {
-                username: 'admin',
-                id: '666'
-            }
+           
         };
     },
     computed: {
@@ -72,6 +69,9 @@ export default {
             } else {
                 return '150px';
             }
+        },
+        userInfo(){
+            return this.$store.getters.userdata;
         }
     },
     methods: {
@@ -134,13 +134,13 @@ export default {
                     {
                         id: 302,
                         authName: '任务管理',
-                        path: 'home/routine_task_manege',
+                        path: 'home/routine_task_manage',
                         children: []
                     },
                     {
                         id: 303,
                         authName: '任务审核',
-                        path: 'home/routine_task_verify',
+                        path: 'home/routine_task_examine',
                         children: []
                     }
                 ]
@@ -159,7 +159,7 @@ export default {
                     {
                         id: 402,
                         authName: '任务管理',
-                        path: 'home/diy_task_manege',
+                        path: 'home/diy_task_manage',
                         children: []
                     }
                 ]
@@ -256,6 +256,12 @@ export default {
                         authName: '点位管理',
                         path: 'home/point_manage',
                         children: []
+                    },{
+                        
+                        id: 809,
+                        authName: '设备分册',
+                        path: 'home/device_menu',
+                        children: []
                     },
                     {
                         id: 802,
@@ -327,6 +333,7 @@ export default {
 .el-aside {
     background-color: #f2f2f2;
     // overflow: hidden;
+    overflow-y:auto; 
 }
 .collapse {
     font-size: 20px; //给图标 设置大小

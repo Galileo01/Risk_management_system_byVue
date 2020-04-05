@@ -70,7 +70,6 @@ export default {
                 taskName: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
                 deadline: [{ required: true, message: '请输入时间', trigger: 'blur' }]
                 
-                
             }
         };
     },
@@ -103,16 +102,24 @@ export default {
         submit() {
             this.$refs.form.validate(valid => {
                 if (!valid) return;
-                this.$message.success('任务分配成功');
+               this.$emit('allocate');
                 this.$emit('update:dialogVisible', false);
             });
         },
         clear(){
           this.$refs.form.resetFields();
-        }
+        },
+        //设置 默认时间 24h 之后
+        setDefaultTime(){
+             const date = new Date();
+              date.setTime(date.getTime() + 3600 * 1000 * 24);
+              this.formData.deadline=date.toString();
+        },
+        
     },
     created() {
         this.getData();
+        this.setDefaultTime();
     }
 };
 </script>

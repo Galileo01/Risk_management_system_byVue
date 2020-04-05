@@ -115,7 +115,8 @@ export default {
                             this.$store.commit('getUserdata', {
                                 id: this.identifyCode + '',
                                 token: this.identifyCode,
-                                role: 1
+                                role: 1,
+                                username:this.formData.username
                             });
                             this.$router.push('/home');
                             this.$message.success('登录成功');

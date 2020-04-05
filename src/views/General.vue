@@ -27,7 +27,7 @@
                     ></el-button>
                     <el-popover
                         placement="top"
-                        width="200"
+                        width="400"
                         v-model="boxVisible"
                     >
                         <el-button
@@ -36,7 +36,7 @@
                             circle
                             size="mini"
                             class="close_btn"
-                              @click="boxVisible = false"
+                            @click="boxVisible = false"
                         ></el-button>
                         <h3>各种隐患的个数</h3>
                         <p>
@@ -57,8 +57,8 @@
                             }}</span>
                             个
                         </p>
-                        <p>
-                            等级一的隐患<span>{{ record.level1 }} </span>个
+                        <!-- <p>
+                            等级一的隐患<span>占比{{ record.level1/record.total }} </span>
                         </p>
                         <p>
                             等级二的隐患<span>{{ record.level2 }}</span> 个
@@ -68,7 +68,20 @@
                         </p>
                         <p>
                             等级四的隐患<span>{{ record.level4 }}</span> 个
-                        </p>
+                        </p> -->
+                        <el-table :data="tableData"  :cellStyle="{ padding: '10px' }">
+                            <el-table-column prop="level" label="等级"></el-table-column>
+                             <el-table-column prop="count" label="数目"></el-table-column>
+                             <el-table-column  label="数目占比"><template v-slot="{row}">
+                                 {{row.countPro|toPro}}
+                                 </template></el-table-column>
+                                  <el-table-column  label="治理占比"><template v-slot="{row}">
+                                 {{row.solvePro|toPro}}
+                                 </template></el-table-column>
+                                  <el-table-column  label="未占比"><template v-slot="{row}">
+                                 {{1-row.solvePro|toPro}}
+                                 </template></el-table-column>
+                        </el-table>
                     </el-popover>
                 </div>
                 <el-amap
@@ -102,23 +115,30 @@
 </template>
 
 <script>
+import mapmixin from 'commonjs/mapmixin';
 export default {
     name: 'General',
+    mixins: [mapmixin],
     data() {
         return {
             record: {},
+            tableData: [],
             positions: [],
             center: [105.757223, 29.33282],
             events: {},
             boxVisible: true
         };
     },
+    filters:{
+        toPro(val){
+            return (val*100).toFixed()+'%';
+        }
+    },
     computed: {},
     components: {},
     methods: {
         getData() {
-            this.record = {
-                company: '重庆市永川区金银坡斗子丘建材有限公司',
+            const data = {
                 total: 40,
                 solved: 38,
                 level1: 30,
@@ -126,6 +146,38 @@ export default {
                 level3: 10,
                 level4: 33
             };
+
+            this.record = {
+                company: '重庆市永川区金银坡斗子丘建材有限公司',
+                total: data.total,
+                solved: data.solved
+            };
+            this.tableData = [
+                {
+                    level: '1',
+                    count: data.level1,
+                    countPro: data.level1 / data.total,
+                    solvePro: 0.7
+                },
+                {
+                    level: '2',
+                    count: data.level2,
+                    countPro: data.level2 / data.total,
+                    solvePro: 0.7
+                },
+                {
+                    level: '3',
+                    count: data.level3,
+                    countPro: data.level3 / data.total,
+                    solvePro: 0.5
+                },
+                {
+                    level: '4',
+                    count: data.level1,
+                    countPro: data.level1 / data.total,
+                    solvePro: 0.8
+                }
+            ];
             this.positions = [
                 {
                     position: [105.756894, 29.336377],
@@ -160,28 +212,11 @@ export default {
                 case 4:
                     return '#0000FE'; //蓝色
             }
-        },
-        mountEvent() {
-            //定义 坐标点 点击的事件 ，显示 提示框
-            const self = this;
-            this.events = {
-                click(event) {
-                    const vid = event.target.F.vid;
-                    // 高德地图只支持同时一个信息窗体的显示。
-                    self.positions[vid].visible = false;
-
-                    //dom 更新完之后才 显示
-                    self.$nextTick(() => {
-                        self.positions[vid].visible = true; //点击 显示
-                    });
-                }
-            };
-        },
-        showBox() {}
+        }
     },
     created() {
         this.getData();
-        this.mountEvent();
+        this.mountEvent('positions'); //绑定 信息窗口的 点击 事件 显示，
     }
 };
 </script>
@@ -228,7 +263,7 @@ export default {
                 }
             }
         }
-        .open_btn{
+        .open_btn {
             margin-top: 10px;
         }
         .close_btn {

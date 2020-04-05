@@ -1,17 +1,33 @@
 <template>
-    <div class="device_query">
-        <BreadNav :texts="['综合浏览', '设备浏览']" />
+    <div class="r_allocate">
+        <BreadNav :texts="['日常任务', '任务分配']" />
         <el-card>
             <el-row>
-                <el-col :span="8"
-                    ><el-input placeholder="输入关键词">
-                        <el-button
-                            slot="append"
-                            icon="el-icon-search"
-                        ></el-button></el-input
-                ></el-col>
+                <el-col :span="8">
+                    <el-select v-model="query.menu" placeholder="请选择设备册">
+                        <el-option
+                            v-for="item in menu"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value"
+                        >
+                        </el-option> </el-select
+                > <el-button>查询</el-button>
+                </el-col>
+                <el-col :span="8" :offset="4" class="all-btns">
+                    <el-button type="primary" @click="all_BtnClick"
+                        >分配全部</el-button
+                    >
+                    <el-button type="primary" @click="allocateVisible = true"
+                        >分配选中</el-button
+                    >
+                </el-col>
             </el-row>
-            <DeviceTable :tableData="tableData" @showdetail="showDetail" />
+            <DeviceTable
+                :tableData="tableData"
+                @showdetail="showDetail"
+                :sectional="true"
+            />
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -24,29 +40,40 @@
             </el-pagination>
         </el-card>
         <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
+        <AllocateDialog
+            :dialogVisible.sync="allocateVisible"
+            ref="all_dia"
+            @allocate="allocate"
+        />
     </div>
 </template>
 
 <script>
-import DeviceTable from './DeviceTable';
-import DeviceDetail from './DeviceDetail';
+import DeviceTable from 'components/general_show/DeviceTable';
+import DeviceDetail from 'components/general_show/DeviceDetail';
+import AllocateDialog from 'components/routine_task/AllocateDialog';
 export default {
-    name: 'DeviceQuery',
+    name: 'R_TaskAllocate',
     data() {
         return {
             tableData: [],
             detailVisible: false,
+            allocateVisible: false,
             detailnum: '', //显示详情的 编号
+            menu: [],
             query: {
                 page: 1,
                 size: 10,
-                total: 0
-            }
+                total: 0,
+                menu: ''
+            },
+            isAll_all: false //是否是 分配全部的 设备
         };
     },
     methods: {
-        getTableData() {
-            this.tableData = [
+        getData() {
+            //获得所哟设备数据
+            const tableData = [
                 {
                     number: 'D001',
                     status: 'good',
@@ -127,11 +154,34 @@ export default {
                     address: '巡线点3'
                 }
             ];
+            //循环遍历，为每一个 数据添加
+            tableData.forEach(val => {
+                val.checked = false;
+            });
+            this.tableData = tableData;
             this.query = {
                 page: 1,
                 size: 10,
                 total: 30
             };
+            this.menu = [
+                {
+                    label: '001  月巡',
+                    value: '001'
+                },
+                {
+                    label: '0012 周巡',
+                    value: '0012'
+                },
+                {
+                    label: '002  日巡',
+                    value: '002'
+                },
+                {
+                    label: '004  督察',
+                    value: '004'
+                }
+            ];
         },
         showDetail(num) {
             console.log(num);
@@ -139,24 +189,42 @@ export default {
             this.detailnum = num;
             this.detailVisible = true;
         },
-        //底部分页 更改size 和 page  触发 获取 新数据
-        handleSizeChange(){},
-        handleCurrentChange(){}
+        //底部分页 更改size 和 page  触发 更改 tableData 数据
+        handleSizeChange() {},
+        handleCurrentChange() {},
+        allocate() {
+            if (this.isAll_all) {
+                //如果分配 全部
+            } else {
+                const list = this.getCheckedDevice();
+            }
+            this.$message.success('分配成功');
+        },
+        all_BtnClick() {
+            this.isAll_all = true;
+            this.allocateVisible = true;
+        },
+        getCheckedDevice() {
+            return this.tableData.filter(val => val.checked);
+        }
     },
     created() {
-        this.getTableData();
+        this.getData();
     },
     components: {
         DeviceTable,
-        DeviceDetail
+        DeviceDetail,
+        AllocateDialog
     }
 };
 </script>
 
 <style scoped lang="less">
-.device_query {
-  /deep/  .el-pagination {
-        margin-top: 10px 
+.r_allocate {
+    .all-btns {
+        .el-button {
+            margin-left: 50px;
+        }
     }
 }
 </style>

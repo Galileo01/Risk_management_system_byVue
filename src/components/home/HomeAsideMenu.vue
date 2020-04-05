@@ -37,20 +37,32 @@ export default {
     name: 'HomeAsideMenu',
     data() {
         return {
-            activePath: '' // 选中的 menu对于的path
+            // activePath: '' // 选中的 menu对于的path
         };
+    },
+    computed: {
+        activePath() {
+            return this.$store.state.activePath;
+        }
     },
     props: {
         menulist: Array, //侧边栏 菜单
         iconlist: Array, //菜单 icon 类名
         isCollapse: Boolean
     },
-    methods:{
-        savePath(path)
-        {
-            window.sessionStorage.setItem('activePath','/'+path);
-            this.activePath='/'+path;
+    methods: {
+        savePath(path) {
+            window.sessionStorage.setItem('activePath', '/' + path);
+            this.$store.commit('changeActivePath', '/' + path);
+        },
+        getActivePath() {
+            //保证页面刷新，侧边栏 选中不变
+            const activePath = sessionStorage.getItem('activePath');
+            if (activePath) this.$store.commit('changeActivePath', activePath);
         }
+    },
+    created() {
+        this.getActivePath();
     }
 };
 </script>
@@ -58,12 +70,15 @@ export default {
 <style scoped lang="less">
 .aside-menu {
     overflow-x: hidden;
-   
     /deep/ span {
         font-size: 13px;
     }
     .title {
         margin-left: 10px;
+    }
+    .el-submenu .el-menu-item {
+    height: 40px;
+    line-height: 40px;
     }
 }
 </style>

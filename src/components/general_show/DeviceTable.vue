@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="tableData" border :cellStyle="{padding:'3px'}" @select="select">
+    <el-table :data="tableData" border :cellStyle="{padding:'4px'}" @select="select">
         <el-table-column type="selection" v-if="sectional"></el-table-column>
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="number" label="设备编号">
@@ -35,7 +35,7 @@ export default {
         select(selection,row){
             if(!this.sectional) 
             return ;
-            row.checked=!row.checked; //在这里更改 ，会影响到 父组件 TaskAllocate 
+            row.checked=!row.checked; //在这里更改 ，会影响到 父组件 通过 props 传递的 tavleData 属性
         }
     }
 };
