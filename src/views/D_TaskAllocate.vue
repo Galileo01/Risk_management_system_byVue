@@ -1,6 +1,6 @@
 <template>
-    <div class="r_allocate">
-        <BreadNav :texts="['日常任务', '任务分配']" />
+    <div class="d_allocate">
+        <BreadNav :texts="['自定义任务', '任务分配']" />
         <el-card>
             <el-row>
                 <el-col :span="8">
@@ -54,7 +54,7 @@ import DeviceTable from 'components/general_show/DeviceTable';
 import DeviceDetail from 'components/general_show/DeviceDetail';
 import AllocateDialog from 'components/routine_task/AllocateDialog';
 export default {
-    name: 'R_TaskAllocate',
+    name: 'D_TaskAllocate',
     data() {
         return {
             tableData: [],
@@ -233,7 +233,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-.r_allocate {
+.d_allocate {
     .all-btns {
         .el-button {
             margin-left: 50px;

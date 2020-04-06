@@ -36,8 +36,8 @@
                     >
                 </el-date-picker></el-form-item
             >
-            <el-form-item label="备注" 
-                ><el-input v-model="formData.commonts"></el-input
+            <el-form-item label="备注"  prop="comments"
+                ><el-input v-model="formData.comments"></el-input
             ></el-form-item>
         </el-form>
         <span slot="footer">

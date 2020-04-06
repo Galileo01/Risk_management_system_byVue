@@ -1,5 +1,6 @@
 <template>
     <el-table
+        ref="table"
         :data="tasklist"
         stripe
         :cellStyle="{ padding: '10px' }"
@@ -184,9 +185,19 @@ export default {
     name: 'TaskTable',
     props: {
         tasklist: {},
-        tableType: {  //当前  表格展示类型  manage/examine  管理/审核
+        tableType: {
+            //当前  表格展示类型  manage/examine  管理/审核
             type: String,
             default: 'manage'
+        }
+        // nav:{        //标识 当前 所处的侧边导航  r/d :日常任务/自定义任务
+        //     type:String,
+        //     default:'r' //默认 日常任务
+        // }
+    },
+    data(){
+        return {
+              isCheckedAll:false
         }
     },
     methods: {
@@ -217,7 +228,7 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.$message.success('任务完成');
+                this.$emit('checkOne', id);
             }
         },
         async refresh(id) {
@@ -233,7 +244,7 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.$message.success('任务已经重置');
+                this.$emit('refreshOne', id);
             }
         },
         trans(id) {
@@ -252,19 +263,20 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.$message.success('任务已被终止');
+                this.$emit('stopOne', id);
             }
         },
         //选择框 选中 更改数据 状态
         select(_, row) {
             row.checked = !row.checked; //在这里更改 ，会影响到 父组件 通过 props 传递的 tavleData 属性
         },
-        //全选 
-        selectAll(se){
-            se.forEach(val=>val.checked=true);
-            
+        //全选
+        selectAll() {
+            const value=this.isCheckedAll;
+            this.tasklist.forEach(val=>val.checked=!value);
+            this.isCheckedAll=!value;
         },
-        //进入任务详情页 
+        //进入任务详情页
         showdetail(id) {
             const { href } = this.$router.resolve({
                 path: `/task/detail/${id}` //进入任务详情页

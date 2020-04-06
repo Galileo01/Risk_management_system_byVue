@@ -10,7 +10,8 @@ const R_TaskManage = () => import('views/R_TaskManage');
 const R_TaskExam =()=>import('views/R_TaskExam')
 const TaskLocation=()=>import('views/TaskLocation')
 const TaskDetail =()=>import('views/TaskDetail')
-
+const D_TaskAllocate= ()=>import('views/D_TaskAllocate')
+const D_TaskManage=()=>import('views/D_TaskManage')
 const Profile = () => import('components/base_set/Profile');
 Vue.use(VueRouter);
 
@@ -53,6 +54,14 @@ const routes = [
             },{
                 path:'routine_task_examine',
                 component:R_TaskExam
+            },
+            {
+                path:'diy_task_allocate',
+                component:D_TaskAllocate
+            },
+            {
+                path:'diy_task_manage',
+                component:D_TaskManage
             }
         ]
     },
@@ -61,7 +70,8 @@ const routes = [
         component:TaskLocation
     },{
         path:'/task/:type/:id',
-        component:TaskDetail
+        component:TaskDetail,
+        props:true
     }
 ];
 

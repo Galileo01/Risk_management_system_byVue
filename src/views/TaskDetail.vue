@@ -163,13 +163,16 @@ export default {
     data() {
         return {
             baseInfo: {}, //任务的基础信息
-            type: this.$route.params.type, //当前 组件展示 的模式 manage/ examine
             tableData: [],
             imgVisible: false,
             showingImg: '',
             videoVisible: false,
             showingVideo: ''
         };
+    },
+    props:{
+        type:String,  //当前 组件展示 的模式 manage/ examine ,通过 路由解耦
+        id:String
     },
     computed: {
         //当前 组件的类型，是展示 任务详情还是任务审核
@@ -531,9 +534,6 @@ export default {
     /* /deep/ .el-table--enable-row-hover .el-table__body tr:hover > td {
         background-color:transparent ;
     } -*/
-}
-/deep/ .commont-table {
-    /* 备注table */
 }
 span.a-style {
     cursor: pointer;

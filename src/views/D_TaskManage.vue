@@ -1,6 +1,6 @@
 <template>
-    <div class="d_task_manage">
-        <BreadNav :texts="['日常任务', '任务管理']" />
+    <div class="r_task_manage">
+        <BreadNav :texts="['自定义任务', '任务管理']" />
         <el-card>
             <el-form inline>
                 <el-form-item label="任务名称"
@@ -128,7 +128,7 @@
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
 export default {
-    name: 'D_TaskManage',
+    name: 'R_TaskManage',
     data() {
         return {
             queryInfo: {

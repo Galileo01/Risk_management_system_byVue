@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="tableData" border :cellStyle="{padding:'4px'}" @select="select">
+    <el-table :data="tableData" border :cellStyle="{padding:'4px'}" @select="select" @select-all="selectAll">
         <el-table-column type="selection" v-if="sectional"></el-table-column>
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="number" label="设备编号">
@@ -31,12 +31,22 @@ export default {
         }
 
     },
+    data(){
+        return {
+            isCheckedAll:false
+        }
+    },
     methods:{
-        select(selection,row){
+        select(_,row){
             if(!this.sectional) 
             return ;
             row.checked=!row.checked; //在这里更改 ，会影响到 父组件 通过 props 传递的 tavleData 属性
-        }
+        },
+         selectAll() {
+            const value=this.isCheckedAll;
+            this.tableData.forEach(val=>val.checked=!value);
+            this.isCheckedAll=!value;
+        },
     }
 };
 </script>
