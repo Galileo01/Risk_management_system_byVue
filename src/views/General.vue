@@ -85,7 +85,7 @@
                     </el-popover>
                 </div>
                 <el-amap
-                    vid="amapDemo"
+                   
                     class="amap"
                     :center="center"
                     :zoom="16"
@@ -125,7 +125,7 @@ export default {
             tableData: [],
             positions: [],
             center: [105.757223, 29.33282],
-            events: {},
+            // events: {},
             boxVisible: true
         };
     },

@@ -34,11 +34,6 @@
             width="90px"
         ></el-table-column>
         <el-table-column
-            prop="uploadProcess"
-            label="上传进度"
-            width="90px"
-        ></el-table-column>
-        <el-table-column
             prop="examineProcess"
             label="审核进度"
             width="90px"

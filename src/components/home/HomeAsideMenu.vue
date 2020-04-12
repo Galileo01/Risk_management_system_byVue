@@ -1,6 +1,5 @@
 <template>
     <el-menu
-        v-if="menulist.length !== 0"
         class="aside-menu"
         :collapse="isCollapse"
         :collapse-transition="false"
@@ -10,24 +9,146 @@
         router
         unique-opened
     >
-        <!--一级菜单 内容-->
-        <el-submenu
-            v-for="(item, index) in menulist"
-            :key="item.id"
-            :index="item.id + ''"
-        >
-            <template slot="title">
-                <i :class="['iconfont', 'icon-' + iconlist[index]]"></i>
-                <span class="title">{{ item.authName }}</span>
-            </template>
-            <el-menu-item
-                v-for="subItem in item.children"
-                :key="subItem.id"
-                :index="'/' + subItem.path"
-                @click="savePath(subItem.path)"
+       
+        <el-submenu index="1">
+            <template slot="title"
+                ><i class="iconfont icon-shijie "></i>
+                <span class="title">综合浏览</span></template
             >
-                <span>{{ subItem.authName }}</span>
-            </el-menu-item>
+            <el-menu-item index="device_query" @click="savePath('device_query')"
+                >设备浏览</el-menu-item
+            >
+        </el-submenu>
+        <el-submenu index="2">
+            <template slot="title"
+                ><i class="iconfont icon-ye "></i>
+                <span class="title">日常任务</span></template
+            >
+            <el-menu-item
+                index="routine_task_allocate"
+                @click="savePath('routine_task_allocate')"
+                >任务分配</el-menu-item
+            >
+            <el-menu-item
+                index="routine_task_manage"
+                @click="savePath('routine_task_manage')"
+                >任务管理</el-menu-item
+            >
+            <el-menu-item
+                index="routine_task_examine"
+                @click="savePath('routine_task_examine')"
+                >任务审核</el-menu-item
+            >
+        </el-submenu>
+        <el-submenu index="3">
+            <template slot="title"
+                ><i class="iconfont icon-eyes "></i>
+                <span class="title">自定义任务</span></template
+            >
+            <el-menu-item
+                index="diy_task_allocate"
+                @click="savePath('diy_task_allocate')"
+                >任务分配</el-menu-item
+            >
+            <el-menu-item
+                index="diy_task_manage"
+                @click="savePath('diy_task_manage')"
+                >任务管理</el-menu-item
+            >
+        </el-submenu>
+        <el-submenu index="4">
+            <template slot="title"
+                ><i class="iconfont icon-shuju "></i>
+                <span class="title">数据统计</span></template
+            >
+            <el-menu-item
+                index="patrol_data"
+                @click="savePath('patrol_data')"
+                >巡查数据</el-menu-item
+            >
+            <el-menu-item
+                index="patrol_statis"
+                @click="savePath('patrol_statis')"
+                >巡查统计</el-menu-item
+            >
+            <el-menu-item
+                index="patrol_report"
+                @click="savePath('patrol_report')"
+                >巡查报表</el-menu-item
+            >
+            <el-menu-item
+                index="danger_data"
+                @click="savePath('danger_data')"
+                >隐患信息</el-menu-item
+            >
+        </el-submenu>
+        <el-submenu index="5">
+            <template slot="title"
+                ><i class="iconfont icon-jiankong "></i>
+                <span class="title">人员监控</span></template
+            >
+            <el-menu-item
+                index="people_location"
+                @click="savePath('people_location')"
+                >人员定位</el-menu-item
+            >
+            <el-menu-item
+                index="people_trail"
+                @click="savePath('people_trail')"
+                >人员轨迹</el-menu-item
+            >
+             <el-menu-item
+                index="device_trail"
+                @click="savePath('device_trail')"
+                >设备轨迹</el-menu-item
+            >
+             <!-- <el-menu-item
+                index="monitor"
+                @click="savePath('monitor')"
+                >视频监控</el-menu-item
+            > -->
+        </el-submenu>
+        <el-submenu index="6">
+            <template slot="title"
+                ><i class="iconfont icon-shezhi "></i>
+                <span class="title">基础设置</span></template
+            >
+            <el-submenu index="6-1">
+                <template slot="title"
+                >
+                <span class="title">隐患管理</span></template
+            >
+            <el-menu-item
+                index="danger_type"
+                @click="savePath('danger_type')"
+                >隐患类型</el-menu-item
+            >
+            <el-menu-item
+                index="danger_info"
+                @click="savePath('danger_info')"
+                >隐患信息</el-menu-item
+            >
+            </el-submenu>
+            <el-menu-item
+                index="point_manage"
+                @click="savePath('point_manage')"
+                >点位管理</el-menu-item
+            >
+            <el-menu-item
+                index="device_menu"
+                @click="savePath('device_menu')"
+                >设备分册</el-menu-item
+            >
+             <el-menu-item
+                index="task_setting"
+                @click="savePath('task_setting')"
+                >任务设置</el-menu-item
+            >
+             <el-menu-item
+                index="account_manage"
+                @click="savePath('account_manage')"
+                >账号管理</el-menu-item
+            >
         </el-submenu>
     </el-menu>
 </template>
@@ -46,14 +167,15 @@ export default {
         }
     },
     props: {
-        menulist: Array, //侧边栏 菜单
-        iconlist: Array, //菜单 icon 类名
         isCollapse: Boolean
     },
     methods: {
         savePath(path) {
-            window.sessionStorage.setItem('activePath', '/' + path);
-            this.$store.commit('changeActivePath', '/' + path);
+            console.log(path);
+
+            window.sessionStorage.setItem('activePath', path);
+
+            this.$store.commit('changeActivePath', path);
         },
         getActivePath() {
             //保证页面刷新，侧边栏 选中不变
@@ -77,8 +199,12 @@ export default {
         margin-left: 10px;
     }
     .el-submenu .el-menu-item {
-    height: 40px;
-    line-height: 40px;
+        height: 40px;
+        line-height: 40px;
+        font-size: 13px;
+    }
+    span {
+        font-size: 13px;
     }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="d_task_manage">
+    <div class="r_task_manage">
         <BreadNav :texts="['日常任务', '任务管理']" />
         <el-card>
             <el-form inline>
@@ -9,35 +9,7 @@
                         class="inputInwidth"
                     ></el-input
                 ></el-form-item>
-                <el-form-item label="设备编号"
-                    ><el-input
-                        v-model="queryInfo.deviceNum"
-                        placeholder="请输入完整编号"
-                        class="inputInwidth"
-                    ></el-input
-                ></el-form-item>
-                <el-form-item label="任务状态">
-                    <el-select v-model="queryInfo.taskStatus">
-                        <el-option
-                            v-for="item in taskStatusList"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="上传状态">
-                    <el-select v-model="queryInfo.uploadStatus">
-                        <el-option
-                            v-for="item in uploadStatusList"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option>
-                    </el-select>
-                </el-form-item>
+                
                 <el-form-item label="终端人员">
                     <el-select v-model="queryInfo.staff">
                         <el-option
@@ -57,16 +29,7 @@
                         >
                     </el-date-picker>
                 </el-form-item>
-                <el-form-item label="截至时间"
-                    ><el-date-picker
-                        v-model="queryInfo.endTime"
-                        type="datetime"
-                        placeholder="选择日期时间"
-                    >
-                        >
-                    </el-date-picker></el-form-item
-                >
-                <el-form-item>
+                
                     <el-button type="primary">查询</el-button>
                     <el-button type="success" @click="checkMany"
                         >完成</el-button
@@ -128,20 +91,17 @@
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
 export default {
-    name: 'D_TaskManage',
+    name: 'R_TaskManage',
     data() {
         return {
             queryInfo: {
                 taskName: '',
-                deviceNum: '',
-                taskStatus: '',
-                uploadStatus: '',
-                startTime: '',
-                endTime: '',
+                geneTime: '',
+                staff: '',
                 pageSize: 10,
                 page: 1,
                 total: 0,
-                staff: ''
+                
             },
             taskStatusList: [
                 {

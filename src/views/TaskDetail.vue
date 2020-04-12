@@ -43,7 +43,7 @@
                 <el-table-column type="index"></el-table-column>
                     <el-table-column type="selection" min-width="60px" v-if="type==='examine'">
                     </el-table-column>
-                    <el-table-column label="任务数据" min-width="800px" :style="{}" class-name="left-mar">
+                    <el-table-column label="任务数据" min-width="800px"  class-name="left-mar">
                         <template v-slot="{ row }">
                             <div class="table-data">
                                 <div>巡线顺序:{{ row.patrolOrder }}</div>
@@ -56,7 +56,7 @@
                                 <div>RFID状态:{{ row.RFIDStatus }}</div>
                                 <div>巡查状态:{{ row.patrolStatus }}</div>
                                 <div>
-                                    巡线点视频:
+                                    巡线点视频: <icon class="el-icon-caret-right"></icon>
                                     <span
                                         class="a-style"
                                         @click="showVideo(row.videoSrc)"
@@ -65,7 +65,7 @@
                                 </div>
                                 <div>审核用户:{{ row.examUser }}</div>
                                 <div>审核时间:{{ row.examTime }}</div>
-                                <div>任务备注表格:</div>
+                                <div>巡查内容:</div>
                             </div>
                             <!-- 子表格 -->
                             <el-table
@@ -94,15 +94,6 @@
                                     </template></el-table-column
                                 >
                             </el-table>
-                        </template>
-                    </el-table-column>
-                    <el-table-column
-                        label="设备信息"
-                        width="200px"
-                        class-name="in-top"
-                        ><template v-slot="{ row }">
-                            <p>{{ row.deviceInfo.num }}</p>
-                            <p>安装位置:{{ row.deviceInfo.address }}</p>
                         </template>
                     </el-table-column>
                     <el-table-column
@@ -527,13 +518,7 @@ export default {
     /* 总体 table  */
     font-size: 13px;
     margin: 10px 0px 20px 0px;
-    /deep/ .in-top .cell {
-        position: absolute;
-        top: 20px;
-    }
-    /* /deep/ .el-table--enable-row-hover .el-table__body tr:hover > td {
-        background-color:transparent ;
-    } -*/
+    
 }
 span.a-style {
     cursor: pointer;

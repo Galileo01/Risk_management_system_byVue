@@ -31,12 +31,10 @@
                         <i :class="iconClass"></i>
                     </div>
                     <HomeAsideMenu
-                        :menulist="menulist"
-                        :iconlist="iconlist"
                         :isCollapse="isCollapse"
                     ></HomeAsideMenu
                 ></el-aside>
-                <el-main><router-view ></router-view></el-main>
+                <el-main><router-view></router-view></el-main>
             </el-container>
         </el-container>
     </div>
@@ -49,10 +47,7 @@ export default {
     data() {
         return {
             //侧边栏 菜单
-            menulist: [],
-            iconlist: [], //菜单 icon 类名,
-            isCollapse: false, //是否折叠
-           
+            isCollapse: false //是否折叠
         };
     },
     computed: {
@@ -70,7 +65,7 @@ export default {
                 return '150px';
             }
         },
-        userInfo(){
+        userInfo() {
             return this.$store.getters.userdata;
         }
     },
@@ -106,199 +101,7 @@ export default {
         HomeAsideMenu
     },
     created() {
-        this.menulist = [
-            {
-                id: 100,
-                authName: '综合浏览',
-                path: '',
-                children: [
-                    {
-                        id: 101,
-                        authName: '设备查询',
-                        path: 'home/device_query',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 300,
-                authName: '日常任务',
-                path: '',
-                children: [
-                    {
-                        id: 301,
-                        authName: '任务分配',
-                        path: 'home/routine_task_allocate',
-                        children: []
-                    },
-                    {
-                        id: 302,
-                        authName: '任务管理',
-                        path: 'home/routine_task_manage',
-                        children: []
-                    },
-                    {
-                        id: 303,
-                        authName: '任务审核',
-                        path: 'home/routine_task_examine',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 400,
-                authName: '自定义任务',
-                path: '',
-                children: [
-                    {
-                        id: 401,
-                        authName: '任务分配',
-                        path: 'home/diy_task_allocate',
-                        children: []
-                    },
-                    {
-                        id: 402,
-                        authName: '任务管理',
-                        path: 'home/diy_task_manage',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 500,
-                authName: '隐患管理',
-                path: '',
-                children: [
-                    {
-                        id: 501,
-                        authName: '隐患类型',
-                        path: 'home/danger_type',
-                        children: []
-                    },
-                    {
-                        id: 502,
-                        authName: '隐患信息',
-                        path: 'home/danger_info',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 600,
-                authName: '数据统计',
-                path: '',
-                children: [
-                    {
-                        id: 601,
-                        authName: '巡查数据',
-                        path: 'home/patrol_data',
-                        children: []
-                    },
-                    {
-                        id: 602,
-                        authName: '巡查统计',
-                        path: 'home/patrol_statis',
-                        children: []
-                    },
-                    {
-                        id: 603,
-                        authName: '隐患信息统计',
-                        path: 'home/danger_statis',
-                        children: []
-                    },
-
-                    {
-                        id: 604,
-                        authName: '巡查报表',
-                        path: 'home/patrol_table',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 700,
-                authName: '人员监控',
-                path: '',
-                children: [
-                    {
-                        id: 701,
-                        authName: '位置定位',
-                        path: 'home/location',
-                        children: []
-                    },
-                    {
-                        id: 702,
-                        authName: '人员移动轨迹',
-                        path: 'home/people_trail',
-                        children: []
-                    },
-                    {
-                        id: 703,
-                        authName: '设备访问轨迹',
-                        path: 'home/device_trail',
-                        children: []
-                    },
-                    {
-                        id: 704,
-                        authName: '视频监控',
-                        path: 'home/monitor',
-                        children: []
-                    }
-                ]
-            },
-            {
-                id: 800,
-                authName: '基础设置',
-                path: '',
-                children: [
-                    {
-                        id: 801,
-                        authName: '点位管理',
-                        path: 'home/point_manage',
-                        children: []
-                    },{
-                        
-                        id: 809,
-                        authName: '设备分册',
-                        path: 'home/device_menu',
-                        children: []
-                    },
-                    {
-                        id: 802,
-                        authName: '巡查项目',
-                        path: 'home/patrol_item',
-                        children: []
-                    },
-                    {
-                        id: 803,
-                        authName: '任务设置',
-                        path: 'home/task_setting',
-                        children: []
-                    },
-                    {
-                        id: 804,
-                        authName: '账号管理',
-                        path: 'home/account_manage',
-                        children: []
-                    },
-                    {
-                        id: 805,
-                        authName: '隐患设置',
-                        path: 'home/danger_setting',
-                        children: []
-                    }
-                ]
-            }
-        ];
-        this.iconlist = [
-            'shijie',
-            'ye',
-            'eyes',
-            'jinggao',
-            'shuju',
-            'jiankong',
-            'shezhi'
-        ];
+       
     }
 };
 </script>
@@ -333,7 +136,7 @@ export default {
 .el-aside {
     background-color: #f2f2f2;
     // overflow: hidden;
-    overflow-y:auto; 
+    overflow-y: auto;
 }
 .collapse {
     font-size: 20px; //给图标 设置大小

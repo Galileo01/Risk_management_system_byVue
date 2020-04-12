@@ -108,15 +108,22 @@ export default {
                         //验证码 正确
                         if (this.formData.password === '123456') {
                             // 验证成功
-                            window.sessionStorage.setItem(
+                            window.localStorage.setItem(
                                 'token',
                                 this.identifyCode
                             ); // 模拟设置 token
+                            sessionStorage.setItem(
+                                'user',
+                                JSON.stringify({
+                                    username: 'admin',
+                                    id: '1234'
+                                })
+                            );
                             this.$store.commit('getUserdata', {
                                 id: this.identifyCode + '',
                                 token: this.identifyCode,
                                 role: 1,
-                                username:this.formData.username
+                                username: this.formData.username
                             });
                             this.$router.push('/home');
                             this.$message.success('登录成功');
@@ -140,11 +147,28 @@ export default {
                 count++;
             }
             this.identifyCode = code;
+        },
+        autoLogin() {
+            if (localStorage.getItem('token')) {
+                //本地存有 token
+                //发送自动登录请求，若 token 没有过期 就自动进入 进入首页,并保存 传回的 用户信息
+
+                this.$message.success('自动登录');
+                this.$router.push('/home');
+                this.$store.commit('getUserdata', {
+                                id: '1231231',
+                                token:'66666',
+                                role: 1,
+                                username: 'admin'
+                            });
+            } else {
+                //随机生成 数字 验证码
+                this.generateIdentify();
+            }
         }
     },
     created() {
-        //随机生成 数字 验证码
-        this.generateIdentify();
+        this.autoLogin();
     },
     components: {
         's-identify': SIdentify
