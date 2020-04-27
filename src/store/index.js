@@ -6,6 +6,17 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     userdata:{ //用户信息
+      accountID: 1,
+                    industryID: 1,
+                    companyID: 1,
+                    accountName: 'aaa',
+                    name:'wws',
+                    mobile: '158235674908',
+                    email: '1354541676@',
+                    rightLevel: 66,
+                    sex:'male',
+                    position:'主管',
+                    address:''
     },
     activePath:'' //动态路由信息
   },
@@ -36,6 +47,9 @@ export default new Vuex.Store({
     activePath(state)
     {
       return state.activePath;
+    },
+    accountName(state){
+      return state.userdata.accountName;
     }
 
   }

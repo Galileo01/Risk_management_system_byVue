@@ -1,66 +1,71 @@
 <template>
-    <div class="device_query">
-        <BreadNav :texts="['综合浏览', '设备浏览']" />
+    <div class="task_set">
+        <BreadNav :texts="['基础设置', '自动任务']" />
         <el-card>
-            <el-row>
-                 <el-col :span="4">
-                    <el-select v-model="query.menu" placeholder="请选择设备册">
+            <el-row class="ali-c">
+                <el-col :span="3" class="info"
+                    ><el-tag>选择自动任务</el-tag></el-col
+                >
+                <el-col :span="5">
+                    <el-select
+                        v-model="taskChioce.taskId"
+                        placeholder="请选择要设置的自动任务"
+                        clearable
+                    >
                         <el-option
-                            v-for="item in menu"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option>
-                    </el-select>
-                   
-                </el-col>
-                <el-col :span="4"> <el-button>查询设备册</el-button></el-col>
-                <el-col :span="8"
-                    ><el-input placeholder="输入关键词">
-                        <el-button
-                            slot="append"
-                            icon="el-icon-search"
-                        ></el-button></el-input
+                            v-for="(item, index) in taskSelections"
+                            :key="index"
+                            :label="item.value"
+                            :value="item.id"
+                        ></el-option> </el-select
                 ></el-col>
+                <el-col :span="6"><el-button type="warning" size="medium" @click="gotoSet">设置该自动任务</el-button></el-col>
             </el-row>
-            <DeviceTable :tableData="tableData" @showdetail="showDetail" />
-            <el-pagination
+            <el-row>
+                <el-alert title="该自动任务包含的设备" type="info" center show-icon>
+                </el-alert>
+            </el-row>
+          
+            <DeviceTable
+                :tableData="taskChioce.taskId=== '' ? [] : tableData"
+                :numCanClick="false"
+            />
+             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page="query.page"
-                :page-sizes="[5, 10, 15]"
+                :page-sizes="[5, 10]"
                 :page-size="query.size"
                 layout="total, sizes, prev, pager, next, jumper"
                 :total="query.total"
             >
             </el-pagination>
         </el-card>
-        <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
     </div>
 </template>
 
 <script>
 import DeviceTable from 'components/general_show/DeviceTable';
-import DeviceDetail from 'components/general_show/DeviceDetail';
 export default {
-    name: 'DeviceQuery',
+    name: 'SetAutoTask',
     data() {
         return {
-            tableData: [],
-            detailVisible: false,
-            detailnum: '', //显示详情的 编号
+           taskChioce:{
+               taskId:''
+           },
+            taskSelections: [],
+            menus: [],
             query: {
                 page: 1,
                 size: 10,
                 total: 0,
-                menu:''
+                menu: ''
             },
-            menu: [],
+            tableData:[]
         };
     },
     methods: {
-        getTableData() {
+        getData() {
             this.tableData = [
                 {
                     number: 'D001',
@@ -84,22 +89,6 @@ export default {
                     date: '2019-09-09 13:24:55',
 
                     address: '大门内右侧'
-                },
-                {
-                    number: 'D004',
-                    status: 'unknown',
-                    type: '低压配电房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电房'
-                },
-                {
-                    number: 'D005',
-                    status: 'unknown',
-                    type: '低压配电室督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电室'
                 },
                 {
                     number: 'D006',
@@ -145,11 +134,30 @@ export default {
             this.query = {
                 page: 1,
                 size: 10,
-                total: 30,
-                menu:'0012'
+                total: 0,
+                menu: ''
             };
-            
-            this.menu = [
+            this.taskSelections = [
+                {
+                    value: '日巡001',
+                    id: '1'
+                },
+                {
+                    value: '周巡0012',
+                    id: '0012'
+                },
+                { value: '月巡0034', id: '0034' },
+                {
+                    value: '日巡003',
+                    id: '003'
+                },
+                {
+                    value: '周巡0010',
+                    id: '0010'
+                },
+                { value: '月巡0020', id: '0020' }
+            ];
+            this.menus = [
                 {
                     label: '001  月巡',
                     value: '001'
@@ -168,30 +176,27 @@ export default {
                 }
             ];
         },
-        showDetail(num) {
-            console.log(num);
-
-            this.detailnum = num;
-            this.detailVisible = true;
-        },
-        //底部分页 更改size 和 page  触发 获取 新数据
         handleSizeChange(){},
-        handleCurrentChange(){}
+        handleCurrentChange(){},
+        gotoSet(){
+            if(this.taskChioce.taskId==='')
+            return this.$message.info('请选择 自动任务');
+            this.$router.push(`set_auto_task${this.taskChioce.taskId}`)
+        }
     },
     created() {
-        this.getTableData();
+        this.getData();
     },
     components: {
-        DeviceTable,
-        DeviceDetail
+        DeviceTable
     }
 };
 </script>
 
 <style scoped lang="less">
-.device_query {
-  /deep/  .el-pagination {
-        margin-top: 10px 
+.task_set {
+    .info .el-tag {
+        font-size: 13px;
     }
 }
 </style>

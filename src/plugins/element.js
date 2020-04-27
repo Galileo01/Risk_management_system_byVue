@@ -35,7 +35,12 @@ import {
     Checkbox,
     CheckboxGroup,
     Collapse,
-    CollapseItem
+    CollapseItem,
+    Switch,
+    Icon,
+    Upload,
+    Alert,
+    Radio
 } from 'element-ui';
 
 Vue.use(Button);
@@ -72,6 +77,11 @@ Vue.use(Option);
 Vue.use(DatePicker);
 Vue.use(Collapse)
 Vue.use(CollapseItem)
+Vue.use(Switch)
+Vue.use(Icon)
+Vue.use(Upload)
+Vue.use(Alert)
+Vue.use(Radio)
 //挂载 全局的 方法
 Vue.prototype.$message = Message;
 Vue.prototype.$confirm = MessageBox.confirm;

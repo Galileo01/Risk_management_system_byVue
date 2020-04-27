@@ -3,7 +3,7 @@
         <BreadNav :texts="['自定义任务', '任务分配']" />
         <el-card>
             <el-row>
-                <el-col :span="8">
+                <el-col :span="4">
                     <el-select v-model="query.menu" placeholder="请选择设备册">
                         <el-option
                             v-for="item in menu"
@@ -13,7 +13,10 @@
                         >
                         </el-option>
                     </el-select>
-                    <el-button>查询</el-button>
+                   
+                </el-col>
+                <el-col :span="1">
+                     <el-button>查询设备册</el-button>
                 </el-col>
                 <el-col :span="8" :offset="4" class="all-btns">
                     <el-button type="primary" @click="all_BtnClick(1)"
@@ -163,7 +166,8 @@ export default {
             this.query = {
                 page: 1,
                 size: 10,
-                total: 30
+                total: 30,
+                menu:'0012'
             };
             this.menu = [
                 {

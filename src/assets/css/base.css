@@ -9,3 +9,16 @@ html,body{
 .el-pagination {
     margin-top: 10px 
 }
+
+/* el-row 的居中 */
+.ali-c {
+    display: flex;
+    align-items: center;
+}
+.el-row{
+    margin-bottom: 10px;
+}
+
+.el-dialog__body {
+    padding: 10px 20px !important;
+}

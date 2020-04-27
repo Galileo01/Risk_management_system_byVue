@@ -7,10 +7,11 @@
                     <h3>永川区非煤矿山企业安全检查监督管理平台</h3>
                 </div></el-header
             >
+            
             <el-main>
                 <BreadNav
                     :texts="['日常任务', componentType]"
-                    :canNav="false"
+                    :toHome="false"
                 />
                 <BaseInfo
                     :taskInfo="baseInfo"
@@ -56,7 +57,7 @@
                                 <div>RFID状态:{{ row.RFIDStatus }}</div>
                                 <div>巡查状态:{{ row.patrolStatus }}</div>
                                 <div>
-                                    巡线点视频: <icon class="el-icon-caret-right"></icon>
+                                    巡线点视频: <el-icon class="el-icon-caret-right"></el-icon>
                                     <span
                                         class="a-style"
                                         @click="showVideo(row.videoSrc)"
@@ -477,7 +478,7 @@ export default {
         this.getData();
     },
     components: {
-        BaseInfo
+        BaseInfo,
     }
 };
 </script>

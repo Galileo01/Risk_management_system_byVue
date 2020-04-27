@@ -1,10 +1,10 @@
 <template>
-    <el-table :data="tableData" border :cellStyle="{padding:'4px'}" @select="select" @select-all="selectAll">
+    <el-table :data="tableData" border  @select="select" @select-all="selectAll" size="mini">
         <el-table-column type="selection" v-if="sectional"></el-table-column>
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="number" label="设备编号">
             <template v-slot="{row}">
-                <a class="num" @click="$emit('showdetail',row.number)">{{row.number}}</a>
+                <a :class="{num:numCanClick}" @click="$emit('showdetail',row.number)">{{row.number}}</a>
             </template>
         </el-table-column>
         <el-table-column prop="status" label="状态">
@@ -28,6 +28,10 @@ export default {
         sectional:{
             type:Boolean,
             default:false
+        },
+        numCanClick:{
+            type:Boolean,
+            default:true
         }
 
     },
@@ -55,7 +59,7 @@ export default {
 .el-table{
     .num{
         cursor: pointer;
-         color:rgb(64, 158, 255); 
+        color:rgb(64, 158, 255); 
     }
    /deep/ td{
         font-size: 13px;

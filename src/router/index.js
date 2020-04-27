@@ -15,8 +15,15 @@ const D_TaskManage = () => import('views/D_TaskManage');
 const PeopleLocation = () => import('views/PeopleLocation');
 const PeopleTrail = () => import('views/PeopleTrail');
 const DeviceTrail = () => import('views/DeviceTrail');
-const Profile = () => import('components/base_set/Profile');
-
+const SetDanger = () => import('views/SetDanger');
+const SetPoints = () => import('views/SetPoints');
+const SetPoint = () => import('views/SetPoint');
+const SetDeviceMenus =()=>import('views/SetDeviceMenus')
+const SetDeviceDis=()=>import('views/SetDeviceDis')
+const Profile = () => import('views/Profile');
+const SetAutoTasks=()=> import('views/SetAutoTasks')
+const SetAutoTask=()=>import('views/SetAutoTask')
+const SetAccount=()=>import('views/SetAccount')
 Vue.use(VueRouter);
 
 const routes = [
@@ -77,8 +84,40 @@ const routes = [
                 component: PeopleTrail
             },
             {
-                path:'device_trail',
-                component:DeviceTrail
+                path: 'device_trail',
+                component: DeviceTrail
+            },
+            {
+                path: 'danger_type',
+                component: SetDanger
+            },
+            {
+                path: 'point_manage',
+                component: SetPoints
+            },
+            {
+                path: 'point_setting:id',
+                component: SetPoint,
+                props: true
+            },{
+                path:'device_menu',
+                component:SetDeviceMenus
+            },{
+                path:'device_distri:menuid',
+                component:SetDeviceDis,
+                props:true
+            },
+            {
+                path:'task_setting',
+                component:SetAutoTasks
+            },{
+                path:'set_auto_task:taskid',
+                component:SetAutoTask,
+                props:true
+            },
+            {
+                path:'account_manage',
+                component:SetAccount
             }
         ]
     },
@@ -89,8 +128,9 @@ const routes = [
     {
         path: '/task/:type/:id',
         component: TaskDetail,
-        props: true
-    }
+        props: true //将 路由 参数映射到 组件props
+    },
+    
 ];
 
 const router = new VueRouter({

@@ -61,26 +61,28 @@
                 ><i class="iconfont icon-shuju "></i>
                 <span class="title">数据统计</span></template
             >
+             <el-menu-item
+                index="last_statis"
+                @click="savePath('last_statis')"
+                >最新数据</el-menu-item
+            >
             <el-menu-item
                 index="patrol_data"
                 @click="savePath('patrol_data')"
-                >巡查数据</el-menu-item
-            >
-            <el-menu-item
-                index="patrol_statis"
-                @click="savePath('patrol_statis')"
-                >巡查统计</el-menu-item
-            >
-            <el-menu-item
-                index="patrol_report"
-                @click="savePath('patrol_report')"
                 >巡查报表</el-menu-item
             >
-            <el-menu-item
+             <el-menu-item
                 index="danger_data"
                 @click="savePath('danger_data')"
-                >隐患信息</el-menu-item
+                >隐患数据</el-menu-item
             >
+            <el-menu-item
+                index="global_statis"
+                @click="savePath('global_statis')"
+                >总体统计</el-menu-item
+            >
+           
+           
         </el-submenu>
         <el-submenu index="5">
             <template slot="title"
@@ -102,37 +104,22 @@
                 @click="savePath('device_trail')"
                 >设备轨迹</el-menu-item
             >
-             <!-- <el-menu-item
-                index="monitor"
-                @click="savePath('monitor')"
-                >视频监控</el-menu-item
-            > -->
         </el-submenu>
         <el-submenu index="6">
             <template slot="title"
                 ><i class="iconfont icon-shezhi "></i>
                 <span class="title">基础设置</span></template
             >
-            <el-submenu index="6-1">
-                <template slot="title"
-                >
-                <span class="title">隐患管理</span></template
-            >
+            
             <el-menu-item
                 index="danger_type"
                 @click="savePath('danger_type')"
                 >隐患类型</el-menu-item
             >
             <el-menu-item
-                index="danger_info"
-                @click="savePath('danger_info')"
-                >隐患信息</el-menu-item
-            >
-            </el-submenu>
-            <el-menu-item
                 index="point_manage"
                 @click="savePath('point_manage')"
-                >点位管理</el-menu-item
+                >点位设置</el-menu-item
             >
             <el-menu-item
                 index="device_menu"
@@ -142,7 +129,7 @@
              <el-menu-item
                 index="task_setting"
                 @click="savePath('task_setting')"
-                >任务设置</el-menu-item
+                >自动任务</el-menu-item
             >
              <el-menu-item
                 index="account_manage"
@@ -171,14 +158,14 @@ export default {
     },
     methods: {
         savePath(path) {
-            console.log(path);
+            // console.log(path);
 
             window.sessionStorage.setItem('activePath', path);
 
             this.$store.commit('changeActivePath', path);
         },
         getActivePath() {
-            //保证页面刷新，侧边栏 选中不变
+            //保证页面刷新，侧边栏 选中不变 ,从  sessionStrorage 获取 路径 
             const activePath = sessionStorage.getItem('activePath');
             if (activePath) this.$store.commit('changeActivePath', activePath);
         }

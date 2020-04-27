@@ -1,8 +1,9 @@
 <template>
-    <div class="r_allocate">
-        <BreadNav :texts="['日常任务', '任务分配']" />
+    <div class="point_manage">
+        <BreadNav :texts="['基础设置', '点位管理']" />
         <el-card>
-            <el-row>
+            <el-row class="ali-c ">
+                <el-col :span="2"> <el-tag>选择设备册</el-tag></el-col>
                 <el-col :span="4">
                     <el-select v-model="query.menu" placeholder="请选择设备册">
                         <el-option
@@ -13,23 +14,13 @@
                         >
                         </el-option>
                     </el-select>
-                  
+                    
                 </el-col>
-                <el-col :span="1">  <el-button>查询设备册</el-button></el-col>
-                <el-col :span="8" :offset="4" class="all-btns">
-                    <el-button type="primary" @click="all_BtnClick(1)"
-                        >分配全部</el-button
-                    >
-                    <el-button type="primary" @click="all_BtnClick(2)"
-                        >分配选中</el-button
-                    >
-                </el-col>
+                
             </el-row>
-            <DeviceTable
-                :tableData="tableData"
-                @showdetail="showDetail"
-                :sectional="true"
-            />
+            <el-row><el-col :span="4"><el-tag>该设备册包含以下设备</el-tag></el-col>
+            <el-col :span="4"><el-tag type="danger">点击编号设置对应的设备</el-tag></el-col></el-row>
+            <DeviceTable :tableData="tableData" @showdetail="goSetting" />
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -41,41 +32,28 @@
             >
             </el-pagination>
         </el-card>
-        <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
-        <AllocateDialog
-            :dialogVisible.sync="allocateVisible"
-            ref="all_dia"
-            @allocate="allocate"
-        />
     </div>
 </template>
 
 <script>
 import DeviceTable from 'components/general_show/DeviceTable';
-import DeviceDetail from 'components/general_show/DeviceDetail';
-import AllocateDialog from 'components/routine_task/AllocateDialog';
 export default {
-    name: 'R_TaskAllocate',
+    name: 'SetPoints',
     data() {
         return {
             tableData: [],
-            detailVisible: false,
-            allocateVisible: false,
-            detailnum: '', //显示详情的 编号
-            menu: [],
             query: {
                 page: 1,
                 size: 10,
                 total: 0,
                 menu: ''
             },
-            isAll_all: false //是否是 分配全部的 设备
+            menu: []
         };
     },
     methods: {
-        getData() {
-            //获得所哟设备数据
-            const tableData = [
+        getTableData() {
+            this.tableData = [
                 {
                     number: 'D001',
                     status: 'good',
@@ -156,17 +134,13 @@ export default {
                     address: '巡线点3'
                 }
             ];
-            //循环遍历，为每一个 数据添加
-            tableData.forEach(val => {
-                val.checked = false;
-            });
-            this.tableData = tableData;
             this.query = {
                 page: 1,
                 size: 10,
                 total: 30,
-                menu:'0012'
+                menu: ''
             };
+
             this.menu = [
                 {
                     label: '001  月巡',
@@ -186,60 +160,20 @@ export default {
                 }
             ];
         },
-        showDetail(num) {
-            console.log(num);
-
-            this.detailnum = num;
-            this.detailVisible = true;
+        goSetting(id) {
+            this.$router.push('point_setting' + id);
+            
         },
-        //底部分页 更改size 和 page  触发 更改 tableData 数据
         handleSizeChange() {},
-        handleCurrentChange() {},
-        allocate() {
-            let data = [];
-            if (this.isAll_all) {
-                //如果分配 全部
-                data = this.tableData;
-            } else {
-                data = this.getCheckedDevice();
-            }
-            this.$message.success('分配成功');
-        },
-        all_BtnClick(num) {
-            if (num === 1) {
-                //如果是 分配全部
-                this.isAll_all = true;
-                this.allocateVisible = true;
-            }
-            else if(num===2)
-            {
-                if(this.getCheckedDevice().length===0)
-                  this.$message.error('请选中设备');
-                else
-                this.allocateVisible = true;
-            }
-        },
-        getCheckedDevice() {
-            return this.tableData.filter(val => val.checked);
-        }
+        handleCurrentChange() {}
     },
     created() {
-        this.getData();
+        this.getTableData();
     },
     components: {
-        DeviceTable,
-        DeviceDetail,
-        AllocateDialog
+        DeviceTable
     }
 };
 </script>
 
-<style scoped lang="less">
-.r_allocate {
-    .all-btns {
-        .el-button {
-            margin-left: 50px;
-        }
-    }
-}
-</style>
+<style></style>
