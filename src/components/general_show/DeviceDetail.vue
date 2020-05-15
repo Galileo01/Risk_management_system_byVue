@@ -10,16 +10,14 @@
         <el-tabs v-model="curTab">
             <el-tab-pane label="基础信息" name="base">
                 <el-row>
-                    <el-col :span="10">设备编号</el-col>
-                    <el-col :span="14">{{ info.num }}</el-col>
+                    <el-col :span="10">设备名称</el-col>
+                    <el-col :span="14">{{ info.name }}</el-col>
                 </el-row>
                 <el-row class="marks">
                     <el-col :span="10">特殊标记</el-col>
                     <el-col :span="14"
                         ><el-tag
-                            v-for="(item, index) in info.mark"
-                            :key="index"
-                            >{{ item }}</el-tag
+                            >{{ info.lable }}</el-tag
                         ></el-col
                     >
                 </el-row>
@@ -30,13 +28,7 @@
                 <el-row class="status">
                     <el-col :span="10">设备状态</el-col>
                     <el-col :span="14">
-                        <el-tag v-if="info.status === 'good'" type="success"
-                            >好</el-tag
-                        >
-                        <el-tag v-else-if="info.status === 'bad'" type="danger"
-                            >差</el-tag
-                        >
-                        <el-tag v-else type="warning">未知</el-tag></el-col
+                        <el-tag>{{info.state}}</el-tag></el-col
                     >
                 </el-row>
                 <el-row>
@@ -46,11 +38,11 @@
 
                 <el-row>
                     <el-col :span="10">经纬度</el-col>
-                    <el-col :span="14">{{ info.location }}</el-col>
+                    <el-col :span="14">{{ info.longitude}},{{info.latitude}}</el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="10">安装日期</el-col>
-                    <el-col :span="14">{{ info.install_date }}</el-col>
+                    <el-col :span="14">{{ info.createTime }}</el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="10">生产商</el-col>
@@ -75,29 +67,23 @@ export default {
     data() {
         return {
             curTab: 'base',
-            info: {},
             naviImgs:[]
         };
     },
     props: {
         dialogVisible: Boolean,
-        num: String
+        info:{
+            type:Object,
+            default(){
+                return {}
+            }
+        }
     },
     methods: {
         closeHandle() {
-            this.$emit('update:vi', false);
+            this.$emit('update:visible', false);
         },
         getData() {
-            this.info = {
-                num: this.num,
-                mark: ['标签正常', '正常巡查', '巡查合格'],
-                type: '办公楼督查',
-                status: 'good',
-                address: '办公楼',
-                location: '(105.756894，29.336377)',
-                install_date: '2019-09-09 13:24:55',
-                manu: '重庆市永川区金银坡斗子丘建材有限公司'
-            };
             this.naviImgs=[
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/d4fed3a81dd84fa2b689420ca64ed0be_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/75a96784e09e4965b1b372cdbc8407d8_1909071031copy.jpg',
@@ -109,8 +95,7 @@ export default {
             ]
         },
         closeHandle(){
-            this.info={},
-            this.naviImgs=[];
+            // this.naviImgs=[];
             this.curTab='base';
         }
     }

@@ -3,7 +3,7 @@
         ref="table"
         :data="tasklist"
         stripe
-        :cellStyle="{ padding: '10px' }"
+        size="mini"
         border
         @select="select"
         @select-all="selectAll"
@@ -17,65 +17,57 @@
         <el-table-column type="index"></el-table-column>
         <el-table-column label="任务名称" width="150px">
             <template v-slot="{ row }">
-                <a class="task-name" @click="showdetail(row.taskId)">{{
-                    row.taskName
+                <a class="task-name" @click="showdetail(row.name)">{{
+                    row.name
                 }}</a>
             </template>
         </el-table-column>
         <el-table-column
-            prop="taskStatus"
+            prop="state"
             label="任务状态"
             width="90px"
-            v-if="tableType === 'manage'"
         ></el-table-column>
         <el-table-column
-            prop="staff"
+            prop="userName"
             label="终端人员"
-            width="90px"
+            width="100px"
         ></el-table-column>
         <el-table-column
-            prop="examineProcess"
+            prop="checkState"
             label="审核进度"
             width="90px"
         ></el-table-column>
         <el-table-column
-            prop="passedNum"
+            prop="passNumber"
             label="合格数"
             width="90px"
         ></el-table-column>
-        <el-table-column prop="gene_Time" label="生成时间"></el-table-column>
-        <el-table-column label="任务选项" width="120px">
+        <el-table-column
+            prop="createTime"
+            label="生成时间"
+            width="220px"
+        ></el-table-column>
+        <el-table-column prop="cycle" label="任务周期(天)"></el-table-column>
+        <el-table-column prop="note" label="备注"></el-table-column>
+        <el-table-column
+            label="操作"
+            v-if="tableType === 'manage'"
+            width="250px"
+        >
             <template v-slot="{ row }">
                 <el-tooltip
                     class="item"
                     effect="light"
-                    :content="
-                        row.selections[0] ? '支持异常巡查' : '不支持异常巡查'
-                    "
-                    placement="left"
-                >
-                    <el-tag :type="row.selections[0] ? 'warning' : 'info'"
-                        >异</el-tag
-                    >
-                </el-tooltip>
-                <el-tooltip
-                    class="item"
-                    effect="light"
-                    :content="
-                        row.selections[1]
-                            ? '按照规定路线排查'
-                            : '不按照规定路线排查'
-                    "
                     placement="top"
+                    content="编辑任务"
                 >
-                    <el-tag :type="row.selections[1] ? 'primary' : 'info'"
-                        >规</el-tag
-                    ></el-tooltip
-                >
-            </template>
-        </el-table-column>
-        <el-table-column label="操作" v-if="tableType === 'manage'">
-            <template v-slot="{ row }">
+                    <el-button
+                        icon="el-icon-edit"
+                        size="mini"
+                        circle
+                        @click="$emit('edit',row)"
+                    ></el-button>
+                </el-tooltip>
                 <el-tooltip
                     class="item"
                     effect="light"
@@ -85,7 +77,7 @@
                         icon="el-icon-location"
                         size="mini"
                         circle
-                        @click="location(row.taskId)"
+                        @click="location(row)"
                         class="location"
                     ></el-button
                 ></el-tooltip>
@@ -101,25 +93,9 @@
                         size="mini"
                         circle
                         class="generate"
-                        @click="generate"
+                        @click="$emit('generate', row)"
                     ></el-button
                 ></el-tooltip>
-
-                <el-tooltip
-                    class="item"
-                    effect="light"
-                    content="完成"
-                    placement="top"
-                >
-                    <el-button
-                        icon="el-icon-check"
-                        size="mini"
-                        circle
-                        class="check"
-                        @click="check(row.taskId)"
-                    ></el-button
-                ></el-tooltip>
-
                 <el-tooltip
                     class="item"
                     effect="light"
@@ -130,44 +106,30 @@
                         size="mini"
                         circle
                         class="refresh"
-                        @click="refresh(row.taskId)"
+                        @click="$emit('refresh', row)"
                     ></el-button>
                 </el-tooltip>
 
                 <el-tooltip
                     class="item"
                     effect="light"
-                    content="转发"
+                    content="删除"
                     placement="top"
                 >
                     <el-button
-                        icon="el-icon-link"
-                        size="mini"
-                        class="trans"
-                        circle
-                        @click="trans(row.taskId)"
-                    ></el-button
-                ></el-tooltip>
-                <!--
-                <el-tooltip
-                    class="item"
-                    effect="light"
-                    content="终止"
-                    placement="top"
-                >
-                    <el-button
-                        icon="el-icon-switch-button"
+                        icon="el-icon-close"
                         size="mini"
                         class="stop"
+                        type="danger"
                         circle
-                         @click="stop(row.taskId)"
+                        @click="$emit('remove', row.name)"
                     ></el-button
-                ></el-tooltip> -->
+                ></el-tooltip>
             </template>
         </el-table-column>
         <el-table-column label="操作" v-else>
             <template v-slot="{ row }">
-                <a class="task-name" @click="exam(row.taskId)">
+                <a class="task-name" @click="exam(row.name)">
                     审核
                 </a>
             </template>
@@ -183,48 +145,22 @@ export default {
         tableType: {
             //当前  表格展示类型  manage/examine  管理/审核
             type: String,
-            default: 'manage'
-        }
-        // nav:{        //标识 当前 所处的侧边导航  r/d :日常任务/自定义任务
-        //     type:String,
-        //     default:'r' //默认 日常任务
-        // }
+            default: 'manage',
+        },
     },
-    data(){
+    data() {
         return {
-              isCheckedAll:false
-        }
+            isCheckedAll: false,
+        };
     },
     methods: {
         //新开一个页面进行 设备定位
-        location(id) {
+        location(row) {
             const { href } = this.$router.resolve({
-                path: `/task_location${id}`
+                path: `/task_location${row.name}`,
             });
+            sessionStorage.setItem('taskID', row.taskID);
             window.open(href, '_blank');
-        },
-        generate() {
-            this.$router.push('/home/routine_task_allocate');
-            this.$store.commit(
-                'changeActivePath',
-                '/home/routine_task_allocate'
-            );
-        },
-        async check(id) {
-            const result = await this.$confirm(
-                '此操作将完成该任务, 是否继续?',
-                '提示',
-                {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }
-            ).catch(error => error);
-            if (result === 'cancel') {
-                this.$message.info('操作取消');
-            } else {
-                this.$emit('checkOne', id);
-            }
         },
         async refresh(id) {
             const result = await this.$confirm(
@@ -233,17 +169,14 @@ export default {
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
                 this.$emit('refreshOne', id);
             }
-        },
-        trans(id) {
-            this.$emit('tran_res', id);
         },
         async stop(id) {
             const result = await this.$confirm(
@@ -252,9 +185,9 @@ export default {
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
@@ -267,26 +200,26 @@ export default {
         },
         //全选
         selectAll() {
-            const value=this.isCheckedAll;
-            this.tasklist.forEach(val=>val.checked=!value);
-            this.isCheckedAll=!value;
+            const value = this.isCheckedAll;
+            this.tasklist.forEach((val) => (val.checked = !value));
+            this.isCheckedAll = !value;
         },
         //进入任务详情页
-        showdetail(id) {
+        showdetail(name) {
             const { href } = this.$router.resolve({
-                path: `/task/detail/${id}` //进入任务详情页
+                path: `/task/${this.tableType}/${name}`, //进入任务详情页
             });
             window.open(href, '_blank');
         },
 
         //任务审核 功能中 进入审核页面
-        exam(id) {
+        exam(name) {
             const { href } = this.$router.resolve({
-                path: `/task/examine/${id}`
+                path: `/task/examine/${name}`,
             });
             window.open(href, '_blank');
-        }
-    }
+        },
+    },
 };
 </script>
 

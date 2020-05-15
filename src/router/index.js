@@ -24,6 +24,13 @@ const Profile = () => import('views/Profile');
 const SetAutoTasks=()=> import('views/SetAutoTasks')
 const SetAutoTask=()=>import('views/SetAutoTask')
 const SetAccount=()=>import('views/SetAccount')
+const StatisLast =()=>import('views/StatisLast')
+const StatisPatrol=()=>import('views/StatisPatrol')
+const StatisDanger=()=>import('views/StatisDanger')
+const DangerPrint=()=>import('views/DangerPrint')
+const SetPatrolItem=()=>import('views/SetPatrolItem')
+const DangerHandle=()=>import('views/DangerHandle')
+const CompanyChoose=()=> import('views/CompanyChoose')
 Vue.use(VueRouter);
 
 const routes = [
@@ -39,10 +46,10 @@ const routes = [
         path: '/home',
         component: Home,
         children: [
-            {
-                path: '',
-                redirect: 'general'
-            },
+            // {
+            //     path: '',
+            //     redirect: 'general'
+            // },
             {
                 path: 'general',
                 component: General
@@ -52,8 +59,8 @@ const routes = [
                 component: DeviceQuery
             },
             {
-                path: 'person_info:id',
-                component: Profile
+                path: 'person_info',
+                component: Profile,
             },
             {
                 path: 'routine_task_allocate',
@@ -79,10 +86,10 @@ const routes = [
                 path: 'people_location',
                 component: PeopleLocation
             },
-            {
-                path: 'people_trail',
-                component: PeopleTrail
-            },
+            // {
+            //     path: 'people_trail',
+            //     component: PeopleTrail
+            // },
             {
                 path: 'device_trail',
                 component: DeviceTrail
@@ -96,14 +103,14 @@ const routes = [
                 component: SetPoints
             },
             {
-                path: 'point_setting:id',
+                path: 'point_setting:name',
                 component: SetPoint,
                 props: true
             },{
                 path:'device_menu',
                 component:SetDeviceMenus
             },{
-                path:'device_distri:menuid',
+                path:'device_distri:name',
                 component:SetDeviceDis,
                 props:true
             },
@@ -118,18 +125,45 @@ const routes = [
             {
                 path:'account_manage',
                 component:SetAccount
+            },
+            {
+                path:'last_statis',
+                component:StatisLast
+            },
+            {
+                path:'patrol_data',
+                component:StatisPatrol
+            },{
+                path:'danger_data',
+                component:StatisDanger
+            },{
+                path:'patrol_item',
+                component:SetPatrolItem
+            },{
+                path:'danger_handle',
+                component:DangerHandle
+            },
+            {
+                path:'company_choose',
+                component:CompanyChoose
             }
         ]
     },
     {
-        path: '/task_location:id',
-        component: TaskLocation
+        path: '/task_location:name',
+        component: TaskLocation,
+        props:true
     },
     {
-        path: '/task/:type/:id',
+        path: '/task/:type/:name',
         component: TaskDetail,
         props: true //将 路由 参数映射到 组件props
     },
+    {
+        path:'/danger_print:num',
+        component:DangerPrint,
+        props:true
+    }
     
 ];
 

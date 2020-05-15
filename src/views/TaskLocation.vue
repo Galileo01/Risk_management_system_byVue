@@ -1,52 +1,53 @@
 <template>
     <div class="task_loction">
-       
         <el-container>
             <el-header
                 ><div class="logo-wapper">
                     <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <h3>永川区非煤矿山企业安全检查监督管理平台</h3>
+                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
+                    <h3>风险治理与管控平台</h3>
                 </div></el-header
             >
             <el-main>
                 <el-row>
                     <el-col>
-                        {{ this.taskInfo.taskName }}
+                        {{ name }}
                     </el-col>
                 </el-row>
                 <el-amap
                     vid="amapDemo"
                     class="amap"
-                    :center="this.windowInfos[0].point"
+                    :center="center"
                     :zoom="16"
                     ref="amap"
                     :plugin="plugin"
-                >
-                    <el-amap-circle-marker
-                        v-for="(item, index) in this.windowInfos"
-                        :center="item.point"
-                        :radius="10"
-                        :fill-color="item.pointColor"
-                        :key="index"
-                        :strokeWeight="1"
-                        :events="events"
-                        :vid="index + ''"
-                    />
-                    <el-amap-info-window
-                        v-for="(item, index) in this.windowInfos"
-                        :position="item.point"
-                        :key="100 + index"
-                        :visible="item.visible"
-                    >
-                        <div class="info-window">
-                            <p>
-                                设备编号: <span>{{ item.num }}</span>
-                            </p>
-                            <p>
-                                安装地址: <span>{{ item.location }}</span>
-                            </p>
-                        </div>
-                    </el-amap-info-window>
+                    ><div v-if="windowInfos.length !== 0">
+                        <el-amap-circle-marker
+                            v-for="(item, index) in this.windowInfos"
+                            :center="item.point"
+                            :radius="10"
+                            :fill-color="item.pointColor"
+                            :key="index"
+                            :strokeWeight="1"
+                            :events="events"
+                            :vid="index + ''"
+                        />
+                        <el-amap-info-window
+                            v-for="(item, index) in this.windowInfos"
+                            :position="item.point"
+                            :key="100 + index"
+                            :visible="item.visible"
+                        >
+                            <div class="info-window">
+                                <p>
+                                    设备编号: <span>{{ item.num }}</span>
+                                </p>
+                                <p>
+                                    安装地址: <span>{{ item.location }}</span>
+                                </p>
+                            </div>
+                        </el-amap-info-window>
+                    </div>
                 </el-amap>
             </el-main>
         </el-container>
@@ -55,6 +56,14 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
+import { getTaskDevices } from 'network/task';
+// import Amap from 'vue-amap';
+// Amap.initAMapApiLoader({
+//     // 申请的高德key
+//     key: '6e350de4372aea6e14e89161fe4816c0',
+//     // 插件集合
+//     plugin: ['ToolBar', 'MapType'],
+// });
 export default {
     name: 'TaskLocation',
     mixins: [mapmixin],
@@ -65,61 +74,52 @@ export default {
             windowInfos: [],
             plugin: [
                 {
-                    pName: 'ToolBar'
+                    pName: 'ToolBar',
                 },
                 {
                     pName: 'MapType',
-                    defaultType: 0
-                }
-            ]
+                    defaultType: 0,
+                },
+            ],
+            id: parseInt(sessionStorage.getItem('taskID')),
+            center: [],
         };
     },
+    props: {
+        name: String,
+    },
     methods: {
-        getTask() {
-            const taskID=this.$route.params.id;
-            this.taskInfo = {
-                taskName: '20200330日巡',
-                taskId: '132',
-                deviceNums: 'R2',
-                taskStatus: '进行中',
-                staff: '蒋兴广',
-                uploadProcess: '1/3',
-                examineProcess: '0/3',
-                passedNum: 1,
-                gene_Time: '2020-03-29 08:35:57',
-                selections: [true, true],
-                taskType: 0
-            };
+        async getTask() {
+            let res = await getTaskDevices(this.id);
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备获取失败');
 
-            this.windowInfos = [
-                {
-                    point: [105.756297, 29.335506],
-                    num: 'R015',
-                    location: '下料口右侧',
+            for (const val of res.devices) {
+                this.windowInfos.push({
+                    point: [val.longitude, val.latitude],
+                    num: val.name,
+                    location: val.address,
+                    pointColor: this.RandomColor(),
                     visible: false,
-                    pointColor: this.RandomColor()
-                },
-                {
-                    point: [105.755301, 29.334068],
-                    num: 'R014',
-                    location: '阡陌道左侧',
-                    visible: false,
-                    pointColor: this.RandomColor()
-                },
-                {
-                    point: [105.757192, 29.332831],
-                    num: 'R013',
-                    location: '炸药库',
-                    visible: false,
-                    pointColor: this.RandomColor()
-                }
-            ];
-        }
+                });
+            }
+            if (res.devices.length === 0)
+                this.center = [
+                    parseFloat(sessionStorage.getItem('longitude')),
+                    parseFloat(sessionStorage.getItem('latitude')),
+                ];
+            else {
+                this.center = [
+                    res.devices[0].longitude,
+                    res.devices[0].latitude,
+                ];
+            }
+        },
     },
     created() {
         this.getTask();
         this.mountEvent('windowInfos');
-    }
+    },
 };
 </script>
 

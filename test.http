@@ -1,0 +1,15 @@
+@baseurl = http://139.224.68.137:8081
+@contentType = application/json
+# Content-Type:  {{contentType}}
+### 登录请求
+#  @name login
+POST  http://139.224.68.137:8081/user/query
+
+{
+    "account":"hyadmin",
+    "password":"123456"
+}
+
+# {
+    # "userID":"666"
+# }

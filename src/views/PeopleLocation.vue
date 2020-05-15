@@ -215,7 +215,5 @@ export default {
 .window-info {
     font-size: 13px;
 }
-/deep/ .amap-info-content {
-    padding: 5px 18px 5px 5px;
-}
+
 </style>

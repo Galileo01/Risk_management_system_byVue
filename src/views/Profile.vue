@@ -97,20 +97,23 @@ export default {
     name: 'Profile',
     data() {
         return {
-            id: 0,
-            userdata: this.$store.getters.userdata,
             defalutAvatar: require('../assets/img/default-avatar.jpg'),
             dialogVisible: false,
             passwords: {
                 old: '',
                 thenew: ''
             },
+            Username:'',
+            userdata:{}
         };
     },
     computed: {
         ...mapGetters(['accountName'])
     },
     methods: {
+        getData(){
+
+        },
         submitAll() {
             this.$message.success('修改成功');
         },
@@ -119,7 +122,7 @@ export default {
         }
     },
     created() {
-        this.id = this.$route.params.id;
+        this.getData();
     },
     
 };

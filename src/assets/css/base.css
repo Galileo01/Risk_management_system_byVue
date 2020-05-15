@@ -10,7 +10,7 @@ html,body{
     margin-top: 10px 
 }
 
-/* el-row 的居中 */
+/* el-row 一行 所有元素 的居中 */
 .ali-c {
     display: flex;
     align-items: center;
@@ -21,4 +21,11 @@ html,body{
 
 .el-dialog__body {
     padding: 10px 20px !important;
+}
+.el-card__body{
+    padding-top: 10px !important;
+}
+
+ .amap-info-content {
+    padding: 5px 18px 5px 5px !important;
 }

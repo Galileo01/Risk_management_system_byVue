@@ -4,10 +4,11 @@
             <el-header
                 ><div class="logo-wapper">
                     <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <h3>永川区非煤矿山企业安全检查监督管理平台</h3>
+                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
+                    <h3>风险治理与管控平台</h3>
                 </div></el-header
             >
-            
+
             <el-main>
                 <BreadNav
                     :texts="['日常任务', componentType]"
@@ -17,20 +18,11 @@
                     :taskInfo="baseInfo"
                     :isCollapse="type === 'examine'"
                 />
-                <div class="exam-op" v-if="type === 'examine'">
-                    <el-button type="danger" @click="dispassMany(1)"
-                        >全部不合格</el-button
+                <div class="op-btns" v-if="type === 'manage'">
+                    <el-button @click="alloVisible=true">重新分配设备</el-button>
+                    <el-button type="primary" @click="sortVisible = true"
+                        >设置巡查顺序</el-button
                     >
-                    <el-button type="primary" @click="passMany(1)"
-                        >全部合格</el-button
-                    >
-                    <el-button type="danger" @click="dispassMany(2)"
-                        >不合格</el-button
-                    >
-                    <el-button type="primary" @click="passMany(2)"
-                        >合格</el-button
-                    >
-                    <el-button>单个审核</el-button>
                 </div>
                 <el-table
                     :data="tableData"
@@ -38,26 +30,27 @@
                     border
                     size="medium"
                     class="total-table"
-                    @select="select"
-                    @select-all="selectAll"
                 >
-                <el-table-column type="index"></el-table-column>
-                    <el-table-column type="selection" min-width="60px" v-if="type==='examine'">
-                    </el-table-column>
-                    <el-table-column label="任务数据" min-width="800px"  class-name="left-mar">
+                    <el-table-column type="index"></el-table-column>
+                    <el-table-column
+                        label="基本任务数据"
+                        width="250px"
+                        class-name="left-mar"
+                    >
                         <template v-slot="{ row }">
                             <div class="table-data">
-                                <div>巡线顺序:{{ row.patrolOrder }}</div>
+                                <div>巡查顺序:{{ row.patrolOrder }}</div>
+                                <div>设备名称:{{ row.deviceName }}</div>
                                 <div>终端人员:{{ row.staff }}</div>
-                                <div>执行时间:{{ row.commitTime }}</div>
                                 <div>上传时间:{{ row.uploadTime }}</div>
-                                <div>
-                                    按时完成:{{ row.intime ? '是' : '否' }}
-                                </div>
+
                                 <div>RFID状态:{{ row.RFIDStatus }}</div>
-                                <div>巡查状态:{{ row.patrolStatus }}</div>
+
                                 <div>
-                                    巡线点视频: <el-icon class="el-icon-caret-right"></el-icon>
+                                    巡线点视频:
+                                    <el-icon
+                                        class="el-icon-caret-right"
+                                    ></el-icon>
                                     <span
                                         class="a-style"
                                         @click="showVideo(row.videoSrc)"
@@ -66,22 +59,29 @@
                                 </div>
                                 <div>审核用户:{{ row.examUser }}</div>
                                 <div>审核时间:{{ row.examTime }}</div>
-                                <div>巡查内容:</div>
+                                <div>
+                                    审核状态:{{ row.examState | examState }}
+                                </div>
+                                <div>审核备注:{{ row.examComment }}</div>
                             </div>
-                            <!-- 子表格 -->
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="巡查内容">
+                        <template v-slot="{ row }">
                             <el-table
-                                :data="row.tableData"
+                                :data="row.checkItems"
                                 size="mini"
                                 class="commont-table"
                             >
                                 <el-table-column
                                     label="标题"
                                     prop="title"
-                                    width="700px"
+                                    width="500px"
                                 ></el-table-column>
                                 <el-table-column
-                                    label="是否符合"
+                                    label="是否符合/巡查备注"
                                     prop="content"
+                                    width="300px"
                                 ></el-table-column>
                                 <el-table-column
                                     label="图片"
@@ -101,7 +101,7 @@
                         label="操作"
                         width="150px"
                         class-name="in-top"
-                        v-if="type==='examine'"
+                        v-if="type === 'examine'"
                     >
                         <template v-slot="{ row }">
                             <el-button
@@ -109,22 +109,23 @@
                                 circle
                                 icon="el-icon-check"
                                 type="primary"
-                                @click="passOne(row.itemID)"
+                                @click="passOne(row.patrolOrder - 1)"
                             ></el-button>
                             <el-button
                                 size="mini"
                                 circle
                                 icon="el-icon-close"
                                 type="danger"
-                                 @click="dispassOne(row.itemID)"
+                                @click="dispassOne(row.patrolOrder - 1)"
                             ></el-button>
-                            <el-button
+                            <!-- <el-button
                                 size="mini"
                                 circle
                                 icon="el-icon-edit"
                                 type="warning"
-                            ></el-button> </template
-                    ></el-table-column>
+                            ></el-button>  -->
+                        </template></el-table-column
+                    >
                 </el-table>
             </el-main>
         </el-container>
@@ -145,11 +146,77 @@
         >
             <video :src="showingVideo" controls></video>
         </el-dialog>
+        <!--某个巡查项 不合格 ，展示的 对话框-->
+        <el-dialog
+            :visible.sync="disPassVisible"
+            title="不合格备注"
+            @close="resetDis"
+        >
+            <el-form :model="disPassInfo" ref="disPassForm" label-width="90px">
+                <el-form-item label="发送信息" prop="isMessage">
+                    <el-checkbox v-model="disPassInfo.isMessage"></el-checkbox>
+                </el-form-item>
+                <el-form-item label="审核备注" prop="auditNote">
+                    <el-input
+                        type="textarea"
+                        v-model="disPassInfo.auditNote"
+                    ></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer">
+                <el-button @click="disPassVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitExam">确认</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog
+            :visible.sync="sortVisible"
+            title="设置巡查顺序"
+            @close="initIndexs"
+        >
+            <el-row
+                ><el-tag type="primary" style="font-size:14px"
+                    >请输入设备新次序（>1）</el-tag
+                ></el-row
+            >
+            <el-form :model="indexs" label-width="100px" v-if="indexs !== {}">
+                <el-form-item
+                    v-for="(item, index) in tableData"
+                    :key="index"
+                    :label="item.deviceName"
+                >
+                    <el-input
+                        style="width:150px"
+                        size="medium"
+                        v-model.number="indexs[index]"
+                        @input="fresh()"
+                        clearable
+                    ></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer">
+                <el-button @click="sortVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitSort">确认</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog :visible.sync="alloVisible" title="分配设备">
+            <span slot="footer">
+                <el-button></el-button>
+                <el-button type="primary"></el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import BaseInfo from 'components/routine_task/BaseInfo';
+import {
+    GetTasks,
+    getTaskDevices,
+    setDeviceOrder,
+    examTask,
+} from 'network/task';
+import { getItemByDevice } from 'network/patrolitem';
+import { getDevice } from 'network/device';
 export default {
     name: 'TaskDetail',
     data() {
@@ -159,221 +226,111 @@ export default {
             imgVisible: false,
             showingImg: '',
             videoVisible: false,
-            showingVideo: ''
+            showingVideo: '',
+            sortVisible: false,
+            indexs: {},
+            disPassVisible: false, //审核 用到的 对象
+            disPassInfo: {
+                auditNote: '', //审核备注
+                isMessage: true, //是否 发送消息
+            },
+            isPass: [], // 表示每个设备的 巡查是否合格
+            allDevices: [], //所有设备
+            alloVisible: false,
         };
     },
-    props:{
-        type:String,  //当前 组件展示 的模式 manage/ examine ,通过 路由解耦
-        id:String
+    props: {
+        type: String, //当前 组件展示 的模式 manage/ examine ,通过 路由解耦
+        name: String,
     },
     computed: {
         //当前 组件的类型，是展示 任务详情还是任务审核
         componentType() {
-            return this.type === 'detail' ? '任务详情' : '任务审核';
-        }
+            return this.type === 'manage' ? '任务详情' : '任务审核';
+        },
+    },
+    filters: {
+        examState(val) {
+            if (val === 1) return '合格';
+            else if (val === 0) return '不合格';
+            else return '未审核';
+        },
     },
     methods: {
-        getData() {
-            const data = {
-                taskName: '20200329日巡',
-                taskId: '123',
-                deviceNums: 'R1 R2 R4',
-                taskStatus: '进行中',
-                staff: '孔荣',
-                uploadProcess: '1/3',
-                examineProcess: '0/3',
-                passedNum: 1,
-                trans_from: '', //转发 人员
-                trans_time: '', //转发的时间
-                lastDownTime: '2020-04-03 14:48:56', //最近一次下载时间
-                gene_Time: '2020-03-29 08:35:57', //生成时间
-                stopTime: '2020-04-03 14:12', //完成/终止时间
-                finalFinishTime: '2020-04-03 14:48:56', //最终完成时间
-                geneUser: '罗世红',
-                stopUSer: '罗世红',
-                menuName: '004日巡',
-                selections: [true, false],
-                taskType: 0,
-                commont: ''
-            };
-            this.baseInfo = data;
-            const tableData = [
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020 -4-2sdasdad',
-                    intime: true, // 是否按时完成
+        async getData() {
+            //获取 任务数据
+            let taskRes = await GetTasks({
+                name: this.name,
+                page: 1,
+                limit: 9999,
+            });
+            console.log(taskRes);
+            if (!taskRes.flag) return this.$message.error('任务信息获取失败');
+            if (taskRes.status !== 200) {
+            }
+            this.baseInfo = taskRes.tasks[0];
+            //获取 设备
+            const deviceRes = await getTaskDevices(this.baseInfo.taskID);
+            console.log(deviceRes);
+            if (!deviceRes.flag) return this.$message.error('任务设备获取失败');
+
+            // 遍历数组 获取每一个设备的  检查项
+            const tableData = [];
+            const isPass = []; // 根据 设备的审核状态 初始化isPass 数组
+            for (const [index, val] of deviceRes.devices.entries()) {
+                const itemRes = await getItemByDevice(val.deviceID);
+                console.log(itemRes);
+                const checkItems = [];
+                if (!itemRes.flag) return this.$message.error('巡查项获取失败');
+                else {
+                    for (const val of itemRes.checkItems) {
+                        checkItems.push({
+                            title: val.name,
+                            content: '符合 [好]',
+                            imgSrc:
+                                'http://pic13.photophoto.cn/20091209/0038037977031807_b.jpg',
+                        });
+                    }
+                }
+                const patrol = {
+                    itemID: index + 1,
+                    patrolOrder: index + 1,
+                    uploadTime: '2020 -4-2 10:28',
+                    staff: '打工的张三',
                     RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
                     videoSrc:
                         'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/33/284a73e6563c4d43bcaef06004d13c49.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡'
-                    },
+                    deviceName: val.name,
                     examUser: '',
                     examTime: '',
-                    checked: false,
-                    tableData: [
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65:80/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/fac0222dcd07403b90cf3110e09d710a.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/91c127e633c94bfaaa8784afc0092062.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/542c51f4e54c4444846461e88c5c499c.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/ba652949e6034b15b9851a8ba4c4c18c.jpg'
-                        }
-                    ]
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020 -4-2sdasdad',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/33/284a73e6563c4d43bcaef06004d13c49.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡'
-                    },
-                    examUser: '',
-                    examTime: '',
-                    checked: false,
-                    tableData: [
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        }
-                    ]
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020 -4-2sdasdad',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/33/284a73e6563c4d43bcaef06004d13c49.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡'
-                    },
-                    examUser: '',
-                    examTime: '',
-                    checked: false,
-                    tableData: [
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        },
-                        {
-                            title:
-                                '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求。（1.标准：【国家标准】《金属非金属矿..：',
-                            content: '符合 [好]',
-                            imgSrc:
-                                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/35/78fec4ade3d64f64a82a1b5b68433d92.jpg'
-                        }
-                    ]
-                }
-            ];
+                    examState: -1,
+                    examComment: '',
+                    checkItems,
+                };
+                isPass.push(-1);
+                tableData.push(patrol);
+            }
+
             this.tableData = tableData;
+            this.isPass = isPass;
+            this.initIndexs();
+        },
+        //获取所有的设备
+        async getAlldevices() {
+            this.allDevices = [];
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            const res = await getDevice({
+                page: 1,
+                limit: 9999,
+            });
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备获取失败');
+            for (const item of res.devices) {
+                this.allDevices.push({ ...item, checked: false });
+            }
+            this.showDevices = this.allDevices.slice(offset, offset + size);
+            this.query.total = res.devices.length;
         },
         //展示 图片 对话框
         showImg(src) {
@@ -384,102 +341,86 @@ export default {
             this.videoVisible = true;
             this.showingVideo = src;
         },
-        //表格选中 事件
-        select(s, row) {
-            row.checked = !row.checked;
-        },
-        selectAll(se) {
-            se.forEach(val => (val.checked = true));
-        },
-        getChecked() {
-            return this.tableData.filter(val => val.checked);
-        },
-        async passMany(num) {
-            //一次 合格多个 num:1/2 标识是全部合格还是选中合格
-            let data = [];
-            if (num === 1) {
-                data = this.tableData;
-            } else if (num === 2) {
-                data = this.getChecked();
-                console.log(data);
-                if (data.length === 0) {
-                    this.$message.warning('请选中数据');
-                    return;
-                }
-            }
-            const result = await this.$confirm(
-                '此操作将多个任务数据处理为合格, 是否继续?',
-                '提示',
-                {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }
-            ).catch(error => error);
-            if (result === 'cancel') {
-                this.$message.info('操作取消');
-            } else this.$message.success('操作成功');
-        },
-        async dispassMany(num) {
-            //一次 合格多个 num:1/2 标识是全部不合格还是选中不合格
-            let data = [];
-            if (num === 1) {
-                data = this.tableData;
-            } else if (num === 2) {
-                data = this.getChecked();
-                if (data.length === 0) {
-                    this.$message.warning('请选中数据');
-                    return;
-                }
-            }
-            const result = await this.$confirm(
-                '此操作将多个任务数据处理为不合格, 是否继续?',
-                '提示',
-                {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }
-            ).catch(error => error);
-            if (result === 'cancel') {
-                this.$message.info('操作取消');
-            } else this.$message.success('操作成功');
-        },
-        async passOne(id) {
+        async passOne(index) {
             const result = await this.$confirm(
                 '此操作将当前任务项处理为合格, 是否继续?',
                 '提示',
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
-            } else this.$message.success('操作成功');
+            } else {
+                this.isPass[index] = 1;
+                this.submitExam();
+            }
         },
-       async dispassOne(id) {
-           const result = await this.$confirm(
-                '此操作将当前数据项处理为不合格, 是否继续?',
-                '提示',
-                {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
+        dispassOne(index) {
+            this.isPass[index] = 0;
+            this.disPassVisible = true;
+        },
+        async submitExam() {
+            console.log(this.isPass);
+
+            const res = await examTask(
+                this.baseInfo.taskID,
+                this.isPass.join(',')
+            );
+            console.log(res);
+            if(!res.flag) this.$message.error('审核失败');
+            else this.$message.success('审核成功');
+            
+            this.disPassVisible = false;
+        },
+        resetDis() {
+            this.$refs.disPassForm.resetFields();
+        },
+        //初始化 indexs 对象
+        initIndexs() {
+            let length = this.tableData.length;
+            while (length--) {
+                this.indexs[length] = length + 1;
+            }
+        },
+        async submitSort() {
+            const indexs = this.indexs;
+            const length = this.tableData.length;
+            const newOrder = [];
+            for (const prop in indexs) {
+                if (indexs[prop] < 0 || indexs[prop] > length) {
+                    return this.$message.error('请输入有效的次序');
                 }
-            ).catch(error => error);
-            if (result === 'cancel') {
-                this.$message.info('操作取消');
-            } else this.$message.success('操作成功');
-       }
+                newOrder[indexs[prop] - 1] = this.tableData[prop].deviceName;
+            }
+            console.log(newOrder);
+            const res = await setDeviceOrder({
+                taskName: this.baseInfo.name,
+                enterpriseName: localStorage.getItem('enterpriseName'),
+                devices: newOrder.join(','),
+            });
+            console.log(res);
+
+            this.$message.success('排序成功');
+            this.getData();
+            this.sortVisible = false;
+        }, //强制 刷新 视图 ，解决 嵌套层次过多 v-model 无法双向绑定
+        fresh() {
+            this.$forceUpdate();
+        },
+        async allocateClick() {
+         
+        },
+        async submitAllocate() {},
     },
     created() {
         this.getData();
     },
     components: {
         BaseInfo,
-    }
+    },
 };
 </script>
 
@@ -509,7 +450,7 @@ export default {
 }
 .el-main {
     padding: 0px;
-    .exam-op {
+    .op-btns {
         margin-top: 5px;
         display: flex;
         justify-content: flex-end;
@@ -519,7 +460,6 @@ export default {
     /* 总体 table  */
     font-size: 13px;
     margin: 10px 0px 20px 0px;
-    
 }
 span.a-style {
     cursor: pointer;
@@ -534,5 +474,4 @@ span.a-style {
     margin: 0 auto;
     display: block;
 }
-
 </style>

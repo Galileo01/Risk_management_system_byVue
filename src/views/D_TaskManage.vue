@@ -2,51 +2,59 @@
     <div class="d_task_manage">
         <BreadNav :texts="['自定义任务', '任务管理']" />
         <el-card>
+            <el-row>
+                <el-col :span="4" :offset="20"
+                    ><el-button type="primary" @click="getList">查询</el-button>
+
+                    <el-button type="danger" @click="removeMany"
+                        >删除</el-button
+                    ></el-col
+                ></el-row
+            >
             <el-form inline>
                 <el-form-item label="任务名称"
                     ><el-input
                         v-model="queryInfo.taskName"
                         class="inputInwidth"
+                        clearable
+                        @clear="getList"
                     ></el-input
                 ></el-form-item>
-                
+
                 <el-form-item label="终端人员">
-                    <el-select v-model="queryInfo.staff">
+                    <el-select
+                        v-model="queryInfo.staff"
+                        clearable
+                        @clear="getList"
+                    >
                         <el-option
-                            v-for="item in staffList"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                        >
-                        </el-option> </el-select
+                            v-for="(item, index) in options"
+                            :key="index"
+                            :label="item.name"
+                            :value="item.name"
+                        ></el-option></el-select
                 ></el-form-item>
-                <el-form-item label="生成时间">
-                    <el-date-picker
-                        v-model="queryInfo.startTime"
-                        type="datetime"
-                        placeholder="选择日期时间"
-                    >
-                        >
-                    </el-date-picker>
+                <el-form-item label="任务周期">
+                    <el-input
+                        v-model.number="queryInfo.cycle"
+                        placeholder="输入任务的周期，单位天"
+                        clearable
+                        @clear="getList"
+                    ></el-input>
                 </el-form-item>
-                
-                    <el-button type="primary">查询</el-button>
-                    <el-button type="success" @click="checkMany"
-                        >完成</el-button
-                    >
-                    <el-button type="warning" @click="stopMany">终止</el-button>
-                    <el-button type="danger" @click="removeMany"
-                        >删除</el-button
-                    >
+                <el-form-item label="任务状态">
+                    <el-input
+                        v-model="queryInfo.state"
+                        clearable
+                        @clear="getList"
+                    ></el-input>
                 </el-form-item>
             </el-form>
             <TaskTable
-                :tasklist="tasklist"
-                @tran_res="tran_res"
-                @checkOne="checkOne"
-                @stopOne="stopOne"
+                :tasklist="showData"
                 @remove="removeOne"
-                @refreshOne="refreshOne"
+                @refresh="refreshOne"
+                @generate="showDialog"
             />
             <el-pagination
                 @size-change="handleSizeChange"
@@ -58,247 +66,114 @@
                 :total="queryInfo.total"
             >
             </el-pagination>
-            <el-dialog
-                :visible.sync="dialogVisible"
-                width="400px"
-                top="200px"
-                title="选择终端人员"
-            >
-                <el-form>
-                    <el-form-item label="终端人员">
-                        <el-select v-model="trans_to_staff">
-                            <el-option
-                                v-for="item in staffList"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value"
-                            >
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-                </el-form>
-                <span slot="footer">
-                    <el-button @click="dialogVisible = false">取 消</el-button>
-                    <el-button type="primary" @click="transmit"
-                        >确 定</el-button
-                    >
-                </span>
-            </el-dialog>
         </el-card>
+        <el-dialog
+            :visible.sync="dialogVisible"
+            @close="oprateTask.name = ''"
+            title="输入新任务名称"
+        >
+            <el-form label-width="100px">
+                <el-form-item label="新任务名称">
+                    <el-input v-model="oprateTask.name" clearable></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer">
+                <el-button @click="dialogVisible = false">取消</el-button>
+                <el-button @click="generate" type="primary">确定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
+import { getUsers } from 'network/account';
+import {
+    GetTasks,
+    setTask,
+    getTaskDevices,
+    AllocateTask,
+    removeTask,
+} from 'network/task';
 export default {
-    name: 'D_TaskManage',
+    name: 'R_TaskManage',
     data() {
         return {
             queryInfo: {
                 taskName: '',
-                geneTime: '',
+                cycle: '',
                 staff: '',
                 pageSize: 10,
                 page: 1,
                 total: 0,
-                
+                state: '',
             },
-            taskStatusList: [
-                {
-                    value: '待下载',
-                    label: '待下哉'
-                },
-                { value: '进行中', label: '进行中' },
-                { value: '申请转发', label: '申请转发' },
-                { value: '已转发', label: '已转发' },
-                { value: '申请完成', label: '申请完成' },
-                { value: '已完成', label: '已完成' },
-                { value: '已终止', label: '已终止' }
-            ],
-            uploadStatusList: [
-                {
-                    value: '未上传',
-                    label: '未上传'
-                },
-                { value: '部分上传', label: '部分上传' },
-                { value: '全部上传', label: '全部上传' }
-            ],
-            staffList: [
-                {
-                    value: '01',
-                    label: '吴磊'
-                },
-                {
-                    value: '02',
-                    label: '孔容'
-                },
-                {
-                    value: '03',
-                    label: '宋飞'
-                },
-                {
-                    value: '04',
-                    label: '曾温根'
-                },
-                {
-                    value: '05',
-                    label: '李沛儒'
-                }
-            ],
+            options: [],
             tasklist: [],
-            dialogVisible: false,
+            showData: [],
             trans_to_staff: '',
-            tran_taskID: 0
+            tran_taskID: 0,
+            dialogVisible: false,
+            oprateTask: {},
         };
     },
     methods: {
-        getList() {
-            const tasklist = [
-                {
-                    taskName: '20200329日巡',
-                    taskId: '123',
-                    deviceNums: 'R1 R2 R4',
-                    taskStatus: '进行中',
-                    staff: '孔荣',
-                    uploadProcess: '1/3',
-                    examineProcess: '0/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, false],
-                    taskType: 0
-                },
-                {
-                    taskName: '20200328日巡',
-                    taskId: '111',
-                    deviceNums: 'R1',
-                    taskStatus: '进行中',
-                    staff: '孔荣',
-                    uploadProcess: '1/3',
-                    examineProcess: '2/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, true],
-                    taskType: 0
-                },
-                {
-                    taskName: '20200325日巡',
-                    taskId: '222',
-                    deviceNums: 'R1 R2 R4 R6',
-                    taskStatus: '进行中',
-                    staff: '蒋兴广',
-                    uploadProcess: '1/3',
-                    examineProcess: '0/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, false],
-                    taskType: 0
-                },
-                {
-                    taskName: '20200330日巡',
-                    taskId: '132',
-                    deviceNums: 'R2',
-                    taskStatus: '进行中',
-                    staff: '蒋兴广',
-                    uploadProcess: '1/3',
-                    examineProcess: '0/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, true],
-                    taskType: 0
-                },
-                {
-                    taskName: '20200329周巡',
-                    taskId: '333',
-                    deviceNums: 'R1 R2 R4',
-                    taskStatus: '进行中',
-                    staff: '蒋兴广',
-                    uploadProcess: '1/3',
-                    examineProcess: '0/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, false],
-                    taskType: 0
-                },
-                {
-                    taskName: '20200326日巡',
-                    taskId: '321',
-                    deviceNums: 'R1 R2 R4 R5',
-                    taskStatus: '进行中',
-                    staff: '袁世彬',
-                    uploadProcess: '1/3',
-                    examineProcess: '0/3',
-                    passedNum: 1,
-                    gene_Time: '2020-03-29 08:35:57',
-                    selections: [true, false],
-                    taskType: 0
-                }
-            ];
-            tasklist.forEach(val => {
-                val.checked = false;
+        async getList() {
+            this.tasklist = [];
+            const res = await GetTasks({
+                enterpriseName: sessionStorage.getItem('enterpriseName'),
+                name: this.queryInfo.taskName,
+                cycle: this.queryInfo.cycle,
+                userName: this.queryInfo.staff,
+                state:this.queryInfo.state
             });
-            this.tasklist = tasklist;
+            // console.log(res);
 
-            this.queryInfo.page = 1;
-            this.queryInfo.pageSize = 10;
-            this.queryInfo.total = 30;
+            if (!res.flag) return this.$message.error('任务列表获取失败');
+
+            res.tasks.forEach((val) => {
+                this.tasklist.push({
+                    ...val,
+                    checked: false,
+                });
+            });
+            console.log(res.tasks, this.tasklist);
+
+            const { pageSize: size, page } = this.queryInfo;
+            const offset = (page - 1) * size;
+            this.showData = this.tasklist.slice(offset, offset + size);
+            this.queryInfo.total = res.tasks.length;
         },
-        handleSizeChange() {},
-        handleCurrentChange() {},
-        tran_res(id) {
-            this.dialogVisible = true;
-            this.tran_taskID = id;
+        // 获取基础信息
+        async getStaff() {
+            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
+            console.log(res);
+
+            if (!res.flag) return this.$message.error('终端人员获取失败');
+
+            this.options = res.users;
         },
-        transmit() {
-            if (this.trans_to_staff) {
-                this.$message.success('转发成功');
-                this.trans_to_staff = '';
-                this.dialogVisible = false;
-            }
+        handleSizeChange(size) {
+            this.queryInfo.pageSize = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.queryInfo.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, pageSize: size } = this.queryInfo;
+            const offset = (page - 1) * size;
+            console.log(
+                offset,
+                size + offset,
+                this.tasklist.slice(offset, offset + size)
+            );
+
+            this.showData = this.tasklist.slice(offset, offset + size);
         },
         getChecked() {
-            return this.tasklist.filter(val => val.checked);
-        },
-        async checkMany() {
-            const checked = this.getChecked();
-            if (checked.length === 0) {
-                this.$message.warning('请选中任务');
-            } else {
-                const result = await this.$confirm(
-                    '此操作将完成多个任务, 是否继续?',
-                    '提示',
-                    {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }
-                ).catch(error => error);
-                if (result === 'cancel') {
-                    this.$message.info('操作取消');
-                } else {
-                    this.$message.success('选中任务已批量完成');
-                }
-            }
-        },
-        async stopMany() {
-            const checked = this.getChecked();
-            if (checked.length === 0) {
-                this.$message.warning('请选中任务');
-            } else {
-                const result = await this.$confirm(
-                    '此操作将终止多个任务, 是否继续?',
-                    '提示',
-                    {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }
-                ).catch(error => error);
-                if (result === 'cancel') {
-                    this.$message.info('操作取消');
-                } else {
-                    this.$message.success('选中任务已批量终止');
-                }
-            }
+            return this.showData.filter((val) => val.checked);
         },
         async removeMany() {
             const checked = this.getChecked();
@@ -306,51 +181,114 @@ export default {
                 this.$message.warning('请选中任务');
             } else {
                 const result = await this.$confirm(
-                    '此操作将终止多个任务, 是否继续?',
+                    `此操作将终止${checked.length}个任务, 是否继续?`,
                     '提示',
                     {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
-                        type: 'warning'
+                        type: 'warning',
                     }
-                ).catch(error => error);
+                ).catch((error) => error);
                 if (result === 'cancel') {
                     this.$message.info('操作取消');
                 } else {
-                    this.$message.success('选中任务已批量删除');
+                    let count = 0;
+                    console.log(checked);
+
+                    for (const val of checked) {
+                        const res = await removeTask(val.name);
+                        if (res.flag) count++;
+                    }
+                    this.$message.success(
+                        `成功删除${count}个,失败${checked.length - count}个`
+                    );
+                    this.getList();
                 }
             }
         },
-        checkOne(id) {
-            console.log(id);
-            this.$message.success('任务完成');
+        async removeOne(name) {
+            const result = await this.$confirm(
+                '此操作将删除该任务, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
+            if (result === 'cancel') {
+                this.$message.info('操作取消');
+            } else {
+                const res = await removeTask(name);
+                console.log(res);
+                if (!res.flag) return this.$message.error('删除操作失败');
+                this.$message.success('任务成功删除');
+                this.getList();
+            }
         },
-        stopOne(id) {
-            console.log(id);
-            this.$message.success('任务成功终止');
+        async refreshOne(task) {
+            const result = await this.$confirm('此操作将, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }).catch((error) => error);
+            if (result === 'cancel') {
+                this.$message.info('操作取消');
+            } else {
+                const res = await setTask({ name: task.name, state: '待完成' });
+                console.log(res);
+                if (!res.flag) this.$message.error('操作失败');
+                this.$message.success('重置操作成功');
+                this.getList();
+            }
         },
-        removeOne(id) {
-            console.log(id);
-            this.$message.success('任务成功删除');
+        showDialog(task) {
+            this.oprateTask = { ...task };
+            this.oprateTask.name=''
+            this.dialogVisible = true;
         },
-        refreshOne(id){
-            console.log(id);
-            this.$message.success('任务成功重置');
-        }
+        async generate() {
+            let res = await getTaskDevices(this.oprateTask.taskID);
+            console.log(res);
+
+            if (!res.flag) return this.$message.error('操作失败');
+            const devices = res.devices.map((val) => val.name).join(','); //生成字符串数组
+            res = await AllocateTask({ ...this.oprateTask, devices,number:res.devices.length });
+            console.log(res);
+            if (!res.flag) return this.$message.error('操作失败');
+            this.$message.success('操作成功');
+            this.getList();
+            this.dialogVisible = false;
+        },
     },
-    created() {
+    activated() {
         this.getList();
+        this.getStaff();
     },
     components: {
-        TaskTable
-    }
+        TaskTable,
+    },
 };
 </script>
 
 <style scoped lang="less">
-.el-form {
-    /deep/ input {
-        width: 220px;
+.d_task_manage {
+  /deep/ .el-card__body {
+        padding-top: 10px;
+    }
+    .el-form {
+        /deep/ input {
+            width: 220px;
+        }
+        .el-form-item {
+            margin-bottom: 22px;
+        }
+    }
+    .el-row {
+        margin-bottom: 10px;
+    }
+    .el-table {
+        margin-top: 0px;
     }
 }
 </style>

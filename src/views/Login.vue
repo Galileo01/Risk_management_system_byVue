@@ -1,6 +1,7 @@
 <template>
     <div class="login">
-        <h1 class="title">永川区非煤矿山企业安全检查监督管理平台</h1>
+        <!-- <h1 class="title">永川区非煤矿山企业安全检查监督管理平台</h1> -->
+         <h1 class="title">风险治理与管控平台</h1>
         <div class="form-wapper">
             <div class="avator">
                 <img src="~assets/img/logo.png" alt="" />
@@ -27,6 +28,7 @@
                         clearable
                         prefix-icon="el-icon-lock"
                         type="password"
+                        show-password
                     ></el-input>
                 </el-form-item>
                 <el-form-item prop="identify">
@@ -57,6 +59,7 @@
 <script>
 import { log } from 'util';
 import SIdentify from 'components/com/identify';
+import { logReq, checkToken } from 'network/account';
 export default {
     name: 'Login',
     data() {
@@ -64,36 +67,28 @@ export default {
             formData: {
                 username: '',
                 password: '',
-                identify: ''
+                identify: '',
             },
             rules: {
                 username: [
                     {
                         required: true,
                         message: '请输入用户名',
-                        trigger: 'blur'
+                        trigger: 'blur',
                     },
-                    {
-                        min: 3,
-                        max: 5,
-                        message: '长度在 3 到 5 个字符',
-                        trigger: 'blur'
-                    }
                 ],
                 password: [
                     { required: true, message: '请输入密码', trigger: 'blur' },
-                    {
-                        min: 6,
-                        max: 15,
-                        message: '长度在 6 到 15 个字符',
-                        trigger: 'blur'
-                    }
                 ],
                 identify: [
-                    { required: true, message: '请输入验证码', trigger: 'blur' }
-                ]
+                    {
+                        required: true,
+                        message: '请输入验证码',
+                        trigger: 'blur',
+                    },
+                ],
             },
-            identifyCode: '1234' // 验证码
+            identifyCode: '1234', // 验证码
         };
     },
     methods: {
@@ -101,31 +96,55 @@ export default {
             this.$refs.form.resetFields();
         },
         login() {
-            this.$refs.form.validate(valid => {
+            this.$refs.form.validate(async (valid) => {
                 if (valid) {
                     //基本验证 通过
                     if (this.identifyCode === this.formData.identify) {
-                        //验证码 正确
-                        if (this.formData.password === '123456') {
-                            // 验证成功
-                            window.localStorage.setItem(
-                                'token',
-                                this.identifyCode
-                            ); // 模拟设置 token
-                            sessionStorage.setItem(
-                                'user',
-                                JSON.stringify({
-                                    username: 'admin',
-                                    id: '1234'
-                                })
+                        const res = await logReq(
+                            this.formData.username,
+                            this.formData.password
+                        );
+                        console.log(res);
+
+                        if (res.flag) {
+                            const {
+                                permission: role,
+                                token,
+                                enterpriseName,
+                                industryName,
+                            } = res;
+                            window.localStorage.setItem('token', token);
+                            localStorage.setItem(
+                                'enterpriseName',
+                                enterpriseName
                             );
                             this.$store.commit('getUserdata', {
-                                id: this.identifyCode + '',
-                                token: this.identifyCode,
-                                role: 1,
-                                username: this.formData.username
+                                token,
+                                role,
+                                username: this.formData.username,
                             });
-                            this.$router.push('/home');
+                            if (role == 0) {
+                                //系统管理员 进入 账号管理页面
+                                this.$router.push('/home/account_manage');
+                                this.$store.commit(
+                                    'changeActivePath',
+                                    'account_manage'
+                                );
+                            } else if (role === 1) {
+                                //行业管理员 进入 企业选择 页面
+                                this.$router.push('/home/company_choose');
+                                this.$store.commit(
+                                    'changeActivePath',
+                                    'company_choose'
+                                );
+                            } //企业管理员 进入 企业履历
+                            else {
+                                this.$router.push('/home/general');
+                                this.$store.commit(
+                                    'changeActivePath',
+                                    'general'
+                                );
+                            }
                             this.$message.success('登录成功');
                         } else {
                             this.$message.error('用户名或密码错误');
@@ -148,31 +167,41 @@ export default {
             }
             this.identifyCode = code;
         },
-        autoLogin() {
+        async autoLogin() {
             if (localStorage.getItem('token')) {
                 //本地存有 token
                 //发送自动登录请求，若 token 没有过期 就自动进入 进入首页,并保存 传回的 用户信息
+                const res = await checkToken();
+                if (res.status !== 200)
+                    return this.$message.error('状态过期，请重新登录');
 
                 this.$message.success('自动登录');
-                this.$router.push('/home');
-                this.$store.commit('getUserdata', {
-                                id: '1231231',
-                                token:'66666',
-                                role: 1,
-                                username: 'admin'
-                            });
+                const role = localStorage.getItem('Role'); //根据 本地存储的 上次 登录的 role
+                if (role == 0) {
+                    //系统管理员 进入 账号管理页面
+                    this.$router.push('/home/account_manage');
+                    this.$store.commit('changeActivePath', 'account_manage');
+                } else if (role == 1) {
+                    //行业管理员 进入 企业选择 页面
+                    this.$router.push('/home/company_choose');
+                    this.$store.commit('changeActivePath', 'company_choose');
+                } //企业管理员 进入 企业履历
+                else {
+                    this.$router.push('/home/general');
+                    this.$store.commit('changeActivePath', 'general');
+                }
             } else {
                 //随机生成 数字 验证码
                 this.generateIdentify();
             }
-        }
+        },
     },
     created() {
         this.autoLogin();
     },
     components: {
-        's-identify': SIdentify
-    }
+        's-identify': SIdentify,
+    },
 };
 </script>
 

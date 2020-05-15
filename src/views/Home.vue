@@ -4,7 +4,8 @@
             <el-header>
                 <div class="logo-wapper">
                     <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <h3>永川区非煤矿山企业安全检查监督管理平台</h3>
+                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
+                    <h3>风险治理与管控平台</h3>
                 </div>
                 <div class="left-wapper">
                     <div class="avator" @click="goProfile">
@@ -18,7 +19,7 @@
                                 alt=""
                             />
                         </el-tooltip>
-                        <span>{{ userInfo.username }}</span>
+                        <span>{{ accountName }}</span>
                     </div>
                     <el-button size="mini" type="danger" @click="logout"
                         >退出</el-button
@@ -32,22 +33,30 @@
                     </div>
                     <HomeAsideMenu
                         :isCollapse="isCollapse"
+                        ref="asidemenu"
                     ></HomeAsideMenu
                 ></el-aside>
-                <el-main><router-view></router-view></el-main>
+                <el-main>
+                    <keep-alive exclude="SetPoint,TaskLocation,TaskDetail"
+                        ><router-view
+                            @choose="chooseCompany"
+                            @changeToUnchange="unchooseCompany"
+                        ></router-view></keep-alive
+                ></el-main>
             </el-container>
         </el-container>
     </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import HomeAsideMenu from 'components/home/HomeAsideMenu';
 export default {
     name: 'Home',
     data() {
         return {
             //侧边栏 菜单
-            isCollapse: false //是否折叠
+            isCollapse: false, //是否折叠
         };
     },
     computed: {
@@ -65,9 +74,7 @@ export default {
                 return '150px';
             }
         },
-        userInfo() {
-            return this.$store.getters.userdata;
-        }
+        ...mapGetters(['accountName', 'UserRole']),
     },
     methods: {
         async logout() {
@@ -77,15 +84,16 @@ export default {
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             console.log(result);
 
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                window.sessionStorage.removeItem('token');
+                sessionStorage.clear();
+                localStorage.clear();
                 this.$router.push('/login');
                 this.$message.success('成功退出');
             }
@@ -94,15 +102,22 @@ export default {
             this.isCollapse = !this.isCollapse;
         },
         goProfile() {
-            this.$router.push(`/home/person_info:${this.userInfo.id}`);
-        }
+            this.$router.push(`/home/person_info`);
+        },
+        chooseCompany() {
+            this.$refs.asidemenu.changeToChoosed();
+            sessionStorage.setItem('ischoose', 'true');
+        },
+        unchooseCompany() {
+            this.$refs.asidemenu.changeToUnchoose();
+            // console.log(1222);
+            sessionStorage.setItem('ischoose', 'false');
+        },
     },
     components: {
-        HomeAsideMenu
+        HomeAsideMenu,
     },
-    created() {
-       
-    }
+    created() {},
 };
 </script>
 

@@ -40,21 +40,9 @@
             </el-amap>
             <div class="select">
                 <el-select
-                    v-model="queryInfo.type"
-                    placeholder="请选择任务类型"
-                >
-                    <el-option
-                        v-for="(item, index) in types"
-                        :key="index"
-                        :label="item"
-                        :value="item"
-                    >
-                    </el-option>
-                </el-select>
-                <el-select
                     v-model="queryInfo.staff"
                     placeholder="请选择终端人员"
-                    size="medium"
+                    size="mini"
                 >
                     <el-option
                         v-for="(item, index) in staffs"
@@ -71,6 +59,19 @@
                     size="small"
                 >
                 </el-date-picker>
+                <el-select
+                    v-model="queryInfo.type"
+                    placeholder="请选择任务"
+                    size="mini"
+                >
+                    <el-option
+                        v-for="(item, index) in tasks"
+                        :key="index"
+                        :label="item"
+                        :value="item"
+                    >
+                    </el-option>
+                </el-select>
                 <el-button type="primary" size="medium" @click="getData"
                     >查询</el-button
                 >
@@ -113,7 +114,7 @@ export default {
                     name: '李沛儒'
                 }
             ],
-            types: ['日常任务', '自定义任务'],
+            tasks: ['日常任务', '自定义任务'], //某个 人员 在某一天 执行的所有任务 ,从数据库获取
             queryInfo: {
                 staff: '',
                 date: '',
@@ -167,6 +168,7 @@ export default {
     },
     created() {
         this.mountEvent('trilInfo');
+        this.queryInfo.date=new Date().toString();// 设置默认的时间
     }
 };
 </script>
@@ -189,7 +191,7 @@ export default {
 .select {
     width: 270px;
     margin: 20px 10px 0 50px;
-    .el-select {
+    .el-select,.el-date-editor{
         margin-bottom: 10px;
     }
     .el-button {

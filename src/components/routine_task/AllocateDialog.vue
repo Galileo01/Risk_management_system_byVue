@@ -7,36 +7,52 @@
         top="50px"
         @close="clear"
     >
-        <el-form :model="formData" label-width="80px" ref="form" :rules="formRules">
+        <el-form
+            :model="formData"
+            label-width="80px"
+            ref="form"
+            :rules="formRules"
+        >
             <el-form-item label="终端人员" prop="staff">
                 <el-select v-model="formData.staff" placeholder="请选择">
                     <el-option
-                        v-for="item in options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
+                        v-for="(item, index) in options"
+                        :key="index"
+                        :label="item.name"
+                        :value="item.name"
                     >
                     </el-option> </el-select
             ></el-form-item>
             <el-form-item label="任务名称" prop="taskName"
                 ><el-input v-model="formData.taskName"></el-input
             ></el-form-item>
-            <el-form-item label="任务选项"
+            <!-- <el-form-item label="任务选项"
                 ><el-checkbox-group v-model="formData.selections">
                     <el-checkbox label="diy">支持异常巡查</el-checkbox>
                     <el-checkbox label="routine">规定线路巡查</el-checkbox>
                 </el-checkbox-group></el-form-item
-            >
+            > -->
+            <el-form-item label="任务类型" prop="type">
+                <el-radio-group
+                    v-model="formData.type"
+                    @change="setDefaultTime"
+                >
+                    <el-radio label="日巡">日巡</el-radio>
+                    <el-radio label="周巡">周巡</el-radio>
+                    <el-radio label="月巡">月巡</el-radio>
+                    <el-radio label="自定义">自定义</el-radio>
+                </el-radio-group>
+            </el-form-item>
             <el-form-item label="完成时间" prop="deadline"
                 ><el-date-picker
                     v-model="formData.deadline"
-                    type="datetime"
+                    type="date"
                     placeholder="选择日期时间"
                 >
                     >
                 </el-date-picker></el-form-item
             >
-            <el-form-item label="备注"  prop="comments"
+            <el-form-item label="备注" prop="comments"
                 ><el-input v-model="formData.comments"></el-input
             ></el-form-item>
         </el-form>
@@ -50,10 +66,12 @@
 </template>
 
 <script>
+import { AllocateTask } from 'network/task';
+import { getUsers } from 'network/account';
 export default {
     name: 'AllocateDialog',
     props: {
-        dialogVisible: Boolean
+        dialogVisible: Boolean,
     },
     data() {
         return {
@@ -62,65 +80,96 @@ export default {
                 taskName: '',
                 selections: ['diy'],
                 deadline: '',
-                comments: '' //备注
+                comments: '', //备注
+                type: '日巡',
             },
             options: [],
             formRules: {
-                staff: [{ required: true, message: '请选择巡查人员', trigger: 'blur' }],
-                taskName: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
-                deadline: [{ required: true, message: '请输入时间', trigger: 'blur' }]
-                
-            }
+                staff: [
+                    {
+                        required: true,
+                        message: '请选择巡查人员',
+                        trigger: 'blur',
+                    },
+                ],
+                taskName: [
+                    {
+                        required: true,
+                        message: '请输入任务名称',
+                        trigger: 'blur',
+                    },
+                ],
+                deadline: [
+                    { required: true, message: '请输入时间', trigger: 'blur' },
+                ],
+                type: [
+                    {
+                        required: true,
+                        message: '请选择类型',
+                        trigger: 'blur',
+                    },
+                ],
+            },
         };
     },
+    computed: {},
     methods: {
         //获取 巡查人员列表
-        getData() {
-            this.options = [
-                {
-                    value: '01',
-                    label: '吴磊'
-                },
-                {
-                    value: '02',
-                    label: '孔容'
-                },
-                {
-                    value: '03',
-                    label: '宋飞'
-                },
-                {
-                    value: '04',
-                    label: '曾温根'
-                },
-                {
-                    value: '05',
-                    label: '李沛儒'
-                }
-            ];
+        async getData() {
+            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
+            console.log(res);
+
+            if (!res.flag) return this.$message.error('终端人员获取失败');
+
+            this.options = res.users;
         },
         submit() {
-            this.$refs.form.validate(valid => {
+            this.$refs.form.validate((valid) => {
                 if (!valid) return;
-               this.$emit('allocate');
+                const deadline = new Date(this.formData.deadline);
+                const now = new Date();
+                const cycle = Math.ceil(
+                    (deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
+                );
+                console.log(cycle);
+
+                this.$emit('allocate', {
+                    cycle,
+                    name: this.formData.taskName,
+                    note: this.formData.comments,
+                    userName: this.formData.staff,
+                    enterpriseName: localStorage.getItem('enterpriseName'),
+                    state: '待执行',
+                });
                 this.$emit('update:dialogVisible', false);
             });
         },
-        clear(){
-          this.$refs.form.resetFields();
+        clear() {
+            this.$refs.form.resetFields();
         },
         //设置 默认时间 24h 之后
-        setDefaultTime(){
-             const date = new Date();
-              date.setTime(date.getTime() + 3600 * 1000 * 24);
-              this.formData.deadline=date.toString();
+        setDefaultTime() {
+            let number = 0;
+            switch (this.formData.type) {
+                case '日巡':
+                    number = 1;
+                    break;
+                case '周巡':
+                    number = 7;
+                    break;
+                case '月巡':
+                    number = 30;
+                    break;
+            }
+            const date = new Date();
+            date.setTime(date.getTime() + 3600 * 1000 * 24 * number);
+            this.formData.deadline = date.toString();
         },
-        
     },
     created() {
         this.getData();
         this.setDefaultTime();
-    }
+    },
 };
 </script>
 

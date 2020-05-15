@@ -11,8 +11,16 @@ module.exports={
         }
     },
     publicPath:"./",
-        // devServer: {
-        //   proxy: 'http://localhost:8080'
-        // }
+        devServer: {
+          // proxy: {//代理
+          //     '/api':{
+          //         target:'http://139.224.68.137:8081',
+          //       //   changeOrigin:true,
+          //         pathRewrite: {
+          //           '/api': ''
+          //       }
+          //     }
+          // }
+        }
 }
       

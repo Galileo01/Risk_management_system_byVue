@@ -6,18 +6,19 @@
                 <el-col :span="4">
                     <el-select v-model="query.menu" placeholder="请选择设备册">
                         <el-option
-                            v-for="item in menu"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
+                            v-for="(item, index) in menu"
+                            :key="index"
+                            :label="item"
+                            :value="item"
                         >
                         </el-option>
                     </el-select>
-                   
                 </el-col>
                 <el-col :span="1">
-                     <el-button>查询设备册</el-button>
-                </el-col>
+                    <el-button @click="getDevices"
+                        >查询设备册</el-button
+                    ></el-col
+                >
                 <el-col :span="8" :offset="4" class="all-btns">
                     <el-button type="primary" @click="all_BtnClick(1)"
                         >分配全部</el-button
@@ -28,7 +29,7 @@
                 </el-col>
             </el-row>
             <DeviceTable
-                :tableData="tableData"
+                :tableData="showData"
                 @showdetail="showDetail"
                 :sectional="true"
             />
@@ -36,14 +37,14 @@
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
                 :current-page="query.page"
-                :page-sizes="[5, 10, 15]"
+                :page-sizes="[3, 5, 10]"
                 :page-size="query.size"
                 layout="total, sizes, prev, pager, next, jumper"
                 :total="query.total"
             >
             </el-pagination>
         </el-card>
-        <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
+        <DeviceDetail :dialogVisible.sync="detailVisible" :info="showInfo" />
         <AllocateDialog
             :dialogVisible.sync="allocateVisible"
             ref="all_dia"
@@ -56,12 +57,17 @@
 import DeviceTable from 'components/general_show/DeviceTable';
 import DeviceDetail from 'components/general_show/DeviceDetail';
 import AllocateDialog from 'components/routine_task/AllocateDialog';
+import { AllocateTask } from 'network/task';
+import { GetDeviceMap, getDeviceByMap, getDevice } from 'network/device';
+
 export default {
     name: 'D_TaskAllocate',
     data() {
         return {
             tableData: [],
+            showData: [],
             detailVisible: false,
+            showInfo: {},
             allocateVisible: false,
             detailnum: '', //显示详情的 编号
             menu: [],
@@ -69,135 +75,70 @@ export default {
                 page: 1,
                 size: 10,
                 total: 0,
-                menu: ''
+                menu: '',
             },
-            isAll_all: false //是否是 分配全部的 设备
+            isAll_all: false, //是否是 分配全部的 设备
         };
     },
     methods: {
-        getData() {
+        async getMenus() {
             //获得所哟设备数据
-            const tableData = [
-                {
-                    number: 'D001',
-                    status: 'good',
-                    type: '办公楼督查',
-                    date: '2019-09-09 13:24:55',
-                    address: '办公楼'
-                },
-                {
-                    number: 'D002',
-                    status: 'good',
-                    type: '磅房督查',
-                    date: '2019-09-09 13:24:55',
+            const res = await GetDeviceMap(1, 9999);
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备册获取失败');
 
-                    address: '磅房'
-                },
-                {
-                    number: 'D003',
-                    status: 'bad',
-                    type: '大门内右侧督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '大门内右侧'
-                },
-                {
-                    number: 'D004',
-                    status: 'unknown',
-                    type: '低压配电房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电房'
-                },
-                {
-                    number: 'D005',
-                    status: 'unknown',
-                    type: '低压配电室督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电室'
-                },
-                {
-                    number: 'D006',
-                    status: 'unknown',
-                    type: '高压配电房1督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房1'
-                },
-                {
-                    number: 'D007',
-                    status: 'unknown',
-                    type: '高压配电房2督',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房2督查'
-                },
-                {
-                    number: 'D008',
-                    status: 'unknown',
-                    type: '巡线点1',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点1'
-                },
-                {
-                    number: 'D009',
-                    status: 'unknown',
-                    type: '巡线点2督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点2'
-                },
-                {
-                    number: 'D010',
-                    status: 'unknown',
-                    type: '巡线点3督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点3'
-                }
-            ];
-            //循环遍历，为每一个 数据添加
-            tableData.forEach(val => {
-                val.checked = false;
-            });
-            this.tableData = tableData;
-            this.query = {
-                page: 1,
-                size: 10,
-                total: 30,
-                menu:'0012'
-            };
-            this.menu = [
-                {
-                    label: '001  月巡',
-                    value: '001'
-                },
-                {
-                    label: '0012 周巡',
-                    value: '0012'
-                },
-                {
-                    label: '002  日巡',
-                    value: '002'
-                },
-                {
-                    label: '004  督察',
-                    value: '004'
-                }
-            ];
+            for (const val of res.deviceMaps) {
+                this.menu.push(val.name);
+            }
         },
-        showDetail(num) {
-            console.log(num);
+        async getDevices() {
+            this.tableData = [];
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            let res = {};
+            if (this.query.menu !== '') {
+                //如果  选择了menu  就根据menu 来获取
+                res = await getDeviceByMap({
+                    deviceMapName: this.query.menu,
+                    limit: 9999,
+                    offset,
+                });
+                console.log(res);
+                if (!res.flag) return this.$message.error('设备获取失败');
+            } else {
+                //没有选择 设备册 就获取 所有的 设备
+                res = await getDevice({
+                    page: 1,
+                    limit: 9999,
+                });
+                console.log(res);
+                if (!res.flag) return this.$message.error('设备获取失败');
+            }
+            this.tableData = res.devices;
 
-            this.detailnum = num;
+            this.showData = this.tableData.slice(offset, offset + size);
+            this.query.total = res.devices.length;
+        },
+        showDetail(name) {
+            const info = this.tableData.find((val) => val.name === name);
+            if (info) this.showInfo = info;
             this.detailVisible = true;
         },
         //底部分页 更改size 和 page  触发 更改 tableData 数据
-        handleSizeChange() {},
-        handleCurrentChange() {},
-        allocate() {
+        handleSizeChange(size) {
+            this.query.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.query.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.query;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+        },
+        async allocate(para) {
             let data = [];
             if (this.isAll_all) {
                 //如果分配 全部
@@ -205,6 +146,18 @@ export default {
             } else {
                 data = this.getCheckedDevice();
             }
+            data = data.map((val) => {
+                return val.name;
+            });
+
+            let devices = data.join(',');
+            const res = await AllocateTask({
+                devices,
+                ...para,
+                number: data.length,
+            });
+            console.log(res);
+
             this.$message.success('分配成功');
         },
         all_BtnClick(num) {
@@ -212,32 +165,30 @@ export default {
                 //如果是 分配全部
                 this.isAll_all = true;
                 this.allocateVisible = true;
-            }
-            else if(num===2)
-            {
-                if(this.getCheckedDevice().length===0)
-                  this.$message.error('请选中设备');
-                else
-                this.allocateVisible = true;
+            } else if (num === 2) {
+                if (this.getCheckedDevice().length === 0)
+                    this.$message.error('请选中设备');
+                else this.allocateVisible = true;
             }
         },
         getCheckedDevice() {
-            return this.tableData.filter(val => val.checked);
-        }
+            return this.showData.filter((val) => val.checked);
+        },
     },
-    created() {
-        this.getData();
+    activated() {
+        this.getMenus();
+        this.getDevices();
     },
     components: {
         DeviceTable,
         DeviceDetail,
-        AllocateDialog
-    }
+        AllocateDialog,
+    },
 };
 </script>
 
 <style scoped lang="less">
-.d_allocate {
+.r_allocate {
     .all-btns {
         .el-button {
             margin-left: 50px;

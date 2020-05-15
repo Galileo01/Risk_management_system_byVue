@@ -4,22 +4,25 @@
             <div class="base_info">
                 <el-row
                     ><el-col :span="2" :offset="2">任务名称</el-col>
-                    <el-col :span="6">{{ taskInfo.taskName }}</el-col>
-                    <el-col :span="2" :offset="2">任务类型</el-col>
-                    <el-col :span="6">{{ typeText }}</el-col></el-row
+                    <el-col :span="6">{{ taskInfo.name }}</el-col>
+                    <!-- <el-col :span="2" :offset="2">任务类型</el-col>
+                    <el-col :span="6">{{ typeText }}</el-col> -->
+                     <el-col :span="2" :offset="2">企业</el-col>
+                    <el-col :span="6">{{ taskInfo.enterpriseName }}</el-col>
+                    </el-row
                 >
                 <el-row
                     ><el-col :span="2" :offset="2">终端人员</el-col>
-                    <el-col :span="6">{{ taskInfo.staff }}</el-col>
+                    <el-col :span="6">{{ taskInfo.userName||'无' }}</el-col>
                     <el-col :span="2" :offset="2">设备册编号</el-col>
                     <el-col :span="6">{{ taskInfo.menuName }}</el-col>
                 </el-row>
 
                 <el-row>
                     <el-col :span="2" :offset="2">生成时间</el-col>
-                    <el-col :span="6">{{ taskInfo.gene_Time }}</el-col>
-                    <el-col :span="2" :offset="2">完成时间</el-col>
-                    <el-col :span="6">{{ taskInfo.stopTime }}</el-col></el-row
+                    <el-col :span="6">{{ taskInfo.createTime }}</el-col>
+                    <el-col :span="2" :offset="2">任务周期(天)</el-col>
+                    <el-col :span="6">{{ taskInfo.cycle }}</el-col></el-row
                 >
             </div>
         </el-collapse-item></el-collapse

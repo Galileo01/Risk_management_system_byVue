@@ -1,10 +1,13 @@
 <template>
     <div class="device_distri">
-        <BreadNav :texts="['基础设置', '设备册', '设备分册']" :navObjs="{1:'device_menu'}"/>
+        <BreadNav
+            :texts="['基础设置', '设备册', '设备分册']"
+            :navObjs="{ 1: 'device_menu' }"
+        />
         <el-card>
             <el-row>
                 <el-col :span="4"
-                    >设备册：<el-tag>{{ menu }}</el-tag></el-col
+                    >设备册：<el-tag>{{ name }}</el-tag></el-col
                 >
                 <el-col :span="6"
                     ><el-button type="danger" @click="subDistri" size="medium"
@@ -12,11 +15,8 @@
                     ></el-col
                 >
             </el-row>
-            <el-table
-                :data="showDevices"
-                border
-                size="small"
-            >
+            <el-row><el-tag>系统所有设备如下</el-tag></el-row>
+            <el-table :data="showDevices" border size="mini">
                 <el-table-column width="50px">
                     <template v-slot="{ row }">
                         <el-checkbox
@@ -24,10 +24,10 @@
                         ></el-checkbox> </template
                 ></el-table-column>
                 <el-table-column type="index"></el-table-column>
-                <el-table-column prop="number" label="设备编号">
+                <el-table-column prop="name" label="设备名称">
                 </el-table-column>
-                <el-table-column prop="status" label="状态">
-                    <template v-slot="{ row }">
+                <el-table-column prop="state" label="状态">
+                    <!-- <template v-slot="{ row }">
                         <el-tag v-if="row.status === 'good'" type="success"
                             >好</el-tag
                         >
@@ -35,14 +35,17 @@
                             >差</el-tag
                         >
                         <el-tag v-else type="warning">未知</el-tag>
-                    </template>
+                    </template> -->
                 </el-table-column>
                 <el-table-column prop="type" label="类型"></el-table-column>
                 <el-table-column
                     prop="address"
                     label="安装地址"
                 ></el-table-column>
-                <el-table-column prop="date" label="安装日期"></el-table-column>
+                <el-table-column
+                    prop="createTime"
+                    label="安装日期"
+                ></el-table-column>
             </el-table>
             <el-pagination
                 @size-change="handleSizeChange"
@@ -60,10 +63,16 @@
 
 <script>
 import DeviceTable from 'components/general_show/DeviceTable';
+import {
+    GetDeviceMap,
+    getDeviceByMap,
+    getDevice,
+    allocateDeviceMap,
+} from 'network/device';
 export default {
     name: 'SetDeviceDis',
     props: {
-        menuid: String
+        name: String,
     },
     data() {
         return {
@@ -71,189 +80,89 @@ export default {
             showDevices: [], //展示在表格的数据
             query: {
                 page: 1,
-                size: 5,
+                size: 10,
                 total: 0,
-                menu: ''
+                menu: '',
             },
-            menu: '日巡0012',
+            choosed: [], //当前 设备册 已经包含的设备
         };
     },
     methods: {
-        getData() {
-            //所有 设备
-            const allDevices = [
-                {
-                    number: 'D001',
-                    status: 'good',
-                    type: '办公楼督查',
-                    date: '2019-09-09 13:24:55',
-                    address: '办公楼'
-                },
-                {
-                    number: 'D002',
-                    status: 'good',
-                    type: '磅房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '磅房'
-                },
-                {
-                    number: 'D003',
-                    status: 'bad',
-                    type: '大门内右侧督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '大门内右侧'
-                },
-                {
-                    number: 'D004',
-                    status: 'unknown',
-                    type: '低压配电房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电房'
-                },
-                {
-                    number: 'D005',
-                    status: 'unknown',
-                    type: '低压配电室督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电室'
-                },
-                {
-                    number: 'D006',
-                    status: 'unknown',
-                    type: '高压配电房1督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房1'
-                },
-                {
-                    number: 'D007',
-                    status: 'unknown',
-                    type: '高压配电房2督',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房2督查'
-                },
-                {
-                    number: 'D008',
-                    status: 'unknown',
-                    type: '巡线点1',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点1'
-                },
-                {
-                    number: 'D009',
-                    status: 'unknown',
-                    type: '巡线点2督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点2'
-                },
-                {
-                    number: 'D010',
-                    status: 'unknown',
-                    type: '巡线点3督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点3'
-                }
-            ];
-            //当前设备册包含的设备
-            const menuDevices = [
-                {
-                    number: 'D001',
-                    status: 'good',
-                    type: '办公楼督查',
-                    date: '2019-09-09 13:24:55',
-                    address: '办公楼'
-                },
-                {
-                    number: 'D003',
-                    status: 'bad',
-                    type: '大门内右侧督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '大门内右侧'
-                },
-                {
-                    number: 'D004',
-                    status: 'unknown',
-                    type: '低压配电房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电房'
-                },
-                {
-                    number: 'D006',
-                    status: 'unknown',
-                    type: '高压配电房1督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房1'
-                },
-                {
-                    number: 'D008',
-                    status: 'unknown',
-                    type: '巡线点1',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点1'
-                },
-
-                {
-                    number: 'D010',
-                    status: 'unknown',
-                    type: '巡线点3督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点3'
-                }
-            ];
-            allDevices.forEach((val1, index) => {
-                if (menuDevices.find(val2 => val2.number === val1.number)) {
-                    val1.checked = true;
-                } else {
-                    val1.checked = false;
-                }
-                if (index < this.query.size) this.showDevices.push(val1);
+        async getChoose() {
+            this.tableData = [];
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            const res = await getDeviceByMap({
+                deviceMapName: this.name,
+                limit: 9999,
+                offset,
             });
-            this.allDevices = allDevices;
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备获取失败');
 
-            this.query = {
+            this.choosed = res.devices;
+            this.getAll();
+        },
+        async getAll() {
+            this.allDevices = [];
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            const res = await getDevice({
                 page: 1,
-                size: 5,
-                total: 10,
-                menu: '0012'
-            };
+                limit: 9999,
+            });
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备获取失败');
+            for (const item of res.devices) {
+                let checked = false;
+                if (
+                    this.choosed.find((val) => val.deviceID === item.deviceID)
+                ) {
+                    checked = true;
+                }
+                this.allDevices.push({ ...item, checked });
+            }
+            this.showDevices = this.allDevices.slice(offset, offset + size);
+            this.query.total = res.devices.length;
         },
         handleSizeChange(size) {
             this.query.size = size;
-            const page = this.query.page;
-            const offset = size * (page - 1);
-            this.showDevices = this.allDevices.slice(offset, offset + size);
+            this.changeShowData();
         },
         handleCurrentChange(page) {
-            const size = this.query.size;
             this.query.page = page;
-            const offset = size * (page - 1);
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.query;
+            const offset = (page - 1) * size;
             this.showDevices = this.allDevices.slice(offset, offset + size);
         },
-        subDistri(){
-            const checked=this.allDevices.filter(val=>val.checked);
-            this.$message.success('提交成功');
-        }
+        async subDistri() {
+            const checked = this.allDevices
+                .filter((val) => val.checked)
+                .map((val) => val.name)
+                .join(',');
+            const res = await allocateDeviceMap(this.name, checked);
+            console.log(res);
+            if (!res.flag) return this.$message.error('提交失败');
+            else {
+                this.$message.success('提交成功');
+                this.getChoose();
+            }
+        },
     },
-    created() {
-        this.getData();
+    activated() {
+        this.getChoose();
     },
     components: {
-        DeviceTable
-    }
+        DeviceTable,
+    },
 };
 </script>
 
-<style></style>
+<style scoped lang="less">
+.device_distri {
+    font-size: 14px;
+}
+</style>

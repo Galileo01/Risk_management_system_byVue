@@ -1,60 +1,71 @@
 <template>
     <div class="point_set">
         <BreadNav
-            :texts="['基础设置', '点位管理', '点位设置']"
-            :navObjs="{'1':'point_manage'}"
+            :texts="['基础设置', '设备管理', '设备设置']"
+            :navObjs="{ '1': 'point_manage' }"
         />
         <el-card>
-            <el-tabs v-model="activeName" tab-position="left" >
-                <el-tab-pane label="基础信息" name="first" class="baseinfo">
+            <el-tabs
+                v-model="activeName"
+                tab-position="left"
+                @tab-click="tabClick"
+            >
+                <el-tab-pane label="基础信息" name="baseInfo" class="baseinfo">
                     <el-form :model="baseInfo" label-width="70px">
-                        <el-form-item label="设备编号" prop="num"
-                            ><el-input v-model="baseInfo.num"></el-input
-                        ></el-form-item>
+                        <el-form-item label="设备编号" prop="name">
+                            <!-- <el-input v-model="baseInfo.name"></el-input> -->
+                            <span>{{ baseInfo.name }}</span>
+                        </el-form-item>
 
-                        <el-form-item label="标记" prop="mark">
-                            <el-input v-model="baseInfo.mark"></el-input>
+                        <el-form-item label="标记" prop="lable">
+                            <el-input v-model="baseInfo.lable"></el-input>
                             <el-tag type="danger">请以逗号分隔标记</el-tag>
                         </el-form-item>
                         <el-form-item label="设备类型" prop="type">
                             <el-input v-model="baseInfo.type"></el-input>
                         </el-form-item>
-                        <el-form-item label="设备状态" prop="status">
-                            <el-input v-model="baseInfo.status"></el-input>
+                        <el-form-item label="设备状态" prop="state">
+                            <el-input v-model="baseInfo.state"></el-input>
                         </el-form-item>
                         <el-form-item label="安装地址" prop="address">
                             <el-input v-model="baseInfo.address"></el-input>
                         </el-form-item>
-                        <el-form-item label="经纬度" prop="location">
-                            <el-input v-model="baseInfo.location"></el-input>
-                            <el-tag type="danger">请以（x,y）的形式填写</el-tag>
+                        <el-form-item label="经度" prop="longitude">
+                            <el-input v-model="baseInfo.longitude"></el-input>
                         </el-form-item>
-                        <el-form-item label="安装日期" prop="install_date">
-                            <el-input
-                                v-model="baseInfo.install_date"
-                            ></el-input>
+                        <el-form-item label="纬度" prop="latitude">
+                            <el-input v-model="baseInfo.latitude"></el-input>
                         </el-form-item>
-                        <el-form-item label="生产商" prop="manu">
-                            <el-input v-model="baseInfo.manu"></el-input>
+                        <el-form-item label="安装日期" prop="createTime">
+                            <el-input v-model="baseInfo.createTime"></el-input>
                         </el-form-item>
                     </el-form>
-                    <el-button type="danger" @click="submitBaseInfoEdit">提交更改</el-button>
+                    <el-button
+                        type="danger"
+                        @click="submitBaseInfoEdit"
+                        size="medium"
+                        >提交更改</el-button
+                    >
                 </el-tab-pane>
-                <el-tab-pane label="图文导航" name="second" class="navimg">
-                     <el-button type="primary" @click="addImg"
+                <el-tab-pane label="图文导航" name="navImgs" class="navimg">
+                    <el-button type="primary" @click="showAddDialog"
                         >添加图片</el-button
                     >
-                    <el-button type="danger" @click="submitBaseInfoEdit">提交设置</el-button>
+                    <el-button type="danger" @click="submitBaseInfoEdit"
+                        >提交设置</el-button
+                    >
                     <div class="imgs">
                         <div
-                            v-for="(img, index) in naviImgs"
+                            v-for="(img, index) in navImgs"
                             :key="index"
                             class="img-wapper"
                         >
                             第{{ index + 1 }}步
                             <img :src="img" alt="" />
                             <div class="btns">
-                                <el-button size="medium" @click="replace(index)"
+                                <el-button
+                                    size="medium"
+                                    @click="showRepDialog(index)"
                                     >替换</el-button
                                 >
                                 <el-button
@@ -66,66 +77,75 @@
                             </div>
                         </div>
                     </div>
-                    
-                    </el-tab-pane
-                >
-                <el-tab-pane label="关联检查项" name="third"
-                    ><div class="selections">
-                        <el-table
-                            :data="selections"
-                            stripe
-                            border
-                            size="small"
-                            style="width:800px"
+                </el-tab-pane>
+                <el-tab-pane label="关联检查项" name="items">
+                    <el-row class="ali-c" v-if="itemsTabType === 'show'"
+                        ><el-col :span="4"
+                            ><el-tag type="info"
+                                >关联的检查项如下</el-tag
+                            ></el-col
                         >
-                            <el-table-column type="index"></el-table-column>
-                            <el-table-column
-                                label="巡查项名称"
-                                prop="title"
-                                width="500px"
-                            ></el-table-column>
-                            <el-table-column label="操作" width="200px">
-                                <template v-slot="{ row }">
-                                    <el-button
-                                        icon="el-icon-edit"
-                                        size="mini"
-                                        type="primary"
-                                        @click="editItem(row.itemID)"
-                                    ></el-button>
-                                    <el-button
-                                        icon="el-icon-delete"
-                                        size="mini"
-                                        type="danger"
-                                        @click="removeItem(row.itemID)"
-                                    ></el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                        <el-pagination
-                            @size-change="handleSizeChange"
-                            @current-change="handleCurrentChange"
-                            :current-page="query.page"
-                            :page-sizes="[5, 10, 15]"
-                            :page-size="query.size"
-                            layout="total, sizes, prev, pager, next, jumper"
-                            :total="query.total"
+                        <el-col :span="5" :offset="15"
+                            ><el-button
+                                size="medium"
+                                type="primary"
+                                @click="ChangeItemsTabType"
+                                >从所有检查项中重新选择</el-button
+                            ></el-col
                         >
-                        </el-pagination></div
-                ></el-tab-pane>
-              
+                    </el-row>
+                    <el-row class="ali-c" v-else>
+                        <el-col :span="4"
+                            ><el-tag type="info">所有检查项如下</el-tag></el-col
+                        >
+                        <el-col :span="3" :offset="14"
+                            ><el-button
+                                type="warning"
+                                size="medium"
+                                @click="ChangeItemsTabType"
+                                >取消选择</el-button
+                            ></el-col
+                        >
+                        <el-col :span="5"
+                            ><el-button
+                                size="medium"
+                                type="danger"
+                                @click="subSelect"
+                                >提交选择</el-button
+                            ></el-col
+                        >
+                    </el-row>
+                    <ItemTable
+                        size="mini"
+                        v-bind="tableProps"
+                        :data="showItems"
+                        @remove="remove"
+                    />
+                    <el-pagination
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="query.page"
+                        :page-sizes="[5, 10]"
+                        :page-size="query.size"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="query.total"
+                    ></el-pagination>
+                </el-tab-pane>
             </el-tabs>
+            <!--添加图片 对话框-->
             <el-dialog
                 :visible.sync="addImgVisible"
                 title="添加图片导航"
                 class="adddia"
             >
-                <el-row type="flex" align="center"
-                    ><el-col :span="8" class="align-c"
+                <el-row class="ali-c"
+                    ><el-col :span="6"
                         ><span>此图片作为导航的步数</span></el-col
                     >
                     <el-col :span="5"
                         ><el-input
                             v-model="addImgInfo.step"
+                            size="mini"
                         ></el-input> </el-col
                 ></el-row>
                 <el-row>
@@ -162,16 +182,45 @@
                     <el-button type="primary" @click="subAdd">确认</el-button>
                 </span>
             </el-dialog>
-            <el-dialog :visible.sync="editItemVisible">
-                
-                    <el-row align="center" type="flex">
-                        <el-col :span="4"  class="align-c">巡查项名称</el-col>
-                        <el-col :span="20"><el-input  v-model="edttingItem.title"></el-input></el-col>
-                    </el-row>
-                   
+            <!-- 替换 图片 对话框 -->
+            <el-dialog
+                title="替换图片"
+                :visible.sync="replaceVisible"
+                class="repdia"
+            >
+                <el-row>
+                    <el-col :span="6">
+                        <div class="img-preview">
+                            <img
+                                v-if="replaceImgInfo.src"
+                                :src="replaceImgInfo.src"
+                                class="avatar"
+                            />
+                            <i
+                                v-else
+                                class="el-icon-plus avatar-uploader-icon"
+                            ></i>
+                        </div>
+                    </el-col>
+                    <el-col :span="4" :offset="2">
+                        <el-upload
+                            action="https://jsonplaceholder.typicode.com/posts/"
+                            :on-success="handleSuccess"
+                        >
+                            <el-button
+                                size="medium"
+                                type="primary"
+                                @click="test"
+                                >选择图片</el-button
+                            ></el-upload
+                        >
+                    </el-col>
+                </el-row>
                 <span slot="footer">
-                    <el-button @click="editItemVisible = false">取消</el-button>
-                    <el-button type="primary" @click="subEdit">确认</el-button>
+                    <el-button @click="replaceVisible = false">取消</el-button>
+                    <el-button type="primary" @click="subReplace"
+                        >确认</el-button
+                    >
                 </span>
             </el-dialog>
         </el-card>
@@ -179,103 +228,101 @@
 </template>
 
 <script>
+import ItemTable from 'components/setting/ItemTable';
+import { getDevice, setDevicePatrolItem, updateDevice } from 'network/device';
+import { getItems, getItemByDevice } from 'network/patrolitem';
 export default {
     name: 'SetPoint',
     props: {
-        id: String
+        name: String,
     },
     data() {
         return {
-            activeName: 'first',
-            baseInfo: {},
-            naviImgs: [],
+            activeName: 'baseInfo', //baseInfo
+            baseInfo: {}, //基础信息
+            navImgs: [], //导航图片
             addImgVisible: false,
             addImgInfo: {
                 step: 1,
-                src: ''
+                src: '',
             },
-            selections: [],
-            editItemVisible: false,
-            edttingItem:{},
+            replaceImgInfo: {
+                // 用于 替换的 图片的 信息
+                step: 0,
+                newRrc: '',
+            },
+            replaceVisible: false,
+            showVisible: false,
+            showItem: {},
             query: {
                 page: 1,
-                size: 5,
-                total: 10
+                size: 10,
+                total: 0,
             },
-            isSubmitBaseinfo:false,  //标识 对应的板块 的更改是否提交
-            isSubmitNav:false,
-            
+            //巡查项
+            items: [],
+            showItems: [], //渲染在 表格 里的 巡查项
+            itemsTabType: 'show', //标识 items tab 栏 处于哪种模式 展示/选择  show/select
+            tableProps: {
+                canEdit: false,
+                canRemove: true,
+                selectional: false,
+            },
+            allItems: [], //选择 巡查项 时， 数据库所有的 检查项,
         };
     },
+    filters: {
+        levelText(value) {
+            switch (value) {
+                case 1:
+                    return '等级一';
+                case 2:
+                    return '等级二';
+                case 3:
+                    return '等级三';
+                case 4:
+                    return '等级四';
+            }
+        },
+    },
     methods: {
-        getData() {
-            const info = {
-                num: this.id,
-                mark: '标签正常,正常巡查,巡查合格',
-                type: '办公楼督查',
-                status: 'good',
-                address: '办公楼',
-                location: '(105.756894，29.336377)',
-                install_date: '2019-09-09 13:24:55',
-                manu: '重庆市永川区金银坡斗子丘建材有限公司'
-            };
-            const naviImgs = [
+        getData(cate) {
+            if (cate === 'baseInfo') this.getBaeInfo();
+            else if (cate === 'navImgs') this.getNavImgs();
+            else {
+                this.getItems();
+            }
+
+            console.log(cate);
+        },
+        async getBaeInfo() {
+            const res = await getDevice({ name: this.name, page: 1, limit: 1 });
+            console.log(res);
+            if (!res.flag) return this.$message.error('设备信息获取失败');
+
+            this.baseInfo = res.devices[0];
+        },
+        getNavImgs() {
+            const navmgs = [
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/d4fed3a81dd84fa2b689420ca64ed0be_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/75a96784e09e4965b1b372cdbc8407d8_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/5ace41339f184023bd53231faf5821a7_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/4f17ea34abb748ab90bba9ada3f11b6a_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/e60c145bf7c24d02b57ff61899000dbf_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/34ee640cafe441cb878fe8a90b16ac80_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/10a9511bc4b841e3bb8e0071b7050dae_1909071031tuya.jpg'
+                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/10a9511bc4b841e3bb8e0071b7050dae_1909071031tuya.jpg',
             ];
-            const selections = [
-                {
-                    title: '操作平台及通道是否规范完整设置护栏',
-                    itemID: '01'
-                },
-                {
-                    title:
-                        '对生产作业范围及周边的高陡边坡是否采取有效安全防控措施',
-                    itemID: '123'
-                },
-                {
-                    title: '防尘装备、设备完好，可正常使用',
-                    itemID: '234'
-                },
-                {
-                    title:
-                        '分层高度或台阶高度以及留设的安全平台距离是否符合开采设计要求',
-                    itemID: '456'
-                },
-                {
-                    title: '高处临边铲装或排危作业是否留足安全间距',
-                    itemID: '02'
-                },
-                {
-                    title:
-                        '进料口是否规范设置倒车档，料仓口内檐、外檐是否规范设置防护栏',
-                    itemID: '12311'
-                },
-                {
-                    title:
-                        '开采作业面位置是否与开采设计一致，符合国家法律法规标准要求',
-                    itemID: '45q3'
-                },
-                {
-                    title: '开关、插座、电缆线路符合规定，无私搭乱接行为',
-                    itemID: '1131'
-                },
-                {
-                    title:
-                        '矿山边界、边坡危险地带、变电所、机械电气设备可能被人触及部位、炸药库、运输道路、排土场等设立相应警示标识',
-                    itemID: '657678'
-                }
-            ];
-            this.baseInfo = info;
-            this.naviImgs = naviImgs;
-            this.selections = selections;
+            this.navImgs = navmgs;
         },
-       
+        async getItems() {
+            const res = await getItemByDevice(this.baseInfo.deviceID);
+            console.log(res);
+            if (!res.flag) return this.$message.error('检查项获取失败');
+            this.items = res.checkItems;
+            this.query.total = this.items.length;
+
+            this.showItems = this.items.slice(0, 10);
+        },
         async removeImg(index) {
             const result = await this.$confirm(
                 '此操作将从导航中删除此图片, 是否继续?',
@@ -283,17 +330,17 @@ export default {
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.naviImgs.splice(index, 1);
+                this.navImgs.splice(index, 1);
                 this.$message.success('删除成功');
             }
         },
-        addImg() {
+        showAddDialog() {
             this.addImgVisible = true;
         },
         handleSuccess() {},
@@ -304,49 +351,172 @@ export default {
         },
         subAdd() {
             this.$message.success('图片上传成功');
-            this.naviImgs.push(this.addImgInfo.src);
+            this.navImgs.push(this.addImgInfo.src);
             this.addImgVisible = false;
         },
-        handleSizeChange() {},
-        handleCurrentChange() {},
+        showRepDialog(index) {
+            this.replaceVisible = true;
+            this.replaceImgInfo.step = index;
+        },
+        subReplace() {
+            this.$message.success('图片替换成功');
+            this.replaceVisible = false;
+        },
+        handleSizeChange(size) {
+            this.query.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.query.page = page;
+            this.changeShowData();
+        },
+
         async removeItem(id) {
-            const result = await this.$confirm('此操作将删除此巡查项, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).catch(error => error);
+            const result = await this.$confirm(
+                '此操作将删除此巡查项, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
                 this.$message.success('成功');
             }
         },
-        editItem(id){
-            this.editItemVisible=true;
-            this.edttingItem=this.selections.find(val=>val.itemID===id);
-            console.log(id);
-            
-        },subEdit(){
-             this.$message.success('巡查项修改成功');
-            this.editItemVisible = false;
-        },
-        submitBaseInfoEdit(){
-            this.$message.success('基础信息修改成功');
-        }
-    },
-    watch:{
-        activeName(val)
-        {
-            if((val==='third'&&!this.isSubmitBaseinfo)||(val==='third'&&!this.isSubmitNav))
-            {
-                 this.$message.error('提示:如有更改请提交更改之后在退出本页面');
-                
+
+        async submitBaseInfoEdit() {
+            const res = await updateDevice(this.baseInfo);
+            console.log(res);
+            if (!res.flag) return this.$message.error('修改失败');
+            else {
+                this.$message.success('基础信息修改成功');
+                this.getBaeInfo();
             }
-        }
+        },
+        tabClick() {
+            //只有 第一次切换到 某个 tab 时才 加载对应数据
+            const target = this.activeName;
+            if (Object.keys(this[target]).length === 0) {
+                //如果  对应的 信息没有获取，
+                this.getData(target);
+            }
+        }, //更改 关联检查项 tab 里的 table 显示类型
+        async ChangeItemsTabType() {
+            const curType = this.itemsTabType;
+            if (curType === 'show') {
+                //当前  类型是 show
+                this.itemsTabType = 'select';
+                this.tableProps.canRemove = false;
+                this.tableProps.selectional = true;
+                await this.getAllItem(); //每次从新获取 所有items
+            } else {
+                this.itemsTabType = 'show';
+                this.tableProps.canRemove = true;
+                this.tableProps.selectional = false;
+            }
+            this.changeShowData();
+        },
+        //更具当前类型，更改 table 显示 的数据
+        changeShowData() {
+            this.query.page = 1;
+            const curType = this.itemsTabType;
+            if (curType === 'show') {
+                this.showItems = this.items.slice(0, this.query.size);
+            } else {
+                this.showItems = this.allItems.slice(0, this.query.size);
+                console.log(this.showItems);
+            }
+        },
+        //获取所有 items
+        async getAllItem() {
+            const res = await getItems();
+            console.log(res);
+            if (!res.flag) return this.$message.error('获取检查项列表失败');
+            const data = res.checkItems;
+            //根据 allItems 和 items 计算应该展示的  待选择的 items
+            // //讲 所有items 里 当前 设备包含的 检查项 设置checked 属性
+            data.forEach((val1, index) => {
+                if (
+                    this.items.findIndex(
+                        (val2) => val2.checkItemID === val1.checkItemID
+                    ) !== -1
+                ) {
+                    //如果 包含
+                    data[index].checked = true;
+                } else {
+                    data[index].checked = false;
+                }
+            });
+            this.query.total = res.checkItems.length;
+            this.allItems = data;
+        },
+
+        async subSelect() {
+            const result = await this.$confirm(
+                '此操作将提交检查项的修改, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
+            if (result === 'cancel') {
+                this.$message.info('操作取消');
+            } else {
+                const checked = this.showItems
+                    .filter((val) => val.checked)
+                    .map((val) => val.name)
+                    .join(',');
+                // console.log(checked);
+
+                const res = await setDevicePatrolItem(this.name, checked);
+                this.$message.success('修改成功');
+                await this.getItems();
+                this.ChangeItemsTabType();
+            }
+        },
+        async remove(id) {
+            const result = await this.$confirm(
+                '此操作将删除此检查项, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
+            if (result === 'cancel') {
+                this.$message.info('操作取消');
+            } else {
+                const newItems = this.items
+                    .map((val) => {
+                        if (val.checkItemID !== id) return val.name;
+                    })
+                    .join(',');
+                console.log(newItems);
+
+                const res = await setDevicePatrolItem(this.name, newItems);
+                console.log(res);
+
+                if (res.flag) {
+                    this.$message.success('删除成功');
+                    this.getItems();
+                } else this.$message.error('删除失败');
+            }
+        },
     },
+
     created() {
-        this.getData();
-    }
+        this.getData('baseInfo');
+    },
+    components: {
+        ItemTable,
+    },
 };
 </script>
 
@@ -358,7 +528,7 @@ export default {
     .el-tab-pane {
         margin-left: 20px;
     }
-   .baseinfo .el-form .el-input {
+    .baseinfo .el-form .el-input {
         width: 500px;
     }
     .el-form .el-tag {
@@ -384,11 +554,11 @@ export default {
             }
         }
     }
-    /* el-col 中的 span 竖直居中 */
 
-    .adddia {
+    .adddia,
+    .repdia {
         .el-row {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .img-preview {
             border: 1px dashed #d9d9d9;
@@ -408,9 +578,5 @@ export default {
             }
         }
     }
-    .align-c {
-            display: flex;
-            align-items: center;
-        }
 }
 </style>

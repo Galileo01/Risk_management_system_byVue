@@ -3,28 +3,43 @@
         <BreadNav :texts="['综合浏览', '设备浏览']" />
         <el-card>
             <el-row>
-                 <el-col :span="4">
-                    <el-select v-model="query.menu" placeholder="请选择设备册">
+                <el-col :span="4">
+                    <el-select
+                        v-model="query.menu"
+                        placeholder="请选择设备册"
+                        size="medium" clearable
+                    >
                         <el-option
-                            v-for="item in menu"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
+                            v-for="(item, index) in menu"
+                            :key="index"
+                            :label="item"
+                            :value="item"
                         >
                         </el-option>
                     </el-select>
-                   
                 </el-col>
-                <el-col :span="4"> <el-button>查询设备册</el-button></el-col>
+                <el-col :span="4">
+                    <el-button @click="getDevices" size="medium"
+                        >查询设备册</el-button
+                    ></el-col
+                >
                 <el-col :span="8"
-                    ><el-input placeholder="输入关键词">
+                    ><el-input
+                        placeholder="输入关键词"
+                        v-model="query.name"
+                        @clear="changeShowData"
+                        clearable
+                        @keyup.enter.native="find"
+                        size="medium"
+                    >
                         <el-button
                             slot="append"
                             icon="el-icon-search"
+                            @click="find"
                         ></el-button></el-input
                 ></el-col>
             </el-row>
-            <DeviceTable :tableData="tableData" @showdetail="showDetail" />
+            <DeviceTable :tableData="showData" @showdetail="showDetail" />
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -36,162 +51,118 @@
             >
             </el-pagination>
         </el-card>
-        <DeviceDetail :dialogVisible.sync="detailVisible" :num="detailnum" />
+        <DeviceDetail :dialogVisible.sync="detailVisible" :info="showInfo" />
     </div>
 </template>
 
 <script>
 import DeviceTable from 'components/general_show/DeviceTable';
 import DeviceDetail from 'components/general_show/DeviceDetail';
+import { GetDeviceMap, getDeviceByMap, getDevice } from 'network/device';
 export default {
     name: 'DeviceQuery',
     data() {
         return {
             tableData: [],
             detailVisible: false,
-            detailnum: '', //显示详情的 编号
             query: {
                 page: 1,
                 size: 10,
                 total: 0,
-                menu:''
+                menu: '',
+                name: '',
             },
             menu: [],
+            showData: [],
+            showInfo: {},
         };
     },
     methods: {
-        getTableData() {
-            this.tableData = [
-                {
-                    number: 'D001',
-                    status: 'good',
-                    type: '办公楼督查',
-                    date: '2019-09-09 13:24:55',
-                    address: '办公楼'
-                },
-                {
-                    number: 'D002',
-                    status: 'good',
-                    type: '磅房督查',
-                    date: '2019-09-09 13:24:55',
+        async getMenus() {
+            //获得所哟设备数据
+            this.menu = [];
+            const res = await GetDeviceMap(1, 9999);
+            // console.log(res);
+            if (!res.flag) return this.$message.error('设备册获取失败');
 
-                    address: '磅房'
-                },
-                {
-                    number: 'D003',
-                    status: 'bad',
-                    type: '大门内右侧督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '大门内右侧'
-                },
-                {
-                    number: 'D004',
-                    status: 'unknown',
-                    type: '低压配电房督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电房'
-                },
-                {
-                    number: 'D005',
-                    status: 'unknown',
-                    type: '低压配电室督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '低压配电室'
-                },
-                {
-                    number: 'D006',
-                    status: 'unknown',
-                    type: '高压配电房1督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房1'
-                },
-                {
-                    number: 'D007',
-                    status: 'unknown',
-                    type: '高压配电房2督',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '高压配电房2督查'
-                },
-                {
-                    number: 'D008',
-                    status: 'unknown',
-                    type: '巡线点1',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点1'
-                },
-                {
-                    number: 'D009',
-                    status: 'unknown',
-                    type: '巡线点2督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点2'
-                },
-                {
-                    number: 'D010',
-                    status: 'unknown',
-                    type: '巡线点3督查',
-                    date: '2019-09-09 13:24:55',
-
-                    address: '巡线点3'
-                }
-            ];
-            this.query = {
-                page: 1,
-                size: 10,
-                total: 30,
-                menu:'0012'
-            };
-            
-            this.menu = [
-                {
-                    label: '001  月巡',
-                    value: '001'
-                },
-                {
-                    label: '0012 周巡',
-                    value: '0012'
-                },
-                {
-                    label: '002  日巡',
-                    value: '002'
-                },
-                {
-                    label: '004  督察',
-                    value: '004'
-                }
-            ];
+            for (const val of res.deviceMaps) {
+                this.menu.push(val.name);
+            }
+            // this.query.menu = this.menu[0];
         },
-        showDetail(num) {
-            console.log(num);
-
-            this.detailnum = num;
+        async getDevices() {
+            this.tableData = [];
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            let res = {};
+            if (this.query.menu !== '') {
+                //如果  选择了menu  就根据menu 来获取
+                res = await getDeviceByMap({
+                    deviceMapName: this.query.menu,
+                    limit: 9999,
+                    offset,
+                });
+                console.log(res);
+                if (!res.flag) return this.$message.error('设备获取失败');
+            } else {
+                //没有选择 设备册 就获取 所有的 设备
+                res = await getDevice({
+                    page: 1,
+                    limit: 9999,
+                });
+                console.log(res);
+                if (!res.flag) return this.$message.error('设备获取失败');
+            }
+            this.tableData = res.devices;
+            this.showData = this.tableData.slice(offset, offset + size);
+            this.query.total = res.devices.length;
+        },
+        showDetail(name) {
+            const info = this.tableData.find((val) => val.name === name);
+            if (info) this.showInfo = info;
             this.detailVisible = true;
         },
-        //底部分页 更改size 和 page  触发 获取 新数据
-        handleSizeChange(){},
-        handleCurrentChange(){}
+        //底部分页 更改size 和 page  触发 更改 tableData 数据
+        handleSizeChange(size) {
+            this.query.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.query.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.query;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+        },
+        find() {
+            this.query;
+            if (!this.query.name) return;
+            const finds = this.showData.filter((val) =>
+                val.name.includes(this.query.name)
+            );
+            if (finds.length > 0) this.showData = finds;
+            else {
+                this.$message.info('查找失败');
+            }
+        },
     },
-    created() {
-        this.getTableData();
+    activated() {
+        this.getMenus();
+        this.getDevices();
     },
     components: {
         DeviceTable,
-        DeviceDetail
-    }
+        DeviceDetail,
+    },
 };
 </script>
 
 <style scoped lang="less">
 .device_query {
-  /deep/  .el-pagination {
-        margin-top: 10px 
+    /deep/ .el-pagination {
+        margin-top: 10px;
     }
 }
 </style>

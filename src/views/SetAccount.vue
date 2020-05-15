@@ -3,20 +3,35 @@
         <BreadNav :texts="['基础设置', '账号管理']" />
         <el-card>
             <el-row>
-                <el-col :span="6"
-                    ><el-input placeholder="输出关键词搜索"
-                        ><el-button
-                            slot="append"
-                            icon="el-icon-search"
-                        ></el-button></el-input
-                ></el-col>
-                <el-col :span="3" :offset="2"
-                    ><el-button type="primary" size="medium" @click="addAccount"
+                <el-col :span="2" :offset="18"
+                    ><el-button type="primary" @click="addAccount"
                         >添加账号</el-button
                     ></el-col
                 >
+                <el-col :span="3"
+                    ><el-button type="success" @click="_getUSers"
+                        >查询</el-button
+                    ></el-col
+                >
             </el-row>
-            <AccountTable :tableData="accounts" @edit="edit" @remove="remove" />
+            <el-form :model="query" inline label-width="70px">
+                <el-form-item label="姓名" prop="name"
+                    ><el-input v-model="query.name" clearable></el-input
+                ></el-form-item>
+                <el-form-item label="权限" prop="permission"
+                    ><el-select v-model="query.permission" clearable>
+                        <el-option
+                            v-for="(item, index) in levels"
+                            :label="item.label"
+                            :key="index"
+                            :value="item.value"
+                        ></el-option> </el-select
+                ></el-form-item>
+                <el-form-item label="职位" prop="position">
+                    <el-input v-model="query.position" clearable=""></el-input>
+                </el-form-item>
+            </el-form>
+            <AccountTable :tableData="showData" @edit="edit" @remove="remove" />
             <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
@@ -31,6 +46,7 @@
             :visible.sync="dialogVisible"
             :title="typeText + '账户'"
             @close="reset"
+            top="40px"
         >
             <el-form
                 :model="oprateAccount"
@@ -38,22 +54,24 @@
                 label-width="80px"
                 :rules="formRules"
             >
-                <el-form-item label="行业" prop="industryID">
+                <el-form-item label="行业" prop="industryName">
                     <el-select
-                        v-model="oprateAccount.industryID"
+                        v-model="oprateAccount.industryName"
                         v-if="formInputType.industryID === 'select'"
+                        size="medium"
                     >
                         <el-option
                             v-for="(item, index) in industrys"
                             :key="index"
-                            :label="item.label"
-                            :value="item.value"
+                            :label="item"
+                            :value="item"
                         ></el-option>
                     </el-select>
                     <el-input
                         v-else
-                        v-model="oprateAccount.industryID"
+                        v-model="oprateAccount.industryName"
                         clearable
+                        size="medium"
                     ></el-input>
                     <el-button
                         type="primary"
@@ -66,24 +84,26 @@
                         }}</el-button
                     >
                 </el-form-item>
-                <el-form-item label="企业" prop="companyID"
+                <el-form-item label="企业" prop="enterpriseName"
                     ><el-select
-                        v-model="oprateAccount.companyID"
+                        v-model="oprateAccount.enterpriseName"
                         style="width:300px"
                         v-if="formInputType.companyID === 'select'"
+                        size="medium"
                     >
                         <el-option
                             v-for="(item, index) in companys"
                             :key="index"
-                            :value="item.value"
-                            :label="item.label"
+                            :value="item.name"
+                            :label="item.name"
                         ></el-option>
                     </el-select>
                     <el-input
                         v-else
-                        v-model="oprateAccount.companyID"
+                        v-model="oprateAccount.enterpriseName"
                         style="width:300px"
                         clearable
+                        size="medium"
                     ></el-input>
                     <el-button
                         type="primary"
@@ -96,34 +116,66 @@
                         }}</el-button
                     >
                 </el-form-item>
-                <el-form-item label="账户名" prop="accountName">
+                <el-form-item
+                    label="账户名"
+                    prop="account"
+                    v-if="dialogType === 'add'"
+                >
                     <el-input
                         clearable
-                        v-model="oprateAccount.accountName"
+                        v-model="oprateAccount.account"
+                        size="medium"
+                    ></el-input>
+                </el-form-item>
+                <el-form-item
+                    label="密码"
+                    v-if="dialogType === 'add'"
+                    prop="password"
+                >
+                    <el-input
+                        show-password
+                        clearable
+                        v-model="oprateAccount.password"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
                 <el-form-item label="姓名" prop="name">
-                    <el-input clearable v-model="oprateAccount.name"></el-input>
+                    <el-input
+                        clearable
+                        v-model="oprateAccount.name"
+                        size="medium"
+                    ></el-input>
                 </el-form-item>
-                <el-form-item label="TEL" prop="mobile">
+                <el-form-item label="TEL" prop="TEL">
                     <el-input
                         style="width:400px"
                         clearable
-                        v-model="oprateAccount.mobile"
+                        v-model="oprateAccount.TEL"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
-                <el-form-item label="邮箱" prop="email">
+                <el-form-item label="职位" prop="position">
+                    <el-input
+                        style="width:400px"
+                        clearable
+                        v-model="oprateAccount.position"
+                        size="medium"
+                    ></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="Email">
                     <el-input
                         style="width:300px"
                         clearable
-                        v-model="oprateAccount.email"
+                        v-model="oprateAccount.Email"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
-                <el-form-item label="权限等级" prop="rightLevel">
-                    <el-select
-                        v-if="dialogType === 'add'"
-                        v-model="oprateAccount.rightLevel"
-                    >
+                <el-form-item
+                    label="权限等级"
+                    prop="permission"
+                    v-if="!(dialogType === 'edit' && Role !== 0)"
+                >
+                    <el-select v-model="oprateAccount.permission" size="medium">
                         <el-option
                             v-for="(item, index) in levels"
                             :key="index"
@@ -131,6 +183,16 @@
                             :value="item.value"
                         ></el-option>
                     </el-select>
+                </el-form-item>
+                <el-form-item
+                    label="IMEI码"
+                    prop="IMEI"
+                    v-if="dialogType === 'add'"
+                >
+                    <el-input
+                        v-model="oprateAccount.IMEI"
+                        size="medium"
+                    ></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer">
@@ -142,182 +204,170 @@
 </template>
 
 <script>
-import AccountTable from 'components/account/AccountTable';
+import AccountTable from 'components/setting/AccountTable';
+import {
+    getUsers,
+    addAccount,
+    updateAccount,
+    deleteUser,
+} from 'network/account';
+import { getInsdustrys, getCompanys } from 'network/company';
 export default {
     name: 'SetAccount',
     data() {
         return {
             accounts: [],
+            showData: [],
             query: {
                 page: 1,
                 size: 10,
-                total: 0
+                total: 0,
+                account: [],
+                name: '',
+                permission: '',
+                position: '',
+
+                enterpriseName: localStorage.getItem('enterpriseName'),
             },
             dialogVisible: false,
             dialogType: 'show', //对话框 此时的类型  show/edit
             formInputType: {
                 // 用于描述对话框的 表单中 companyID 和 industryID 的 输入方式 : select/input
                 companyID: 'select',
-                industryID: 'select'
+                industryID: 'select',
             },
             oprateAccount: {
-                industryID: '',
-                companyID: '',
-                accountName: '',
-                mobile: '',
-                email: '',
-                rightLevel: '',
-                name: ''
+                industryName: '',
+                enterpriseName: '',
+                account: '',
+                TEL: '',
+                Email: '',
+                permission: 3,
+                name: '',
+                password: '',
+                IMEI: '',
+                position: '',
             }, //正在操作的 账户对象
-            industrys: [],
+            industrys: ['采矿业', '建筑业'],
             companys: [],
-            levels: [],
+            levels: [
+                { label: '不限', value: '' },
+                { label: '行业管理员', value: 1 },
+                { label: '企业管理员', value: 2 },
+                { label: '安检员', value: 3 },
+            ], //权限 等级
             formRules: {
-                industryID: [
-                    { required: true, message: '请选择行业', trigger: 'blur' }
-                ],
-                companyID: [
-                    { required: true, message: '请选择企业', trigger: 'blur' }
-                ],
-                accountName: [
-                    {
-                        required: true,
-                        message: '请输入账户名称',
-                        trigger: 'blur'
-                    }
-                ],
-                rightLevel: [
+                permission: [
                     {
                         required: true,
                         message: '请选择权限等级',
-                        trigger: 'blur'
-                    }
-                ]
-            }
+                        trigger: 'blur',
+                    },
+                ],
+                password: [
+                    {
+                        required: true,
+                        message: '请输入密码',
+                        trigger: 'blur',
+                    },
+                ],
+                IMEI: [
+                    {
+                        required: true,
+                        message: '请输入IMEI',
+                        trigger: 'blur',
+                    },
+                ],
+                enterpriseName: [
+                    {
+                        required: true,
+                        message: '请选择/输入企业',
+                        trigger: 'blur',
+                    },
+                ],
+                industryName: [
+                    {
+                        required: true,
+                        message: '请选择/输入行业',
+                        trigger: 'blur',
+                    },
+                ],
+                account: [
+                    {
+                        required: true,
+                        message: '请输入用户名',
+                        trigger: 'blur',
+                    },
+                ],
+                name: [
+                    {
+                        required: true,
+                        message: '请输入姓名',
+                        trigger: 'blur',
+                    },
+                ],
+                permission: [
+                    {
+                        required: true,
+                        message: '请选择权限',
+                        trigger: 'blur',
+                    },
+                ],
+            },
         };
     },
     computed: {
         typeText() {
             if (this.dialogType === 'edit') return '修改';
             else return '添加';
-        }
+        },
+        Role() {
+            return localStorage.getItem('Role');
+        },
     },
     methods: {
-        getData() {
-            const accounts = [
-                {
-                    accountID: 1,
-                    industryID: 1,
-                    companyID: 1,
-                    accountName: 'aaa',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 66
-                },
-                {
-                    accountID: 2,
-                    industryID: 1,
-                    companyID: 1,
-                    accountName: 'bbb',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 13
-                },
-                {
-                    accountID: 6,
-                    industryID: 2,
-                    companyID: 1,
-                    accountName: 'aadsddsdaa',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 66
-                },
-                {
-                    accountID: 78,
-                    industryID: 1,
-                    companyID: 1,
-                    accountName: 'kklkfj',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 66
-                },
-                {
-                    accountID: 14,
-                    industryID: 1,
-                    companyID: 67,
-                    accountName: 'vbb55',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 66
-                },
-                {
-                    accountID: 78,
-                    industryID: 1,
-                    companyID: 1,
-                    accountName: 'jkuiii',
-                    mobile: '158235674908',
-                    email: '1354541676@',
-                    rightLevel: 66
-                }
-            ];
+        async _getUSers() {
+            const res = await getUsers({ ...this.query, limit: 9999 });
+            // console.log(res);
+            if (!res.flag) return this.$message.error('用户获取失败');
 
-            const industrys = [
-                {
-                    label: '采矿',
-                    value: 1
-                },
-                {
-                    label: '建材',
-                    value: 2
-                }
-            ];
-            const companys = [
-                {
-                    label: '重庆市永川区金银坡斗子丘建材有限公司',
-                    value: 1
-                },
-                {
-                    label: '重庆安瑞建材有限公司',
-                    value: 2
-                },
-                {
-                    label: '重庆翰星建材有限责任公司',
-                    value: 3
-                },
-                {
-                    label: '重庆市上善建材有限公司',
-                    value: 4
-                }
-            ];
-            const levels = [
-                {
-                    label: '应急局',
-                    value: 100
-                },
-                {
-                    label: '企业主',
-                    value: 50
-                },
-                {
-                    label: '安检员',
-                    value: 25
-                }
-            ];
+            this.accounts = res.users;
 
-            this.accounts = accounts;
-            this.companys = companys;
-            this.industrys = industrys;
-            this.levels = levels;
+            const { size, page } = this.query;
+            const offset = (page - 1) * size;
+            this.showData = this.accounts.slice(
+                offset,
+                offset + res.users.length
+            );
+            this.query.total = res.users.length;
+        },
+        async getData() {
+            let res = await getCompanys({ page: 1, limit: 9999 });
+            // console.log(res);
+            if (!res.flag) return this.$message.error('企业列表获取失败');
+            this.companys = res.enterprises;
+        },
+        handleSizeChange(size) {
+            this.query.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.query.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.query;
+            const offset = (page - 1) * size;
+            this.showData = this.accounts.slice(offset, offset + size);
         },
         addAccount() {
-            this.dialogVisible = true;
             this.dialogType = 'add';
+            this.oprateAccount.password = '';
+            this.dialogVisible = true;
         },
-        handleSizeChange() {},
-        handleCurrentChange() {},
         edit(accountID) {
             this.oprateAccount = this.accounts.find(
-                val => val.accountID === accountID
+                (val) => val.userID === accountID
             );
             this.dialogVisible = true;
             this.dialogType = 'edit';
@@ -329,13 +379,25 @@ export default {
                 {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    type: 'warning'
+                    type: 'warning',
                 }
-            ).catch(error => error);
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.$message.success('成功');
+                const user = this.accounts.find(
+                    (val) => val.userID === accountID
+                );
+                if (user.permission < this.Role)
+                    return this.$message.error('权限不够');
+
+                const res = await deleteUser(user.enterpriseName, user.name);
+                console.log(res);
+                if (res.flag) {
+                    this.$message.success('删除成功');
+                    this._getUSers();
+                }
+                else this.$message.error('删除失败');
             }
         },
         //更改  描述表单输入的 方式 对象
@@ -347,36 +409,57 @@ export default {
         //重置  oprateAccount 对象
         reset() {
             this.oprateAccount = {
-                industryID: '',
-                companyID: '',
-                accountName: '',
-                mobile: '',
-                email: '',
-                rightLevel: '',
-                name: ''
+                industryName: '',
+                enterpriseName: '',
+                account: '',
+                TEL: '',
+                Email: '',
+                permission: 3,
+                name: '',
+                password: '',
+                IMEI: '',
             };
         },
         submit() {
-            this.$refs.form.validate(valid => {
+            this.$refs.form.validate(async (valid) => {
                 if (!valid) return;
                 switch (this.dialogType) {
                     case 'add':
-                        this.$message.success('账号添加成功');
+                        if (this.oprateAccount.permission < this.Role)
+                            //只能创建 权限比自己低的用户
+                            return this.$message.info('不能创建权限更高的用户');
+
+                        const res = await addAccount(this.oprateAccount);
+
+                        if (!res.flag)
+                            return this.$message.error('账号添加失败');
+                        else {
+                            this.$message.success('账号添加成功');
+                            this._getUSers();
+                        }
                         break;
                     case 'edit':
-                        this.$message.success('账号修改成功');
+                        const res1 = await updateAccount(this.oprateAccount);
+                        console.log(res1);
+                        if (!res1.flag) return this.$message.error('修改失败');
+                        else {
+                            this.$message.success('修改成功');
+                            this._getUSers();
+                        }
+                        break;
                 }
 
                 this.dialogVisible = false;
             });
-        }
+        },
     },
-    created() {
+    activated() {
+        this._getUSers();
         this.getData();
     },
     components: {
-        AccountTable
-    }
+        AccountTable,
+    },
 };
 </script>
 
@@ -387,6 +470,14 @@ export default {
     }
     .el-form .el-input {
         width: 200px;
+    }
+    .el-form-item {
+        margin-bottom: 16px;
+    }
+}
+.el-dialog__wrapper {
+    /deep/ .el-dialog__footer {
+        padding-top: 0px;
     }
 }
 </style>
