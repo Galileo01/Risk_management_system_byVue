@@ -4,7 +4,12 @@
         <el-card>
             <el-row>
                 <el-col :span="4">
-                    <el-select v-model="query.menu" placeholder="请选择设备册">
+                    <el-select
+                        v-model="query.menu"
+                        placeholder="请选择设备册"
+                        clearable
+                        @clear="getDevices"
+                    >
                         <el-option
                             v-for="(item, index) in menu"
                             :key="index"
@@ -49,6 +54,7 @@
             :dialogVisible.sync="allocateVisible"
             ref="all_dia"
             @allocate="allocate"
+            taskType="d"
         />
     </div>
 </template>
@@ -83,6 +89,7 @@ export default {
     methods: {
         async getMenus() {
             //获得所哟设备数据
+            this.menu = [];
             const res = await GetDeviceMap(1, 9999);
             console.log(res);
             if (!res.flag) return this.$message.error('设备册获取失败');

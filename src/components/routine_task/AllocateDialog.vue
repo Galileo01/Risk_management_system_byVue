@@ -32,7 +32,7 @@
                     <el-checkbox label="routine">规定线路巡查</el-checkbox>
                 </el-checkbox-group></el-form-item
             > -->
-            <el-form-item label="任务类型" prop="type">
+            <el-form-item label="任务类型" prop="type" v-if="taskType === 'r'">
                 <el-radio-group
                     v-model="formData.type"
                     @change="setDefaultTime"
@@ -40,10 +40,12 @@
                     <el-radio label="日巡">日巡</el-radio>
                     <el-radio label="周巡">周巡</el-radio>
                     <el-radio label="月巡">月巡</el-radio>
-                    <el-radio label="自定义">自定义</el-radio>
                 </el-radio-group>
             </el-form-item>
-            <el-form-item label="完成时间" prop="deadline"
+            <el-form-item
+                label="完成时间"
+                prop="deadline"
+                v-if="taskType === 'r'"
                 ><el-date-picker
                     v-model="formData.deadline"
                     type="date"
@@ -72,6 +74,11 @@ export default {
     name: 'AllocateDialog',
     props: {
         dialogVisible: Boolean,
+        taskType: {
+            //标识 当前 要分配的 任务类型   r/d 日常任务/自定义任务
+            type: String,
+            default: 'r',
+        },
     },
     data() {
         return {
@@ -131,10 +138,10 @@ export default {
                 const cycle = Math.ceil(
                     (deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
                 );
-                console.log(cycle);
+                // console.log(cycle);
 
                 this.$emit('allocate', {
-                    cycle,
+                    cycle:this.taskType==='r'?cycle:0 ,// 根据任务类型，设置 cycle
                     name: this.formData.taskName,
                     note: this.formData.comments,
                     userName: this.formData.staff,

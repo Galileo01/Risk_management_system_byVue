@@ -19,7 +19,9 @@
                     :isCollapse="type === 'examine'"
                 />
                 <div class="op-btns" v-if="type === 'manage'">
-                    <el-button @click="alloVisible=true">重新分配设备</el-button>
+                    <el-button @click="alloVisible = true"
+                        >重新分配设备</el-button
+                    >
                     <el-button type="primary" @click="sortVisible = true"
                         >设置巡查顺序</el-button
                     >
@@ -198,22 +200,29 @@
                 <el-button type="primary" @click="submitSort">确认</el-button>
             </span>
         </el-dialog>
-        <el-dialog :visible.sync="alloVisible" title="分配设备">
+        <!-- <el-dialog :visible.sync="alloVisible" title="分配设备">
             <span slot="footer">
                 <el-button></el-button>
                 <el-button type="primary"></el-button>
             </span>
-        </el-dialog>
+        </el-dialog> -->
+        <ReAllocateDia
+            :dialogVisible.sync="alloVisible"
+            :choosed="tableData"
+            @setDevice="submitSetDevice"
+        ></ReAllocateDia>
     </div>
 </template>
 
 <script>
 import BaseInfo from 'components/routine_task/BaseInfo';
+import ReAllocateDia from 'components/routine_task/ReAllocateDia';
 import {
     GetTasks,
     getTaskDevices,
     setDeviceOrder,
     examTask,
+    SetTaskDevices,
 } from 'network/task';
 import { getItemByDevice } from 'network/patrolitem';
 import { getDevice } from 'network/device';
@@ -370,9 +379,9 @@ export default {
                 this.isPass.join(',')
             );
             console.log(res);
-            if(!res.flag) this.$message.error('审核失败');
+            if (!res.flag) this.$message.error('审核失败');
             else this.$message.success('审核成功');
-            
+
             this.disPassVisible = false;
         },
         resetDis() {
@@ -410,16 +419,26 @@ export default {
         fresh() {
             this.$forceUpdate();
         },
-        async allocateClick() {
-         
+        //重新分配 任务设备
+        async submitSetDevice(devices) {
+            console.log(devices);
+
+            const res = await SetTaskDevices(this.name, devices);
+            console.log(res);
+            if (!res.flag)  this.$message.error('操作失败');
+            else {
+                this.$message.success('操作成功');
+                this.getData();
+            }
+            this.alloVisible = false;
         },
-        async submitAllocate() {},
     },
     created() {
         this.getData();
     },
     components: {
         BaseInfo,
+        ReAllocateDia,
     },
 };
 </script>
@@ -473,5 +492,9 @@ span.a-style {
     width: 300px;
     margin: 0 auto;
     display: block;
+}
+
+/deep/ .el-dialog__footer {
+    padding: 0px 20px 10px !important;
 }
 </style>

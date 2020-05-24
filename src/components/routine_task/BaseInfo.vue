@@ -7,13 +7,12 @@
                     <el-col :span="6">{{ taskInfo.name }}</el-col>
                     <!-- <el-col :span="2" :offset="2">任务类型</el-col>
                     <el-col :span="6">{{ typeText }}</el-col> -->
-                     <el-col :span="2" :offset="2">企业</el-col>
+                    <el-col :span="2" :offset="2">企业</el-col>
                     <el-col :span="6">{{ taskInfo.enterpriseName }}</el-col>
-                    </el-row
-                >
+                </el-row>
                 <el-row
                     ><el-col :span="2" :offset="2">终端人员</el-col>
-                    <el-col :span="6">{{ taskInfo.userName||'无' }}</el-col>
+                    <el-col :span="6">{{ taskInfo.userName || '无' }}</el-col>
                     <el-col :span="2" :offset="2">设备册编号</el-col>
                     <el-col :span="6">{{ taskInfo.menuName }}</el-col>
                 </el-row>
@@ -21,9 +20,13 @@
                 <el-row>
                     <el-col :span="2" :offset="2">生成时间</el-col>
                     <el-col :span="6">{{ taskInfo.createTime }}</el-col>
+                    <el-col :span="2" :offset="2">任务类型</el-col>
+                    <el-col :span="2">{{ typeText }}</el-col>
+                </el-row>
+                <el-row v-if="taskInfo.cycle!==0">
                     <el-col :span="2" :offset="2">任务周期(天)</el-col>
-                    <el-col :span="6">{{ taskInfo.cycle }}</el-col></el-row
-                >
+                    <el-col :span="6">{{ taskInfo.cycle }}</el-col>
+                </el-row>
             </div>
         </el-collapse-item></el-collapse
     >
@@ -34,7 +37,7 @@ export default {
     name: 'BaseInfo',
     data() {
         return {
-            activeNames: !this.isCollapse ? '1' : '' //el-collapse  当前展示的item  name 属性
+            activeNames: !this.isCollapse ? '1' : '', //el-collapse  当前展示的item  name 属性
         };
     },
     props: {
@@ -42,14 +45,14 @@ export default {
         isCollapse: {
             //标识 是否折叠,默认 不折叠
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
     },
     computed: {
         typeText() {
-            return this.taskInfo.taskType === 0 ? '日周月巡查' : '自定义巡查';
-        }
-    }
+            return this.taskInfo.cycle === 0 ? '自定义任务':'日常任务'  ;
+        },
+    },
 };
 </script>
 

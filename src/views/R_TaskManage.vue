@@ -108,8 +108,8 @@
                     <el-input v-model="oprateTask.cycle"></el-input>
                 </el-form-item>
 
-                <el-form-item label="备注" prop="comments"
-                    ><el-input v-model="oprateTask.comments"></el-input
+                <el-form-item label="备注" prop="note"
+                    ><el-input v-model="oprateTask.note"></el-input
                 ></el-form-item>
             </el-form>
             <span slot="footer">
@@ -170,11 +170,14 @@ export default {
             if (!res.flag) return this.$message.error('任务列表获取失败');
 
             res.tasks.forEach((val) => {
-                this.tasklist.push({
-                    ...val,
-                    checked: false,
-                });
+                if (val.cycle !== 0) { //只显示 日常任务
+                    this.tasklist.push({
+                        ...val,
+                        checked: false,
+                    });
+                }
             });
+
             console.log(res.tasks, this.tasklist);
 
             const { pageSize: size, page } = this.queryInfo;

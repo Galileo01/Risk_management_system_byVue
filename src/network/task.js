@@ -38,6 +38,7 @@ export function AllocateTask({
     userName,
     number,
 }) {
+    console.log(`0/${number}`);
     return ins
         .post(
             '/task/insert',
@@ -66,7 +67,7 @@ export function AllocateTask({
         .catch(errFun);
 }
 ///设置 任务信息
-export function setTask({ name, userName, state,cycle }) {
+export function setTask({ name, userName, state, cycle, note }) {
     return ins
         .post(
             '/task/update',
@@ -74,7 +75,8 @@ export function setTask({ name, userName, state,cycle }) {
                 name,
                 userName,
                 state,
-                cycle
+                cycle,
+                note,
             })
         )
         .catch(errFun);
@@ -117,16 +119,16 @@ export function removeTask(name) {
 }
 
 //审核任务
-export function examTask(taskID, auditState,auditNote) {
+export function examTask(taskID, auditState, auditNote) {
     console.log(auditState);
-    
+
     return ins
         .post(
             './task/audit',
             qs.stringify({
                 taskID,
                 auditState,
-                auditNote
+                auditNote,
             })
         )
         .catch(errFun);

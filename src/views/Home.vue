@@ -150,8 +150,7 @@ export default {
 }
 .el-aside {
     background-color: #f2f2f2;
-    // overflow: hidden;
-    overflow-y: auto;
+    overflow-x: hidden;
 }
 .collapse {
     font-size: 20px; //给图标 设置大小

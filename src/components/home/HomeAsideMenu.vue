@@ -82,6 +82,12 @@ export default {
                                 path: 'account_manage',
                                 children: [],
                             },
+                            {
+                                id: 807,
+                                authName: '企业行业',
+                                path: 'enter_indus',
+                                children: [],
+                            },
                         ],
                     },
                 ];
@@ -280,16 +286,22 @@ export default {
                                 path: 'device_menu',
                                 children: [],
                             },
-                            {
-                                id: 805,
-                                authName: '自动任务',
-                                path: 'task_setting',
-                                children: [],
-                            },
+                            // {
+                            //     id: 805,
+                            //     authName: '自动任务',
+                            //     path: 'task_setting',
+                            //     children: [],
+                            // },
                             {
                                 id: 806,
                                 authName: '账号管理',
                                 path: 'account_manage',
+                                children: [],
+                            },
+                            {
+                                id: 807,
+                                authName: '企业行业',
+                                path: 'enter_indus',
                                 children: [],
                             },
                         ],
@@ -472,6 +484,9 @@ export default {
 <style scoped lang="less">
 .aside-menu {
     overflow-x: hidden;
+    // overflow: hidden;
+    max-height: calc(100vh - 28px - 48px);
+    overflow-y: auto;
     /deep/ span {
         font-size: 13px;
     }

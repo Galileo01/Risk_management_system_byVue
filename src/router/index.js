@@ -18,29 +18,31 @@ const DeviceTrail = () => import('views/DeviceTrail');
 const SetDanger = () => import('views/SetDanger');
 const SetPoints = () => import('views/SetPoints');
 const SetPoint = () => import('views/SetPoint');
-const SetDeviceMenus =()=>import('views/SetDeviceMenus')
-const SetDeviceDis=()=>import('views/SetDeviceDis')
+const SetDeviceMenus = () => import('views/SetDeviceMenus');
+const SetDeviceDis = () => import('views/SetDeviceDis');
 const Profile = () => import('views/Profile');
-const SetAutoTasks=()=> import('views/SetAutoTasks')
-const SetAutoTask=()=>import('views/SetAutoTask')
-const SetAccount=()=>import('views/SetAccount')
-const StatisLast =()=>import('views/StatisLast')
-const StatisPatrol=()=>import('views/StatisPatrol')
-const StatisDanger=()=>import('views/StatisDanger')
-const DangerPrint=()=>import('views/DangerPrint')
-const SetPatrolItem=()=>import('views/SetPatrolItem')
-const DangerHandle=()=>import('views/DangerHandle')
-const CompanyChoose=()=> import('views/CompanyChoose')
+const SetAutoTasks = () => import('views/SetAutoTasks');
+const SetAutoTask = () => import('views/SetAutoTask');
+const SetAccount = () => import('views/SetAccount');
+const StatisLast = () => import('views/StatisLast');
+const StatisPatrol = () => import('views/StatisPatrol');
+const StatisDanger = () => import('views/StatisDanger');
+const DangerPrint = () => import('views/DangerPrint');
+const SetPatrolItem = () => import('views/SetPatrolItem');
+const DangerHandle = () => import('views/DangerHandle');
+const CompanyChoose = () => import('views/CompanyChoose');
+const SetEnter_Ind = () => import('views/SetEnter_Ind');
+
 Vue.use(VueRouter);
 
 const routes = [
     {
         path: '/',
-        redirect: '/login'
+        redirect: '/login',
     },
     {
         path: '/login',
-        component: Login
+        component: Login,
     },
     {
         path: '/home',
@@ -52,11 +54,11 @@ const routes = [
             // },
             {
                 path: 'general',
-                component: General
+                component: General,
             },
             {
                 path: 'device_query',
-                component: DeviceQuery
+                component: DeviceQuery,
             },
             {
                 path: 'person_info',
@@ -64,27 +66,27 @@ const routes = [
             },
             {
                 path: 'routine_task_allocate',
-                component: R_TaskAllocate
+                component: R_TaskAllocate,
             },
             {
                 path: 'routine_task_manage',
-                component: R_TaskManage
+                component: R_TaskManage,
             },
             {
                 path: 'routine_task_examine',
-                component: R_TaskExam
+                component: R_TaskExam,
             },
             {
                 path: 'diy_task_allocate',
-                component: D_TaskAllocate
+                component: D_TaskAllocate,
             },
             {
                 path: 'diy_task_manage',
-                component: D_TaskManage
+                component: D_TaskManage,
             },
             {
                 path: 'people_location',
-                component: PeopleLocation
+                component: PeopleLocation,
             },
             // {
             //     path: 'people_trail',
@@ -92,84 +94,93 @@ const routes = [
             // },
             {
                 path: 'device_trail',
-                component: DeviceTrail
+                component: DeviceTrail,
             },
             {
                 path: 'danger_type',
-                component: SetDanger
+                component: SetDanger,
             },
             {
                 path: 'point_manage',
-                component: SetPoints
+                component: SetPoints,
             },
             {
                 path: 'point_setting:name',
                 component: SetPoint,
-                props: true
-            },{
-                path:'device_menu',
-                component:SetDeviceMenus
-            },{
-                path:'device_distri:name',
-                component:SetDeviceDis,
-                props:true
+                props: true,
             },
             {
-                path:'task_setting',
-                component:SetAutoTasks
-            },{
-                path:'set_auto_task:taskid',
-                component:SetAutoTask,
-                props:true
+                path: 'device_menu',
+                component: SetDeviceMenus,
             },
             {
-                path:'account_manage',
-                component:SetAccount
+                path: 'device_distri:name',
+                component: SetDeviceDis,
+                props: true,
             },
             {
-                path:'last_statis',
-                component:StatisLast
+                path: 'task_setting',
+                component: SetAutoTasks,
             },
             {
-                path:'patrol_data',
-                component:StatisPatrol
-            },{
-                path:'danger_data',
-                component:StatisDanger
-            },{
-                path:'patrol_item',
-                component:SetPatrolItem
-            },{
-                path:'danger_handle',
-                component:DangerHandle
+                path: 'set_auto_task:taskid',
+                component: SetAutoTask,
+                props: true,
             },
             {
-                path:'company_choose',
-                component:CompanyChoose
-            }
-        ]
+                path: 'account_manage',
+                component: SetAccount,
+            },
+            {
+                path: 'last_statis',
+                component: StatisLast,
+            },
+            {
+                path: 'patrol_data',
+                component: StatisPatrol,
+            },
+            {
+                path: 'danger_data',
+                component: StatisDanger,
+            },
+            {
+                path: 'patrol_item',
+                component: SetPatrolItem,
+            },
+            {
+                path: 'danger_handle',
+                component: DangerHandle,
+            },
+            {
+                path: 'company_choose',
+                component: CompanyChoose,
+            },
+            {
+                path: 'enter_indus',
+                component: SetEnter_Ind,
+            },
+        ],
     },
     {
         path: '/task_location:name',
         component: TaskLocation,
-        props:true
+        props: true,
     },
     {
         path: '/task/:type/:name',
         component: TaskDetail,
-        props: true //将 路由 参数映射到 组件props
+        props: true, //将 路由 参数映射到 组件props
     },
     {
-        path:'/danger_print:num',
-        component:DangerPrint,
-        props:true
-    }
-    
+        path: '/danger_print:num',
+        component: DangerPrint,
+        props: true,
+    },
 ];
 
 const router = new VueRouter({
     mode: 'hash',
-    routes
+    routes,
 });
 //设置 导航守卫
 router.beforeEach((to, from, next) => {

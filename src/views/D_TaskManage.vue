@@ -4,9 +4,11 @@
         <el-card>
             <el-row>
                 <el-col :span="4" :offset="20"
-                    ><el-button type="primary" @click="getList">查询</el-button>
+                    ><el-button type="primary" @click="getList" size="medium"
+                        >查询</el-button
+                    >
 
-                    <el-button type="danger" @click="removeMany"
+                    <el-button type="danger" @click="removeMany" size="medium"
                         >删除</el-button
                     ></el-col
                 ></el-row
@@ -34,14 +36,6 @@
                             :value="item.name"
                         ></el-option></el-select
                 ></el-form-item>
-                <el-form-item label="任务周期">
-                    <el-input
-                        v-model.number="queryInfo.cycle"
-                        placeholder="输入任务的周期，单位天"
-                        clearable
-                        @clear="getList"
-                    ></el-input>
-                </el-form-item>
                 <el-form-item label="任务状态">
                     <el-input
                         v-model="queryInfo.state"
@@ -55,6 +49,8 @@
                 @remove="removeOne"
                 @refresh="refreshOne"
                 @generate="showDialog"
+                @edit="editClick"
+                taskType="d"
             />
             <el-pagination
                 @size-change="handleSizeChange"
@@ -68,7 +64,7 @@
             </el-pagination>
         </el-card>
         <el-dialog
-            :visible.sync="dialogVisible"
+            :visible.sync="newDialogVisible"
             @close="oprateTask.name = ''"
             title="输入新任务名称"
         >
@@ -78,8 +74,36 @@
                 </el-form-item>
             </el-form>
             <span slot="footer">
-                <el-button @click="dialogVisible = false">取消</el-button>
+                <el-button @click="newDialogVisible = false">取消</el-button>
                 <el-button @click="generate" type="primary">确定</el-button>
+            </span>
+        </el-dialog>
+        <el-dialog :visible.sync="editVisible" title="编辑任务">
+            <el-form :model="oprateTask" label-width="100px">
+                <el-form-item label="终端人员" prop="userName">
+                    <el-select
+                        v-model="oprateTask.userName"
+                        placeholder="请选择"
+                    >
+                        <el-option
+                            v-for="(item, index) in options"
+                            :key="index"
+                            :label="item.name"
+                            :value="item.name"
+                        >
+                        </el-option> </el-select
+                ></el-form-item>
+                <el-form-item label="任务名称" prop="name"
+                    ><el-input v-model="oprateTask.name" disabled=""></el-input
+                ></el-form-item>
+
+                <el-form-item label="备注" prop="note"
+                    ><el-input v-model="oprateTask.note"></el-input
+                ></el-form-item>
+            </el-form>
+            <span slot="footer">
+                <el-button @click="editVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitEdit">确认</el-button>
             </span>
         </el-dialog>
     </div>
@@ -95,29 +119,32 @@ import {
     AllocateTask,
     removeTask,
 } from 'network/task';
+
 export default {
     name: 'R_TaskManage',
     data() {
         return {
             queryInfo: {
                 taskName: '',
-                cycle: '',
+                cycle: 0,
                 staff: '',
                 pageSize: 10,
                 page: 1,
                 total: 0,
                 state: '',
             },
-            options: [],
+            options: [], //所有安检员
             tasklist: [],
             showData: [],
             trans_to_staff: '',
             tran_taskID: 0,
-            dialogVisible: false,
+            newDialogVisible: false,
             oprateTask: {},
+            editVisible: false,
         };
     },
     methods: {
+        //获取任务列表
         async getList() {
             this.tasklist = [];
             const res = await GetTasks({
@@ -125,7 +152,7 @@ export default {
                 name: this.queryInfo.taskName,
                 cycle: this.queryInfo.cycle,
                 userName: this.queryInfo.staff,
-                state:this.queryInfo.state
+                state: this.queryInfo.state,
             });
             // console.log(res);
 
@@ -144,7 +171,7 @@ export default {
             this.showData = this.tasklist.slice(offset, offset + size);
             this.queryInfo.total = res.tasks.length;
         },
-        // 获取基础信息
+        // 获取所有安检员
         async getStaff() {
             const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
             console.log(res);
@@ -227,11 +254,15 @@ export default {
             }
         },
         async refreshOne(task) {
-            const result = await this.$confirm('此操作将, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning',
-            }).catch((error) => error);
+            const result = await this.$confirm(
+                '此操作将重置任务, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
@@ -244,8 +275,8 @@ export default {
         },
         showDialog(task) {
             this.oprateTask = { ...task };
-            this.oprateTask.name=''
-            this.dialogVisible = true;
+            this.oprateTask.name = '';
+            this.newDialogVisible = true;
         },
         async generate() {
             let res = await getTaskDevices(this.oprateTask.taskID);
@@ -253,12 +284,31 @@ export default {
 
             if (!res.flag) return this.$message.error('操作失败');
             const devices = res.devices.map((val) => val.name).join(','); //生成字符串数组
-            res = await AllocateTask({ ...this.oprateTask, devices,number:res.devices.length });
+            res = await AllocateTask({
+                ...this.oprateTask,
+                devices,
+                number: res.devices.length,
+            });
             console.log(res);
             if (!res.flag) return this.$message.error('操作失败');
             this.$message.success('操作成功');
             this.getList();
-            this.dialogVisible = false;
+            this.newDialogVisible = false;
+        },
+        editClick(task) {
+            console.log(task);
+
+            this.oprateTask = { ...task };
+            this.editVisible = true;
+        },
+        async submitEdit() {
+            const res = await setTask(this.oprateTask);
+            console.log(res);
+            if (!res.flag) return this.$message.error('修改失败');
+            else {
+                this.$message.success('修改成功');
+                this.getList();
+            }
         },
     },
     activated() {
@@ -273,7 +323,7 @@ export default {
 
 <style scoped lang="less">
 .d_task_manage {
-  /deep/ .el-card__body {
+    /deep/ .el-card__body {
         padding-top: 10px;
     }
     .el-form {

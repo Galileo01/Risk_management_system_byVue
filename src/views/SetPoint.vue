@@ -468,7 +468,7 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                const checked = this.showItems
+                const checked = this.allItems
                     .filter((val) => val.checked)
                     .map((val) => val.name)
                     .join(',');

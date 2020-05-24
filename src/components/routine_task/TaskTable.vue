@@ -47,7 +47,7 @@
             label="生成时间"
             width="220px"
         ></el-table-column>
-        <el-table-column prop="cycle" label="任务周期(天)"></el-table-column>
+        <el-table-column prop="cycle" label="任务周期(天)" v-if="taskType==='r'"></el-table-column>
         <el-table-column prop="note" label="备注"></el-table-column>
         <el-table-column
             label="操作"
@@ -147,6 +147,10 @@ export default {
             type: String,
             default: 'manage',
         },
+        taskType:{
+            type:String,
+            default:'r'//默认是日常任务
+        }
     },
     data() {
         return {
