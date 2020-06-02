@@ -1,6 +1,6 @@
 {
   "name": "risk_system",
-  "version": "1.205",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --open",
