@@ -1,13 +1,14 @@
 import { ins, errFun } from './index';
 import qs from 'qs';
 //获取 企业
-export function getCompanys({ name, page, limit }) {
+export function getCompanys({ name, page, limit,industryName }) {
     return ins
         .get('/enterprise/query', {
             params: {
                 name,
                 limit,
                 offset: (page - 1) * limit,
+                industryName
             },
         })
         .catch(errFun);
@@ -78,13 +79,13 @@ export function removeCompany(name) {
 export function getIndustrys({ name, page, limit }) {
     return ins
         .get('/industry/query', {
-            params: { offset: (page - 1) * limit, limit },
+            params: { offset: (page - 1) * limit, limit, name },
         })
         .catch(errFun);
 }
 
 export function addIndustry(name) {
-    return ins.post('/industry/insert', qs.stringify({ name })).catch(errFun);
+    return ins.post('/industry/insert', qs.stringify(name)).catch(errFun);
 }
 
 export function updateIndustry({ name, afterName }) {
@@ -98,8 +99,6 @@ export function updateIndustry({ name, afterName }) {
         )
         .catch(errFun);
 }
-export function removeIndustry(name)
-{
-    return ins.post('/industry/delete',qs.stringify({name}))
-    .catch(errFun);
+export function removeIndustry(name) {
+    return ins.post('/industry/delete', qs.stringify({ name })).catch(errFun);
 }

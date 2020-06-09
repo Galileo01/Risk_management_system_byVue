@@ -61,6 +61,7 @@
             :visible.sync="dialogVisible"
             :title="dialogType === 'edit' ? '编辑企业' : '添加企业'"
             @close="resetForm"
+            @open="getIndustries"
         >
             <el-form
                 :model="oprateInfo"
@@ -124,6 +125,7 @@ import {
     addCompany,
     updateCompany,
     removeCompany,
+    getIndustrys,
 } from 'network/company';
 export default {
     name: 'SetIndustry',
@@ -148,7 +150,7 @@ export default {
                 longitude: 0,
                 address: '',
             },
-            industries: ['采矿业', '建筑业'],
+            industries: [],
             rules: {
                 name: [
                     {
@@ -186,7 +188,12 @@ export default {
             );
             this.query.total = res.enterprises.length;
         },
-        async getIndustries() {},
+        async getIndustries() {
+            const res = await getIndustrys({ page: 1, limit: 9999 });
+            console.log(res);
+            if (!res.flag) return this.$message.error('行业列表获取失败');
+            this.industries = res.industrys.map((item) => item.name);
+        },
         handleSizeChange(size) {
             this.query.size = size;
             this.changeShowData();
@@ -294,7 +301,7 @@ export default {
             }
         },
     },
-    activated() {
+    created() {
         this.getData();
     },
 };

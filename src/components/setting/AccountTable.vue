@@ -1,5 +1,5 @@
 <template>
-    <el-table size="small" :data="tableData" stripe border="">
+    <el-table size="mini" :data="tableData" stripe border="" >
         <el-table-column label="企业" prop="enterpriseName" width="300px"></el-table-column>
         <el-table-column label="行业" prop="industryName"></el-table-column>
         <el-table-column label="职位" prop="position"></el-table-column>

@@ -43,12 +43,14 @@
                     v-model="queryInfo.staff"
                     placeholder="请选择终端人员"
                     size="mini"
+                    @change="_getTasks"
                 >
                     <el-option
                         v-for="(item, index) in staffs"
                         :key="index"
                         :label="item.name"
                         :value="item.name"
+                        size="mini"
                     >
                     </el-option>
                 </el-select>
@@ -57,18 +59,19 @@
                     type="date"
                     placeholder="选择日期"
                     size="small"
+                    @change="filterSelection"
                 >
                 </el-date-picker>
                 <el-select
-                    v-model="queryInfo.type"
+                    v-model="queryInfo.taskID"
                     placeholder="请选择任务"
                     size="mini"
                 >
                     <el-option
-                        v-for="(item, index) in tasks"
+                        v-for="(item, index) in taskSelections"
                         :key="index"
-                        :label="item"
-                        :value="item"
+                        :label="item.name"
+                        :value="item.taskID"
                     >
                     </el-option>
                 </el-select>
@@ -82,6 +85,7 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
+import { GetTasks ,getTaskDevices} from 'network/task';
 export default {
     name: 'DeviceTrail',
     mixins: [mapmixin],
@@ -90,43 +94,36 @@ export default {
             center: [105.757223, 29.33282],
             plugin: [
                 {
-                    pName: 'ToolBar'
+                    pName: 'ToolBar',
                 },
                 {
                     pName: 'MapType',
-                    defaultType: 0
-                }
-            ],
-            staffs: [
-                {
-                    name: '吴磊'
+                    defaultType: 0,
                 },
-                {
-                    name: '孔容'
-                },
-                {
-                    name: '宋飞'
-                },
-                {
-                    name: '曾温根'
-                },
-                {
-                    name: '李沛儒'
-                }
             ],
             tasks: ['日常任务', '自定义任务'], //某个 人员 在某一天 执行的所有任务 ,从数据库获取
             queryInfo: {
                 staff: '',
                 date: '',
-                type: ''
+                taskID:'',
             },
+            taskSelections: [],
             trilInfo: [],
             path: [],
-            windows: []
+            windows: [],
         };
     },
+    computed: {
+        staffs() {
+            return this.$store.state.staffs.map((item) => {
+                return {
+                    name: item.name,
+                };
+            });
+        },
+    },
     methods: {
-        getData() {
+        async getData() {
             if (this.queryInfo.type === '')
                 return this.$message.error('请选择任务类型');
             else if (this.queryInfo.staff === '')
@@ -134,42 +131,74 @@ export default {
             else if (this.queryInfo.date === '')
                 return this.$message.error('请选择日期');
 
+            const res = await getTaskDevices(this.queryInfo.taskID);
+            if(!res.flag) return this.$message.error('任务信息获取失败');
+            console.log(res);
+            
+
+            
             const data = [
                 {
                     position: [105.757243, 29.333],
                     num: 'R10',
                     status: '正常',
                     updataTime: '2020-03-30 23:07:49',
-                    visible: false
+                    visible: false,
                 },
                 {
                     position: [105.757223, 29.334],
                     num: 'R16',
                     status: '正常',
                     updataTime: '2020-04-08 23:07:49',
-                    visible: false
+                    visible: false,
                 },
                 {
                     position: [105.758523, 29.3355],
                     num: 'R18',
                     status: '正常',
                     updataTime: '2020-03-27 23:07:49',
-                    visible: false
-                }
+                    visible: false,
+                },
             ];
             this.$message.success('查询成功');
 
             this.trilInfo = data;
             this.path = [];
-            data.forEach(val => {
+            data.forEach((val) => {
                 this.path.push(val.position);
             });
-        }
+        },
+        async _getTasks() {
+            const res = await GetTasks({ userName: this.queryInfo.staff });
+            if (!res.flag) return this.$message.error('任务信息获取失败');
+            this.tasks = res.tasks;
+            this.filterSelection();
+        },
+        //过滤数据
+        filterSelection() {
+            this.taskSelections = [];
+            const time = new Date(this.queryInfo.date);
+            const date = time.getDate();
+            const year = time.getFullYear();
+            const month = time.getMonth();
+            this.tasks.forEach((item) => {
+                const crateTime = new Date(item.createTime);
+                if (
+                    crateTime.getDate() === date &&
+                    crateTime.getMonth() === month &&
+                    crateTime.getFullYear() === year
+                )
+                    this.taskSelections.push({
+                        name:item.name,
+                        taskID:item.taskID
+                    });
+            });
+        },
     },
     created() {
         this.mountEvent('trilInfo');
-        this.queryInfo.date=new Date().toString();// 设置默认的时间
-    }
+        this.queryInfo.date = new Date().toString(); // 设置默认的时间
+    },
 };
 </script>
 
@@ -191,7 +220,8 @@ export default {
 .select {
     width: 270px;
     margin: 20px 10px 0 50px;
-    .el-select,.el-date-editor{
+    .el-select,
+    .el-date-editor {
         margin-bottom: 10px;
     }
     .el-button {

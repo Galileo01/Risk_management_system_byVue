@@ -19,7 +19,7 @@
                         v-model="queryInfo.taskName"
                         class="inputInwidth"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     ></el-input
                 ></el-form-item>
 
@@ -27,7 +27,7 @@
                     <el-select
                         v-model="queryInfo.staff"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     >
                         <el-option
                             v-for="(item, index) in options"
@@ -41,14 +41,14 @@
                         v-model.number="queryInfo.cycle"
                         placeholder="输入任务的周期，单位天"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     ></el-input>
                 </el-form-item>
                 <el-form-item label="任务状态">
                     <el-input
                         v-model="queryInfo.state"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     ></el-input>
                 </el-form-item>
             </el-form>
@@ -122,7 +122,6 @@
 
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
-import { getUsers } from 'network/account';
 import {
     GetTasks,
     setTask,
@@ -130,6 +129,7 @@ import {
     AllocateTask,
     removeTask,
 } from 'network/task';
+import { mapState } from 'vuex';
 
 export default {
     name: 'R_TaskManage',
@@ -144,7 +144,6 @@ export default {
                 total: 0,
                 state: '',
             },
-            options: [], //所有安检员
             tasklist: [],
             showData: [],
             trans_to_staff: '',
@@ -153,6 +152,11 @@ export default {
             oprateTask: {},
             editVisible: false,
         };
+    },
+    computed: {
+        ...mapState({
+            options: 'staffs',
+        }),
     },
     methods: {
         //获取任务列表
@@ -170,7 +174,8 @@ export default {
             if (!res.flag) return this.$message.error('任务列表获取失败');
 
             res.tasks.forEach((val) => {
-                if (val.cycle !== 0) { //只显示 日常任务
+                if (val.cycle !== 0) {
+                    //只显示 日常任务
                     this.tasklist.push({
                         ...val,
                         checked: false,
@@ -183,16 +188,7 @@ export default {
             const { pageSize: size, page } = this.queryInfo;
             const offset = (page - 1) * size;
             this.showData = this.tasklist.slice(offset, offset + size);
-            this.queryInfo.total = res.tasks.length;
-        },
-        // 获取所有安检员
-        async getStaff() {
-            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
-            console.log(res);
-
-            if (!res.flag) return this.$message.error('终端人员获取失败');
-
-            this.options = res.users;
+            this.queryInfo.total = this.tasklist.length;
         },
         handleSizeChange(size) {
             this.queryInfo.pageSize = size;
@@ -321,13 +317,13 @@ export default {
             if (!res.flag) return this.$message.error('修改失败');
             else {
                 this.$message.success('修改成功');
+                this.editVisible=false;
                 this.getList();
             }
         },
     },
-    activated() {
+    created() {
         this.getList();
-        this.getStaff();
     },
     components: {
         TaskTable,

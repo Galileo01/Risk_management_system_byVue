@@ -2,12 +2,19 @@
     <div>
         <el-row>
             <el-col :span="5">
-                <el-input placeholder="输入行业名称" size="medium"
-                    ><el-button slot="append">搜索</el-button></el-input
+                <el-input
+                    placeholder="输入行业名称"
+                    size="medium"
+                    v-model="query.name"
+                    clearable
+                    @clear="getData"
+                    ><el-button slot="append" @click="getData"
+                        >搜索</el-button
+                    ></el-input
                 ></el-col
             >
             <el-col :span="3" :offset="15"
-                ><el-button size="medium" type="danger" @click="addClick"
+                ><el-button size="medium" type="primary" @click="addClick"
                     >添加行业</el-button
                 ></el-col
             >
@@ -19,6 +26,7 @@
                     <el-button
                         size="mini"
                         icon="el-icon-edit"
+                        type="primary"
                         @click="editClick(row)"
                     ></el-button>
                     <el-button
@@ -42,6 +50,7 @@
         <el-dialog
             :visible.sync="dialogVisible"
             :title="dialogType === 'add' ? '添加行业' : '编辑行业'"
+            @close="reset"
         >
             <el-row type="flex" class="ali-c"
                 ><el-col :span="2">行业名称:</el-col>
@@ -49,6 +58,8 @@
                     <el-input
                         size="medium"
                         v-model="oprateInfo.name"
+                        clearable
+                        @keyup.enter.native="submitClick"
                     ></el-input></el-col
             ></el-row>
             <span slot="footer">
@@ -91,13 +102,10 @@ export default {
             const res = await getIndustrys({ name, page, limit: 9999 });
             console.log(res);
             if (!res.flag) return this.$message.error('行业列表获取失败');
-            this.industries = res.industries;
+            this.industries = res.industrys;
             const offset = (page - 1) * size;
-            this.showData = this.industries.slice(
-                offset,
-                offset + res.industries.length
-            );
-            this.query.total = res.industries.length;
+            this.showData = this.industries.slice(offset, offset + size);
+            this.query.total = res.industrys.length;
         },
         handleSizeChange(size) {
             this.query.size = size;
@@ -138,8 +146,7 @@ export default {
             if (res.flag) {
                 this.$message.success('添加成功');
                 this.getData();
-            }
-            {
+            } else {
                 this.$message.error('添加失败');
             }
             this.dialogVisible = false;
@@ -154,8 +161,7 @@ export default {
             if (res.flag) {
                 this.$message.success('添加成功');
                 this.getData();
-            }
-            {
+            } else {
                 this.$message.error('添加失败');
             }
             this.dialogVisible = false;
@@ -179,14 +185,16 @@ export default {
                 if (res.flag) {
                     this.$message.success('添加成功');
                     this.getData();
-                }
-                {
+                } else {
                     this.$message.error('添加失败');
                 }
             }
         },
+        reset() {
+            this.oprateInfo.name = '';
+        },
     },
-    activated() {
+    created() {
         this.getData();
     },
 };

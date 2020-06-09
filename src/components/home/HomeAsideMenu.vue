@@ -66,7 +66,7 @@ export default {
             if (activePath) this.$store.commit('changeActivePath', activePath);
         },
         getData() {
-            const role = this.$store.getters.UserRole;
+        
             if (this.UserRole == 0) {
                 // 是 系统管理员
                 this.menulist = [
@@ -286,22 +286,10 @@ export default {
                                 path: 'device_menu',
                                 children: [],
                             },
-                            // {
-                            //     id: 805,
-                            //     authName: '自动任务',
-                            //     path: 'task_setting',
-                            //     children: [],
-                            // },
                             {
                                 id: 806,
                                 authName: '账号管理',
                                 path: 'account_manage',
-                                children: [],
-                            },
-                            {
-                                id: 807,
-                                authName: '企业行业',
-                                path: 'enter_indus',
                                 children: [],
                             },
                         ],

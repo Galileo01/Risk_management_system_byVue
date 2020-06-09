@@ -81,8 +81,8 @@
                                     width="500px"
                                 ></el-table-column>
                                 <el-table-column
-                                    label="是否符合/巡查备注"
-                                    prop="content"
+                                    label="是否符合/巡查结果"
+                                    prop="result"
                                     width="300px"
                                 ></el-table-column>
                                 <el-table-column
@@ -161,7 +161,7 @@
                 <el-form-item label="审核备注" prop="auditNote">
                     <el-input
                         type="textarea"
-                        v-model="disPassInfo.auditNote"
+                        v-model="examInfo.auditNote[examInfo.oprateIndex]"
                     ></el-input>
                 </el-form-item>
             </el-form>
@@ -226,6 +226,7 @@ import {
 } from 'network/task';
 import { getItemByDevice } from 'network/patrolitem';
 import { getDevice } from 'network/device';
+import { generateRisk } from 'network/danger';
 export default {
     name: 'TaskDetail',
     data() {
@@ -237,13 +238,19 @@ export default {
             videoVisible: false,
             showingVideo: '',
             sortVisible: false,
-            indexs: {},
+            indexs: {}, //初始的巡查顺序
             disPassVisible: false, //审核 用到的 对象
             disPassInfo: {
-                auditNote: '', //审核备注
+                auditNote: [], //审核备注
                 isMessage: true, //是否 发送消息
+            }, //审核信息
+            examInfo: {
+                isMessage: true,
+                message: '',
+                auditState: [],
+                auditNote: [],
+                oprateIndex: 0, //正在 操作的 设备
             },
-            isPass: [], // 表示每个设备的 巡查是否合格
             allDevices: [], //所有设备
             alloVisible: false,
         };
@@ -273,11 +280,12 @@ export default {
                 page: 1,
                 limit: 9999,
             });
-            console.log(taskRes);
             if (!taskRes.flag) return this.$message.error('任务信息获取失败');
             if (taskRes.status !== 200) {
             }
             this.baseInfo = taskRes.tasks[0];
+            this.examInfo.auditNote = [];
+            this.examInfo.auditState = [];
             //获取 设备
             const deviceRes = await getTaskDevices(this.baseInfo.taskID);
             console.log(deviceRes);
@@ -285,17 +293,15 @@ export default {
 
             // 遍历数组 获取每一个设备的  检查项
             const tableData = [];
-            const isPass = []; // 根据 设备的审核状态 初始化isPass 数组
             for (const [index, val] of deviceRes.devices.entries()) {
                 const itemRes = await getItemByDevice(val.deviceID);
-                console.log(itemRes);
                 const checkItems = [];
                 if (!itemRes.flag) return this.$message.error('巡查项获取失败');
                 else {
                     for (const val of itemRes.checkItems) {
                         checkItems.push({
                             title: val.name,
-                            content: '符合 [好]',
+                            result: '符合 [好]',
                             imgSrc:
                                 'http://pic13.photophoto.cn/20091209/0038037977031807_b.jpg',
                         });
@@ -316,13 +322,13 @@ export default {
                     examComment: '',
                     checkItems,
                 };
-                isPass.push(-1);
                 tableData.push(patrol);
+                this.examInfo.auditNote.push('');
+                this.examInfo.auditState.push(-1 + '');
             }
 
             this.tableData = tableData;
-            this.isPass = isPass;
-            this.initIndexs();
+            this.initIndexs(); //初始化 初始巡查顺序
         },
         //获取所有的设备
         async getAlldevices() {
@@ -352,7 +358,7 @@ export default {
         },
         async passOne(index) {
             const result = await this.$confirm(
-                '此操作将当前任务项处理为合格, 是否继续?',
+                '此操作将改任务的巡查处理为合格, 是否继续?',
                 '提示',
                 {
                     confirmButtonText: '确定',
@@ -363,25 +369,31 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.isPass[index] = 1;
+                this.examInfo.auditState[index] = '1';
                 this.submitExam();
             }
         },
+
         dispassOne(index) {
-            this.isPass[index] = 0;
+            this.examInfo.auditState[index] = '0';
+            this.examInfo.oprateIndex = index;
             this.disPassVisible = true;
         },
         async submitExam() {
-            console.log(this.isPass);
-
-            const res = await examTask(
-                this.baseInfo.taskID,
-                this.isPass.join(',')
-            );
+            console.log(this.examInfo.auditState);
+            console.log(this.examInfo.auditNote);
+            const res = await examTask({
+                taskID: this.baseInfo.taskID,
+                // ...this.examInfo,
+                auditNote: this.examInfo.auditNote.join(','),
+                auditState: this.examInfo.auditState.join(','),
+            });
             console.log(res);
             if (!res.flag) this.$message.error('审核失败');
-            else this.$message.success('审核成功');
-
+            else {
+                this.$message.success('审核成功');
+                this.getData(); //刷新数据
+            }
             this.disPassVisible = false;
         },
         resetDis() {
@@ -425,9 +437,9 @@ export default {
 
             const res = await SetTaskDevices(this.name, devices);
             console.log(res);
-            if (!res.flag)  this.$message.error('操作失败');
+            if (!res.flag) this.$message.error('分配失败');
             else {
-                this.$message.success('操作成功');
+                this.$message.success('分配成功');
                 this.getData();
             }
             this.alloVisible = false;

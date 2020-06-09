@@ -20,6 +20,7 @@
                         class="inputInwidth"
                         clearable
                         @clear="getList"
+                        size="medium"
                     ></el-input
                 ></el-form-item>
 
@@ -28,6 +29,7 @@
                         v-model="queryInfo.staff"
                         clearable
                         @clear="getList"
+                        size="medium"
                     >
                         <el-option
                             v-for="(item, index) in options"
@@ -41,6 +43,7 @@
                         v-model="queryInfo.state"
                         clearable
                         @clear="getList"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
             </el-form>
@@ -111,7 +114,7 @@
 
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
-import { getUsers } from 'network/account';
+import { mapState } from 'vuex';
 import {
     GetTasks,
     setTask,
@@ -133,7 +136,6 @@ export default {
                 total: 0,
                 state: '',
             },
-            options: [], //所有安检员
             tasklist: [],
             showData: [],
             trans_to_staff: '',
@@ -142,6 +144,11 @@ export default {
             oprateTask: {},
             editVisible: false,
         };
+    },
+    computed: {
+        ...mapState({
+            options: 'staffs',
+        }),
     },
     methods: {
         //获取任务列表
@@ -170,15 +177,6 @@ export default {
             const offset = (page - 1) * size;
             this.showData = this.tasklist.slice(offset, offset + size);
             this.queryInfo.total = res.tasks.length;
-        },
-        // 获取所有安检员
-        async getStaff() {
-            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
-            console.log(res);
-
-            if (!res.flag) return this.$message.error('终端人员获取失败');
-
-            this.options = res.users;
         },
         handleSizeChange(size) {
             this.queryInfo.pageSize = size;
@@ -311,9 +309,8 @@ export default {
             }
         },
     },
-    activated() {
+    created() {
         this.getList();
-        this.getStaff();
     },
     components: {
         TaskTable,

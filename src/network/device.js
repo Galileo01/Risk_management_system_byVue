@@ -42,16 +42,21 @@ export function updateDeviceMap(name, afterName) {
 
 export function allocateDeviceMap(deviceMapName, deviceNames) {
     return ins
-        .post('/deviceMap/allocation', qs.stringify({ deviceMapName, deviceNames }))
+        .post(
+            '/deviceMap/allocation',
+            qs.stringify({ deviceMapName, deviceNames })
+        )
         .catch(errFun);
 }
 
 //设备相关  函数
-export function getDevice({ enterpriseName, state, label, name, page, limit }) {
+export function getDevice({ state, label, name, page, limit }) {
+    page = page || 1;
+    limit = limit || 9999;
     return ins
         .get('/device/query', {
             params: {
-                enterpriseName,
+                enterpriseName: localStorage.getItem('enterpriseName'),
                 state,
                 label,
                 name,

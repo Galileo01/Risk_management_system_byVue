@@ -69,7 +69,8 @@
 
 <script>
 import { AllocateTask } from 'network/task';
-import { getUsers } from 'network/account';
+
+import { mapState } from 'vuex';
 export default {
     name: 'AllocateDialog',
     props: {
@@ -90,7 +91,7 @@ export default {
                 comments: '', //备注
                 type: '日巡',
             },
-            options: [],
+            // options: [],
             formRules: {
                 staff: [
                     {
@@ -119,17 +120,12 @@ export default {
             },
         };
     },
-    computed: {},
+    computed: {
+        ...mapState({
+            options: 'staffs',
+        }),
+    },
     methods: {
-        //获取 巡查人员列表
-        async getData() {
-            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
-            console.log(res);
-
-            if (!res.flag) return this.$message.error('终端人员获取失败');
-
-            this.options = res.users;
-        },
         submit() {
             this.$refs.form.validate((valid) => {
                 if (!valid) return;
@@ -141,7 +137,7 @@ export default {
                 // console.log(cycle);
 
                 this.$emit('allocate', {
-                    cycle:this.taskType==='r'?cycle:0 ,// 根据任务类型，设置 cycle
+                    cycle: this.taskType === 'r' ? cycle : 0, // 根据任务类型，设置 cycle
                     name: this.formData.taskName,
                     note: this.formData.comments,
                     userName: this.formData.staff,
@@ -174,7 +170,7 @@ export default {
         },
     },
     created() {
-        this.getData();
+        // this.getData();
         this.setDefaultTime();
     },
 };

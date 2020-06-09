@@ -56,44 +56,30 @@ export default {
             center: [105.757223, 29.33282],
             plugin: [
                 {
-                    pName: 'ToolBar'
+                    pName: 'ToolBar',
                 },
                 {
                     pName: 'MapType',
-                    defaultType: 0
-                }
+                    defaultType: 0,
+                },
             ],
             checkList: [],
-            selections: [
-                {
-                    name: '吴磊',
-                    online: true
-                },
-                {
-                    name: '孔容',
-                    online: false
-                },
-                {
-                    name: '宋飞',
-                    online: false
-                },
-                {
-                    name: '曾温根',
-                    online: true
-                },
-                {
-                    name: '李沛儒',
-                    online: false
-                }
-            ],
+
             ischeckAll: false,
             points: [],
             showPoints: [],
             imgs: {
                 offline: require('../assets/img/offline.png'),
-                online: require('../assets/img/online.png')
-            }
+                online: require('../assets/img/online.png'),
+            },
         };
+    },
+    computed: {
+        selections() {
+            return this.$store.state.staffs.map((item) => {
+                return { name: item.name };
+            });
+        },
     },
     methods: {
         //获取所有终端人员 的位置 信息
@@ -103,52 +89,51 @@ export default {
                     position: [105.757243, 29.333],
                     name: '吴磊',
                     online: true,
-                    updataTime: '2020-03-30 23:07:49'
+                    updataTime: '2020-03-30 23:07:49',
                 },
                 {
                     position: [105.757223, 29.334],
                     name: '孔容',
                     online: false,
-                    updataTime: '2020-04-08 23:07:49'
+                    updataTime: '2020-04-08 23:07:49',
                 },
                 {
                     position: [105.758523, 29.3355],
                     name: '宋飞',
                     online: false,
-                    updataTime: '2020-03-27 23:07:49'
+                    updataTime: '2020-03-27 23:07:49',
                 },
                 {
                     position: [105.757223, 29.3326],
                     name: '曾温根',
                     online: true,
-                    updataTime: '2020-03-30 23:07:49'
+                    updataTime: '2020-03-30 23:07:49',
                 },
                 {
                     position: [105.757263, 29.332],
                     name: '李沛儒',
                     online: false,
-                    updataTime: '2020-03-30 23:07:49'
-                }
+                    updataTime: '2020-03-30 23:07:49',
+                },
             ];
         },
         //返回  选中的 位置信心
         getShowPoints() {
-            if(this.checkList.length===0)
+            if (this.checkList.length === 0)
                 return this.$message.error('请选中人员');
             this.showPoints = [];
             const checkList = this.checkList;
             const show = [];
-            this.points.forEach(val => {
-                if (checkList.find(val2 => val2 === val.name)) {
+            this.points.forEach((val) => {
+                if (checkList.find((val2) => val2 === val.name)) {
                     show.push({
-                        ...val,// 扩展运算符 ，在val 的基础上 加上 visible 属性 ，解决 未知原因导致 更改 showPoints 的visible 属性会同步到points 上
-                        visible: false
+                        ...val, // 扩展运算符 ，在val 的基础上 加上 visible 属性 ，解决 未知原因导致 更改 showPoints 的visible 属性会同步到points 上
+                        visible: false,
                     });
                 }
             });
             this.showPoints = show;
             this.$message.success('定位成功');
-            
         },
         handleCheckAllChange() {
             const now = this.ischeckAll; //点击之后 选中状态为 true
@@ -158,7 +143,7 @@ export default {
                 this.ischeckAll = false;
             } else {
                 //将要选中全部
-                this.selections.forEach(val => {
+                this.selections.forEach((val) => {
                     this.checkList.push(val.name);
                 });
                 this.ischeckAll = true;
@@ -168,12 +153,12 @@ export default {
         handleChange() {
             const val = this.checkList.length === this.selections.length;
             this.ischeckAll = val;
-        }
+        },
     },
     created() {
         this.getData();
         this.mountEvent('showPoints'); //绑定 window 视窗显示 处理函数
-    }
+    },
 };
 </script>
 
@@ -215,5 +200,4 @@ export default {
 .window-info {
     font-size: 13px;
 }
-
 </style>

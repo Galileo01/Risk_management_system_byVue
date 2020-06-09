@@ -6,10 +6,12 @@
                 <el-button size="mini" type="info" @click="reset"
                     >重置输入</el-button
                 >
-                <el-button type="primary" size="medium">查询</el-button>
+                <el-button type="primary" size="medium" @click="getData"
+                    >查询</el-button
+                >
             </div>
             <el-form inline label-width="100px" :model="queryInfo" ref="form">
-                <el-form-item label="来源时间(起)" prop="startTime"
+                <!-- <el-form-item label="来源时间(起)" prop="startTime"
                     ><el-date-picker
                         v-model="queryInfo.startTime"
                         type="date"
@@ -26,26 +28,37 @@
                         clearable
                     >
                     </el-date-picker
-                ></el-form-item>
+                ></el-form-item> -->
+                <el-form-item label="来源任务" prop="taskName">
+                    <el-input v-model="queryInfo.taskName" clearable @clear="getData"></el-input>
+                </el-form-item>
+                <el-form-item label="来源设备" prop="deviceName">
+                    <el-input v-model="queryInfo.deviceName" clearable @clear="getData"></el-input>
+                </el-form-item>
                 <el-form-item label="隐患类型" prop="dangerType"
-                    ><el-select v-model="queryInfo.dangerType" clearable>
+                    ><el-select
+                        v-model="queryInfo.riskTypeName"
+                        clearable
+                        @change="getData"
+                    >
                         <el-option
-                            label="证照不齐"
-                            value="zhenzhao"
-                        ></el-option>
-                        <el-option label="资料不全" value="data"></el-option>
-                        <el-option label="安全隐患" value="safe"></el-option>
-                        <el-option label="巡查处理" value="deal"></el-option>
-                        <el-option
-                            label="巡查异常上报"
-                            value="report"
-                        ></el-option>
-                        <el-option
-                            label="终端上传"
-                            value="terminal"
+                            v-for="(item, index) in dangerTypes"
+                            :key="index"
+                            :value="item.name"
+                            :label="item.name"
                         ></el-option></el-select
                 ></el-form-item>
-                <el-form-item label="上报人员" prop="staff"
+                <el-form-item label="风险等级" prop="level">
+                    <el-select v-model="queryInfo.level" @change="getData" clearable>
+                        <el-option
+                            v-for="number in 4"
+                            :key="number"
+                            :value="number"
+                            :label="'等级' + number"
+                        ></el-option>
+                    </el-select>
+                </el-form-item>
+                <!-- <el-form-item label="上报人员" prop="staff"
                     ><el-select v-model="queryInfo.staff" clearable>
                         <el-option
                             v-for="(item, index) in staffs"
@@ -53,19 +66,10 @@
                             :label="item.label"
                             :value="item.value"
                         ></el-option> </el-select
-                ></el-form-item>
-                <el-form-item label="审核状态" prop="examState"
-                    ><el-select v-model="queryInfo.examState" clearable>
-                        <el-option label="未审核" value="not-exam"></el-option>
-                        <el-option label="不合格" value="not-pass"></el-option>
-                        <el-option
-                            label="合格"
-                            value="pass"
-                        ></el-option> </el-select
-                ></el-form-item>
+                ></el-form-item> -->
             </el-form>
             <DangerTable
-                :data="tableData"
+                :data="showData"
                 @show="show"
                 oprateType="handle"
                 @handle="handle"
@@ -88,7 +92,7 @@
 
 <script>
 import DangerTable from 'components/statis/DangerTable';
-import {getDanger}  from 'network/danger'
+import { getDangers, dealDanger } from 'network/danger';
 export default {
     name: 'StatisDanger',
     data() {
@@ -96,178 +100,104 @@ export default {
             queryInfo: {
                 startTime: '',
                 endTime: '',
-                dangerType: '',
-                part: '',
-                staff: '',
-                examState: '',
-                dangerState: '',
+                taskName: '', //来源 任务
+                deviceName: '', //来源设备
+                riskTypeName: '',
+                level: '',
+                state: '',
                 page: 1,
-                size: 10,
-                total: 0
+                size: 5,
+                total: 0,
             },
-            staffs: [],
             tableData: [],
+            showData: [],
             dialogVisible: false,
-            showDes: ''
+            showDes: '',
         };
     },
-    methods: {
-        getData() {
-            const staffs = [
-                {
-                    value: '01',
-                    label: '吴磊'
-                },
-                {
-                    value: '02',
-                    label: '孔容'
-                },
-                {
-                    value: '03',
-                    label: '宋飞'
-                },
-                {
-                    value: '04',
-                    label: '曾温根'
-                },
-                {
-                    value: '05',
-                    label: '李沛儒'
-                }
-            ];
-            const tableData = [
-                {
-                    dangerNum: '123',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '9876',
-                    deivceNum: 'R78',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '1689',
-                    deivceNum: 'P017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '123',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '123',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: 'K976',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '123',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                },
-                {
-                    dangerNum: '123',
-                    deivceNum: 'R017',
-                    dangerType: '安全隐患',
-                    examState: '合格',
-                    dangerState: '处理',
-                    staff: '李沛儒',
-                    ge_time: '2019-11-27 07:41:33', // 生成时间
-                    addressDes: '低压变电房前', //位置描述
-                    dangerDes: '杂物乱堆' //异常/隐患描述
-                }
-            ];
-            this.staffs = staffs;
-            this.tableData = tableData;
+    computed: {
+        dangerTypes() {
+            return this.$store.state.dangerTypes;
         },
-        handleSizeChange() {},
-        handleCurrentChange() {},
+    },
+    methods: {
+        async getData() {
+            //获取 state 为0 ，未处理的 隐患
+            const res = await getDangers({
+                ...this.queryInfo,
+                limit: 9999,
+                state: '0',
+            });
+            console.log(res);
+            if (!res.flag) return this.$message.error('风险获取失败');
+
+            this.queryInfo.total = res.risks.length;
+            //过滤掉 已经处理的 风险
+            this.tableData = res.risks;
+            const { size, page } = this.queryInfo;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+        },
+        handleSizeChange(size) {
+            this.queryInfo.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.queryInfo.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.queryInfo;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+        },
         show(num) {
             console.log(num);
 
-            const { dangerDes } = this.tableData.find(
-                val => val.dangerNum === num
-            );
-            this.showDes = dangerDes || '';
+            const { note } = this.tableData.find((val) => val.riskID === num);
+            this.showDes = note || '';
             this.dialogVisible = true;
         },
         reset() {
             this.$refs.form.resetFields();
         },
-        async handle(num) {
-            const result = await this.$confirm('此操作将更改该隐患的状态, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).catch(error => error);
+        async handle(risk) {
+            const result = await this.$confirm(
+                '此操作将会设置隐患的状态为已处理, 是否继续?',
+                '提示',
+                {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                }
+            ).catch((error) => error);
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.$message.success('处理成功');
+                const res=await dealDanger(risk);
+                console.log(res);
+                
+                if(!res.flag) return this.$message.error('处理失败');
+                else{
+                    this.$message.success('处理成功');
+                    this.getData();
+                }
             }
-        }
+        },
     },
     created() {
         this.getData();
     },
     components: {
-        DangerTable
-    }
+        DangerTable,
+    },
 };
 </script>
 
 <style scoped lang="less">
 .danger_handle {
     /deep/ .el-card__body {
-        padding: 10px 20px 0 20px;
+        padding: 10px 20px 10px 20px;
     }
     .el-form-item {
         margin-bottom: 10px;

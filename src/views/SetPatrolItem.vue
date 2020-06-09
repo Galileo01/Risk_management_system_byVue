@@ -10,7 +10,7 @@
                         v-model="query.info"
                         @keyup.enter.native="getData"
                         clearable
-                        @clear="getData"
+                        @clear="getData" 
                     >
                         <el-button
                             slot="append"
@@ -19,7 +19,7 @@
                         ></el-button></el-input
                 ></el-col>
                 <el-col :span="5" :offset="1"
-                    ><el-button type="primary" size="medium" @click="add"
+                    ><el-button type="primary" size="medium" @click="add" 
                         >添加巡查项</el-button
                     ></el-col
                 >
@@ -71,7 +71,7 @@
                             v-for="(item, index) in riskTypes"
                             :key="index"
                             :label="item.name"
-                            :value="item.id"
+                            :value="item.riskTypeID"
                         ></el-option>
                     </el-select>
                 </el-form-item>
@@ -109,14 +109,14 @@
 <script>
 import ItemTable from 'components/setting/ItemTable';
 import { getItems, addItem, updateItem, removeItem } from 'network/patrolitem';
-import { getDangerTypes } from 'network/danger';
+import { mapState } from 'vuex';
+
 export default {
     name: 'SetPatrolItem',
     data() {
         return {
             tableData: [],
             showData: [],
-            riskTypes: [],
             query: {
                 page: 1,
                 size: 10,
@@ -200,6 +200,9 @@ export default {
                     return '添加';
             }
         },
+        ...mapState({
+            riskTypes: 'dangerTypes',
+        }),
     },
     filters: {
         levelText(value) {
@@ -229,7 +232,6 @@ export default {
     },
     methods: {
         async getData() {
-        
             const { size, page } = this.query;
             const offset = (page - 1) * size;
             const res = await getItems(this.query.info);
@@ -240,27 +242,8 @@ export default {
             this.tableData = data;
             this.showData = this.tableData.slice(offset, offset + size);
         },
-        async _getDangerTypes() {
-            const res = await getDangerTypes({
-                page: 1,
-                limit: 9999,
-            });
-            console.log(res);
-
-            if (!res.flag) return this.$message.error('隐患类型获取失败');
-            const riskTypes = [];
-            for (const val of res.riskTypes) {
-                riskTypes.push({
-                    name: val.name,
-                    id: val.riskTypeID,
-                });
-            }
-
-            console.log(riskTypes);
-            this.riskTypes = riskTypes;
-        },
         getTypeText(id) {
-            const type = this.riskTypes.find((val) => val.id === id);
+            const type = this.riskTypes.find((val) => val.riskTypeID === id);
             return type ? type.name : '';
         },
         handleSizeChange(size) {
@@ -364,13 +347,11 @@ export default {
                 total: 0,
                 info: '',
             };
-            this.riskTypes = [];
         },
     },
-    activated() {
+    created() {
         this.resetAll();
         this.getData();
-        this._getDangerTypes();
     },
     components: {
         ItemTable,

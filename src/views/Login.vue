@@ -1,10 +1,10 @@
 <template>
     <div class="login">
         <!-- <h1 class="title">永川区非煤矿山企业安全检查监督管理平台</h1> -->
-         <h1 class="title">风险治理与管控平台</h1>
+        <h1 class="title">重大风险隐患排查及监督治理系统</h1>
         <div class="form-wapper">
             <div class="avator">
-                <img src="~assets/img/logo.png" alt="" />
+                <img src="~assets/img/login.png" alt="" />
             </div>
 
             <el-form
@@ -104,7 +104,7 @@ export default {
                             this.formData.username,
                             this.formData.password
                         );
-                        console.log(res);
+                        console.log('login', res);
 
                         if (res.flag) {
                             const {
@@ -122,7 +122,13 @@ export default {
                                 token,
                                 role,
                                 username: this.formData.username,
+                                industryName: industryName,
                             });
+                            if (industryName)
+                                localStorage.setItem(
+                                    'industryName',
+                                    industryName
+                                );
                             if (role == 0) {
                                 //系统管理员 进入 账号管理页面
                                 this.$router.push('/home/account_manage');

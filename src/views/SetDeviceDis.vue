@@ -152,7 +152,7 @@ export default {
             }
         },
     },
-    activated() {
+    created() {
         this.getChoose();
     },
     components: {

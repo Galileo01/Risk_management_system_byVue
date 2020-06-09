@@ -158,9 +158,6 @@ export default {
     components: {},
     methods: {
         async getData() {
-            this.record = {}; //清空数据
-            this.tableData = [];
-            this.positions = [];
             const name = localStorage.getItem('enterpriseName');
             let res = await getDangers({
                 enterpriseName: name,
@@ -301,9 +298,6 @@ export default {
     created() {
         this.getData();
         this.mountEvent('positions'); //绑定 信息窗口的 点击 事件 显示，
-    },
-    activated() {
-        this.getData();
     },
 };
 </script>

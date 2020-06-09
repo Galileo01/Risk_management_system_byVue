@@ -4,10 +4,8 @@
         <el-card>
             <el-row>
                 <el-col :span="4" :offset="20"
-                    ><el-button type="primary" @click="getList">查询</el-button>
-
-                    </el-col
-                ></el-row
+                    ><el-button type="primary" @click="getList"  size="medium">查询</el-button>
+                </el-col></el-row
             >
             <el-form inline>
                 <el-form-item label="任务名称"
@@ -15,7 +13,7 @@
                         v-model="queryInfo.taskName"
                         class="inputInwidth"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     ></el-input
                 ></el-form-item>
 
@@ -23,7 +21,7 @@
                     <el-select
                         v-model="queryInfo.staff"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     >
                         <el-option
                             v-for="(item, index) in options"
@@ -37,16 +35,10 @@
                         v-model.number="queryInfo.cycle"
                         placeholder="输入任务的周期，单位天"
                         clearable
-                        @clear="getList"
+                        @clear="getList"  size="medium"
                     ></el-input>
                 </el-form-item>
-                <el-form-item label="任务状态">
-                    <el-input
-                        v-model="queryInfo.state"
-                        clearable
-                        @clear="getList"
-                    ></el-input>
-                </el-form-item>
+                
             </el-form>
             <TaskTable :tasklist="showData" tableType="examine" />
             <el-pagination
@@ -60,13 +52,11 @@
             >
             </el-pagination>
         </el-card>
-        
     </div>
 </template>
 
 <script>
 import TaskTable from 'components/routine_task/TaskTable';
-import { getUsers } from 'network/account';
 import {
     GetTasks,
     setTask,
@@ -74,6 +64,7 @@ import {
     AllocateTask,
     removeTask,
 } from 'network/task';
+import {mapState} from 'vuex'
 export default {
     name: 'R_TaskManage',
     data() {
@@ -85,48 +76,42 @@ export default {
                 pageSize: 10,
                 page: 1,
                 total: 0,
-                state: '',
             },
-            options: [],
             tasklist: [],
             showData: [],
         };
     },
+    computed:{
+        ...mapState({
+            options:'staffs'
+        })
+    },
     methods: {
         async getList() {
-            this.tasklist = [];
             const res = await GetTasks({
                 enterpriseName: sessionStorage.getItem('enterpriseName'),
                 name: this.queryInfo.taskName,
                 cycle: this.queryInfo.cycle,
                 userName: this.queryInfo.staff,
-                state: this.queryInfo.state,
             });
             // console.log(res);
 
             if (!res.flag) return this.$message.error('任务列表获取失败');
 
             res.tasks.forEach((val) => {
-                this.tasklist.push({
-                    ...val,
-                    checked: false,
-                });
+                if (val.state != '0') {
+                    this.tasklist.push({
+                        ...val,
+                        checked: false,
+                    });
+                }
             });
             console.log(res.tasks, this.tasklist);
 
             const { pageSize: size, page } = this.queryInfo;
             const offset = (page - 1) * size;
             this.showData = this.tasklist.slice(offset, offset + size);
-            this.queryInfo.total = res.tasks.length;
-        },
-        // 获取基础信息
-        async getStaff() {
-            const res = await getUsers({ permission: 3, limit: 9999, page: 1 });
-            console.log(res);
-
-            if (!res.flag) return this.$message.error('终端人员获取失败');
-
-            this.options = res.users;
+            this.queryInfo.total =this.tasklist.length;
         },
         handleSizeChange(size) {
             this.queryInfo.pageSize = size;
@@ -147,11 +132,9 @@ export default {
 
             this.showData = this.tasklist.slice(offset, offset + size);
         },
-       
     },
-    activated() {
+    created() {
         this.getList();
-        this.getStaff();
     },
     components: {
         TaskTable,

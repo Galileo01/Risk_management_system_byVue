@@ -54,40 +54,23 @@ export function checkToken() {
 export function getUsers({
     name,
     permission,
-    enterpriseName,
     limit,
     page,
     position,
+    enterpriseName,
+    industryName,
 }) {
-    let para = {};
-    if (name) {
-        para = {
-            name,
-            permission,
-            enterpriseName,
-            limit,
-            position,
-            offset: (page - 1) * limit,
-        };
-    } else if (position) {
-        para = {
-            permission,
-            enterpriseName,
-            limit,
-            offset: (page - 1) * limit,
-            position,
-        };
-    } else {
-        para = {
-            permission,
-            enterpriseName,
-            limit,
-            offset: (page - 1) * limit,
-        };
-    }
     return ins
         .get('/user/query', {
-            params: para,
+            params: {
+                name: name || null,
+                permission: permission || null,
+                enterpriseName: enterpriseName || null,
+                industryName: industryName || null,
+                limit,
+                offset: (page - 1) * limit,
+                position: position || null,
+            },
         })
         .catch(errFun);
 }

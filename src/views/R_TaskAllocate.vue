@@ -8,6 +8,7 @@
                         v-model="query.menu"
                         placeholder="请选择设备册"
                         clearable
+                        size="medium"
                     >
                         <el-option
                             v-for="(item, index) in menu"
@@ -19,15 +20,15 @@
                     </el-select>
                 </el-col>
                 <el-col :span="1">
-                    <el-button @click="getDevices"
+                    <el-button @click="getDevices"  size="medium"
                         >查询设备册</el-button
                     ></el-col
                 >
                 <el-col :span="8" :offset="4" class="all-btns">
-                    <el-button type="primary" @click="all_BtnClick(1)"
+                    <el-button type="primary" @click="all_BtnClick(1)"  size="small"
                         >分配全部</el-button
                     >
-                    <el-button type="primary" @click="all_BtnClick(2)"
+                    <el-button type="primary" @click="all_BtnClick(2)"  size="small"
                         >分配选中</el-button
                     >
                 </el-col>
@@ -96,9 +97,6 @@ export default {
             }
         },
         async getDevices() {
-            console.log(222);
-
-            this.tableData = [];
             const { size, page } = this.query;
             const offset = (page - 1) * size;
             let res = {};
@@ -180,12 +178,9 @@ export default {
             return this.showData.filter((val) => val.checked);
         },
     },
-    activated() {
+    created() {
         this.getMenus();
         this.getDevices();
-    },
-    deactivated() {
-        this.changeShowData();
     },
     components: {
         DeviceTable,

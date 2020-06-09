@@ -32,13 +32,16 @@ export default {
             const state = await checkToken();
             console.log(state);
 
-            const res = await getCompanys({ page: 1, limit: 9999 });
+            const res = await getCompanys({
+                page: 1,
+                limit: 9999,
+                industryName: localStorage.getItem('industryName'),
+            });
             // console.log(res);
             if (!res.flag) return this.$message.error('企业列表获取失败');
 
             this.companys = res.enterprises;
-            this.industryName = res.enterprises[0].industryName;
-            localStorage.setItem('industryName', this.industryName);
+            this.industryName = localStorage.getItem('industryName');
         },
         choose(name) {
             localStorage.setItem('enterpriseName', name);
@@ -47,7 +50,7 @@ export default {
             this.$router.push('/home/general');
         },
     },
-    activated() {
+    created() {
         this.$emit('changeToUnchange'); //进入companychoose 页面 始终把 页面状态改为 未选择公司\
         this.getData();
     },

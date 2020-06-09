@@ -3,23 +3,40 @@
         <BreadNav :texts="['基础设置', '账号管理']" />
         <el-card>
             <el-row>
-                <el-col :span="2" :offset="18"
-                    ><el-button type="primary" @click="addAccount"
+                <el-col :span="2" :offset="20"
+                    ><el-button type="primary" @click="addAccount" size="small"
                         >添加账号</el-button
                     ></el-col
                 >
-                <el-col :span="3"
-                    ><el-button type="success" @click="_getUSers"
+                <el-col :span="2"
+                    ><el-button type="success" @click="_getUSers" size="small"
                         >查询</el-button
                     ></el-col
                 >
             </el-row>
-            <el-form :model="query" inline label-width="70px">
+            <el-form
+                :model="query"
+                inline
+                label-width="70px"
+                size="mini"
+                class="input-query"
+            >
                 <el-form-item label="姓名" prop="name"
-                    ><el-input v-model="query.name" clearable></el-input
+                    ><el-input
+                        v-model="query.name"
+                        clearable
+                        size="mini"
+                        @clear="_getUSers"
+                        @keyup.enter.native="_getUSers"
+                    ></el-input
                 ></el-form-item>
                 <el-form-item label="权限" prop="permission"
-                    ><el-select v-model="query.permission" clearable>
+                    ><el-select
+                        v-model="query.permission"
+                        clearable
+                        size="mini"
+                        @clear="_getUSers"
+                    >
                         <el-option
                             v-for="(item, index) in levels"
                             :label="item.label"
@@ -27,8 +44,37 @@
                             :value="item.value"
                         ></el-option> </el-select
                 ></el-form-item>
-                <el-form-item label="职位" prop="position">
-                    <el-input v-model="query.position" clearable=""></el-input>
+                <el-form-item label="职位" prop="position" @clear="_getUSers">
+                    <el-input
+                        v-model="query.position"
+                        clearable
+                        size="mini"
+                        @keyup.enter.native="_getUSers"
+                    ></el-input>
+                </el-form-item>
+                <el-form-item
+                    label="行业名称"
+                    prop="industryName"
+                    v-if="Role == 0"
+                >
+                    <el-input
+                        size="mini"
+                        clearable
+                        v-model="query.industryName"
+                        @clear="_getUSers"
+                    ></el-input>
+                </el-form-item>
+                <el-form-item
+                    label="企业名称"
+                    prop="enterpriseName"
+                    v-if="Role <= 1"
+                >
+                    <el-input
+                        size="mini"
+                        clearable
+                        v-model="query.enterpriseName"
+                        @clear="_getUSers"
+                    ></el-input>
                 </el-form-item>
             </el-form>
             <AccountTable :tableData="showData" @edit="edit" @remove="remove" />
@@ -92,7 +138,9 @@
                         size="medium"
                     >
                         <el-option
-                            v-for="(item, index) in companys"
+                            v-for="(item, index) in companys[
+                                oprateAccount.industryName
+                            ]"
                             :key="index"
                             :value="item.name"
                             :label="item.name"
@@ -211,7 +259,7 @@ import {
     updateAccount,
     deleteUser,
 } from 'network/account';
-import { getInsdustrys, getCompanys } from 'network/company';
+import { getIndustrys, getCompanys } from 'network/company';
 export default {
     name: 'SetAccount',
     data() {
@@ -226,8 +274,8 @@ export default {
                 name: '',
                 permission: '',
                 position: '',
-
-                enterpriseName: localStorage.getItem('enterpriseName'),
+                industryName: '',
+                enterpriseName: '', //localStorage.getItem('enterpriseName')
             },
             dialogVisible: false,
             dialogType: 'show', //对话框 此时的类型  show/edit
@@ -248,10 +296,9 @@ export default {
                 IMEI: '',
                 position: '',
             }, //正在操作的 账户对象
-            industrys: ['采矿业', '建筑业'],
+            industrys: [],
             companys: [],
             levels: [
-                { label: '不限', value: '' },
                 { label: '行业管理员', value: 1 },
                 { label: '企业管理员', value: 2 },
                 { label: '安检员', value: 3 },
@@ -328,24 +375,39 @@ export default {
     methods: {
         async _getUSers() {
             const res = await getUsers({ ...this.query, limit: 9999 });
-            // console.log(res);
+            console.log(res);
             if (!res.flag) return this.$message.error('用户获取失败');
-
             this.accounts = res.users;
-
             const { size, page } = this.query;
             const offset = (page - 1) * size;
-            this.showData = this.accounts.slice(
-                offset,
-                offset + res.users.length
-            );
+            this.showData = this.accounts.slice(offset, offset + size);
             this.query.total = res.users.length;
         },
+
         async getData() {
-            let res = await getCompanys({ page: 1, limit: 9999 });
-            // console.log(res);
-            if (!res.flag) return this.$message.error('企业列表获取失败');
-            this.companys = res.enterprises;
+            Promise.all([
+                getIndustrys({ page: 1, limit: 9999 }),
+                getCompanys({
+                    page: 1,
+                    limit: 9999,
+                }),
+            ])
+                .then((res) => {
+                    // console.log(res);
+                    const insdustrys = res[0].industrys;
+                    const companys = res[1].enterprises;
+                    this.industrys = insdustrys.map((item) => item.name);
+                    for (const ins of insdustrys) {
+                        const coms = companys.filter(
+                            (val) => val.industryName === ins.name
+                        );
+                        this.companys[ins.name] = coms;
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
+                    this.$message.error('行业/企业列表获取失败');
+                });
         },
         handleSizeChange(size) {
             this.query.size = size;
@@ -396,13 +458,15 @@ export default {
                 if (res.flag) {
                     this.$message.success('删除成功');
                     this._getUSers();
-                }
-                else this.$message.error('删除失败');
+                } else this.$message.error('删除失败');
             }
         },
         //更改  描述表单输入的 方式 对象
         changeInputType(attr) {
             const pre = this.formInputType[attr];
+            if (this.Role != 0 && pre === 'select')
+                return this.$message.error('权限不够');
+
             this.formInputType[attr] = pre === 'select' ? 'input' : 'select';
             this.oprateAccount[attr] = '';
         },
@@ -436,6 +500,7 @@ export default {
                         else {
                             this.$message.success('账号添加成功');
                             this._getUSers();
+                            this.$store.dispatch('reqStaffs'); //刷新vuex
                         }
                         break;
                     case 'edit':
@@ -445,6 +510,7 @@ export default {
                         else {
                             this.$message.success('修改成功');
                             this._getUSers();
+                            this.$store.dispatch('reqStaffs'); //刷新vuex
                         }
                         break;
                 }
@@ -453,7 +519,7 @@ export default {
             });
         },
     },
-    activated() {
+    created() {
         this._getUSers();
         this.getData();
     },
@@ -478,6 +544,11 @@ export default {
 .el-dialog__wrapper {
     /deep/ .el-dialog__footer {
         padding-top: 0px;
+    }
+}
+.input-query.el-form {
+    /deep/ .el-form-item {
+        margin-right: 0;
     }
 }
 </style>

@@ -2,7 +2,7 @@
     <div class="danger_manage">
         <BreadNav :texts="['基础设置', '隐患类型']" />
         <el-card>
-            <el-button type="primary" size="medium" @click="add"
+            <el-button type="primary" size="medium" @click="add" 
                 >添加类型</el-button
             >
             <el-table :data="dangerTypes" border stripe size="mini">
@@ -156,6 +156,7 @@ export default {
             if (!res.flag) return this.$message.error('隐患类型获取失败');
 
             this.dangerTypes = res.riskTypes;
+            this.$store.commit('getDangerTypes', res.riskTypes); //更新 vuex
         },
         clear() {
             this.opratingType = {

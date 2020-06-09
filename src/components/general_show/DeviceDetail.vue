@@ -85,7 +85,7 @@ export default {
         },
         getData() {
             this.naviImgs=[
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/d4fed3a81dd84fa2b689420ca64ed0be_1909071031copy.jpg',
+                'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/navigation/D002/2fc0ca4606d34421999cc004f0027c97_1909071359copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/75a96784e09e4965b1b372cdbc8407d8_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/5ace41339f184023bd53231faf5821a7_1909071031copy.jpg',
                 'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/4f17ea34abb748ab90bba9ada3f11b6a_1909071031copy.jpg',

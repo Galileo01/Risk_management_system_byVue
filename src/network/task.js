@@ -1,7 +1,6 @@
 import { ins, errFun } from './index';
 import qs from 'qs';
 export function GetTasks({
-    enterpriseName,
     industryName,
     cycle,
     name,
@@ -11,11 +10,11 @@ export function GetTasks({
     page,
     limit,
 }) {
-    console.log(name);
+    // console.log(name);
     return ins
         .get('/task/query', {
             params: {
-                enterpriseName,
+                enterpriseName: localStorage.getItem('enterpriseName'),
                 industryName,
                 cycle,
                 name,
@@ -48,7 +47,7 @@ export function AllocateTask({
                 note,
                 devices,
                 checkState: `0/${number}`,
-                state: '待',
+                state: '0',
                 enterpriseName,
                 industryName,
             })
@@ -85,10 +84,13 @@ export function setTask({ name, userName, state, cycle, note }) {
 //设置 设备
 export function SetTaskDevices(taskName, devices) {
     return ins
-        .post('/task_deivce/insert', {
-            taskName,
-            devices,
-        })
+        .post(
+            '/task_device/insert',
+            qs.stringify({
+                taskName,
+                devices,
+            })
+        )
         .catch(errFun);
 }
 //排序 任务 设备 顺序
@@ -119,7 +121,7 @@ export function removeTask(name) {
 }
 
 //审核任务
-export function examTask(taskID, auditState, auditNote) {
+export function examTask({ taskID, auditState, auditNote }) {
     console.log(auditState);
 
     return ins

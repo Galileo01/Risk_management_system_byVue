@@ -63,7 +63,7 @@
                                 :center="position"
                                 :radius="10"
                                 :strokeWeight="1"
-                                  fill-color="#0000FE"
+                                fill-color="#0000FE"
                             />
                             <el-amap-info-window
                                 :position="position"
@@ -73,15 +73,21 @@
                             >
                         </el-amap>
                     </el-col>
-                    </el-row
-                >
+                </el-row>
                 <el-row>图片佐证</el-row>
                 <el-row>
-                    <img :src="item" :alt="'图片'+index" v-for="(item,index) in dangerInfo.imgs" :key="index">
+                    <img
+                        :src="item"
+                        :alt="'图片' + index"
+                        v-for="(item, index) in dangerInfo.imgs"
+                        :key="index"
+                    />
                 </el-row>
-                <el-row type="flex" >
-                    <el-col :span="5">打印人 :{{accountName}}</el-col>
-                    <el-col :span="6" :offset="11">打印时间 :{{now|date}}</el-col>
+                <el-row type="flex">
+                    <el-col :span="5">打印人 :{{ accountName }}</el-col>
+                    <el-col :span="6" :offset="11"
+                        >打印时间 :{{ now | date }}</el-col
+                    >
                 </el-row>
             </el-card>
         </el-main>
@@ -89,31 +95,39 @@
 </template>
 
 <script>
-import {formatDate} from 'commonjs/utils'
+import { formatDate } from 'commonjs/utils';
+import { getDangers } from 'network/danger';
 export default {
     name: 'DangerPrint',
     props: {
-        num: String
+        device: String,
     },
     data() {
         return {
             dangerInfo: {},
             position: [],
-            now:''
+            now: '',
         };
     },
-    computed:{
-        accountName(){
+    computed: {
+        accountName() {
             return this.$store.getters.accountName;
-        }
+        },
     },
-    filters:{
-        date(value){
-            return formatDate(value,'yyyy-MM-dd hh:mm:ss')
-        }
+    filters: {
+        date(value) {
+            return formatDate(value, 'yyyy-MM-dd hh:mm:ss');
+        },
     },
     methods: {
-        getData() {
+        async getData() {
+            const res = await getDangers({
+                page: 1,
+                limit: 9999,
+                deviceName: this.device,
+            });
+            console.log(res);
+
             this.dangerInfo = {
                 dangerNum: '123',
                 deivceNum: 'R017',
@@ -123,19 +137,21 @@ export default {
                 addressDes: '低压变电房前', //位置描述
                 dangerDes: '杂物乱堆', //异常/隐患描述
                 examState: '未处理',
-                imgs:['http://118.190.1.65/NDMMSKQ/image/ndmmsImage/reportInfo/301/3dde9027efdb49fa898a9b8e8e05bf15.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/reportInfo/283/4640e1b78dbc4d47bf938a8dd5ab3908.jpg']
+                imgs: [
+                    'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/reportInfo/301/3dde9027efdb49fa898a9b8e8e05bf15.jpg',
+                    'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/reportInfo/283/4640e1b78dbc4d47bf938a8dd5ab3908.jpg',
+                ],
             };
             this.position = [105.757223, 29.3326];
         },
         print() {
             window.print();
-        }
+        },
     },
     created() {
         this.getData();
-        this.now=new Date().toString();
-    }
+        this.now = new Date().toString();
+    },
 };
 </script>
 
@@ -160,10 +176,9 @@ export default {
         width: 500px;
         height: 300px;
     }
-    img{
+    img {
         width: 300px;
         margin-right: 10px;
     }
-    
 }
 </style>

@@ -213,7 +213,7 @@ export default {
             this.$refs.form.resetFields();
         },
     },
-    activated() {
+    created() {
         this.getMenus();
     },
     components: {

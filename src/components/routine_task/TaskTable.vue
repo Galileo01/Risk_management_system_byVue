@@ -22,11 +22,11 @@
                 }}</a>
             </template>
         </el-table-column>
-        <el-table-column
-            prop="state"
-            label="任务状态"
-            width="90px"
-        ></el-table-column>
+        <el-table-column prop="state" label="任务状态" width="90px">
+            <template v-slot="{ row }">
+                <span>{{ stateText(row.state) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="userName"
             label="终端人员"
@@ -47,7 +47,11 @@
             label="生成时间"
             width="220px"
         ></el-table-column>
-        <el-table-column prop="cycle" label="任务周期(天)" v-if="taskType==='r'"></el-table-column>
+        <el-table-column
+            prop="cycle"
+            label="任务周期(天)"
+            v-if="taskType === 'r'"
+        ></el-table-column>
         <el-table-column prop="note" label="备注"></el-table-column>
         <el-table-column
             label="操作"
@@ -65,7 +69,7 @@
                         icon="el-icon-edit"
                         size="mini"
                         circle
-                        @click="$emit('edit',row)"
+                        @click="$emit('edit', row)"
                     ></el-button>
                 </el-tooltip>
                 <el-tooltip
@@ -147,11 +151,12 @@ export default {
             type: String,
             default: 'manage',
         },
-        taskType:{
-            type:String,
-            default:'r'//默认是日常任务
-        }
+        taskType: {
+            type: String,
+            default: 'r', //默认是日常任务
+        },
     },
+    computed: {},
     data() {
         return {
             isCheckedAll: false,
@@ -222,6 +227,10 @@ export default {
                 path: `/task/examine/${name}`,
             });
             window.open(href, '_blank');
+        },
+        stateText(state) {
+            const states = ['待完成', '待审核', '合格', '不合格'];
+            return states[state];
         },
     },
 };

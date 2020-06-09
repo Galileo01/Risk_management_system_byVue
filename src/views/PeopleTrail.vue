@@ -30,7 +30,7 @@
                     :key="100 + index"
                     :visible="item.visible"
                 >
-                     <div class="window-info">
+                    <div class="window-info">
                         {{ item.name + ' ' + item.updataTime }}
                     </div></el-amap-info-window
                 >
@@ -75,38 +75,30 @@ export default {
             center: [105.757223, 29.33382],
             plugin: [
                 {
-                    pName: 'ToolBar'
+                    pName: 'ToolBar',
                 },
                 {
                     pName: 'MapType',
-                    defaultType: 0
-                }
-            ],
-            staffs: [
-                {
-                    name: '吴磊'
+                    defaultType: 0,
                 },
-                {
-                    name: '孔容'
-                },
-                {
-                    name: '宋飞'
-                },
-                {
-                    name: '曾温根'
-                },
-                {
-                    name: '李沛儒'
-                }
             ],
             queryInfo: {
                 staff: '',
-                date: ''
+                date: '',
             },
             trilInfo: [],
             path: [],
-            windows: []
+            windows: [],
         };
+    },
+    computed: {
+        staffs() {
+            return this.$store.state.staffs.map((item) => {
+                return {
+                    name: item.name,
+                };
+            });
+        },
     },
     methods: {
         getData() {
@@ -120,46 +112,45 @@ export default {
                     position: [105.757243, 29.333],
                     name: '吴磊',
                     updataTime: '2020-03-30 23:07:49',
-                    visible:false
+                    visible: false,
                 },
                 {
                     position: [105.757223, 29.334],
                     name: '吴磊',
                     updataTime: '2020-04-08 23:07:49',
-                    visible:false
+                    visible: false,
                 },
                 {
                     position: [105.758523, 29.3355],
                     name: '吴磊',
                     updataTime: '2020-03-27 23:07:49',
-                    visible:false
+                    visible: false,
                 },
                 {
                     position: [105.757223, 29.3326],
                     name: '吴磊',
                     updataTime: '2020-03-30 23:07:49',
-                    visible:false
+                    visible: false,
                 },
                 {
                     position: [105.757263, 29.332],
                     name: '吴磊',
                     updataTime: '2020-03-30 23:07:49',
-                    visible:false
-                }
+                    visible: false,
+                },
             ];
             this.$message.success('查询成功');
 
             this.trilInfo = data;
-            this.path=[];
-            data.forEach(val => {
+            this.path = [];
+            data.forEach((val) => {
                 this.path.push(val.position);
-               
             });
-        }
+        },
     },
     created() {
         this.mountEvent('trilInfo');
-    }
+    },
 };
 </script>
 

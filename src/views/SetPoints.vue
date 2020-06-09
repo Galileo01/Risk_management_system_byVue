@@ -22,7 +22,7 @@
                     </el-select>
                 </el-col>
                 <el-col :span="3" :offset="15"
-                    ><el-button type="primary" @click="dialogVisible = true"
+                    ><el-button type="primary" @click="dialogVisible = true"  size="medium"
                         >添加设备</el-button
                     ></el-col
                 >
@@ -300,7 +300,7 @@ export default {
             });
         },
     },
-    activated() {
+    created() {
         this.getMenus();
         this.getDevices();
     },

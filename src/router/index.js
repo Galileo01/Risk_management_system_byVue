@@ -47,6 +47,7 @@ const routes = [
     {
         path: '/home',
         component: Home,
+
         children: [
             // {
             //     path: '',
@@ -165,16 +166,19 @@ const routes = [
         path: '/task_location:name',
         component: TaskLocation,
         props: true,
+        meta: { title: '任务定位' },
     },
     {
         path: '/task/:type/:name',
         component: TaskDetail,
         props: true, //将 路由 参数映射到 组件props
+        meta: { title: '任务详情' },
     },
     {
-        path: '/danger_print:num',
+        path: '/danger_print:device',
         component: DangerPrint,
         props: true,
+        meta: { title: '隐患打印' },
     },
 ];
 
@@ -184,6 +188,16 @@ const router = new VueRouter({
 });
 //设置 导航守卫
 router.beforeEach((to, from, next) => {
+    if (
+        from.path.includes('/task/manage') ||
+        from.path.includes('/task_location') ||
+        from.path.includes('/danger_print') ||
+        from.path.includes('/task/examine')
+    ) {
+        console.log('当前页面禁止跳转到其他页面');
+        return next(false);
+    }
+    if (to.meta.title) document.title = to.meta.title;
     if (to.path == '/login') return next();
     // const token = sessionStorage.getItem('user');
     const token = localStorage.getItem('token');

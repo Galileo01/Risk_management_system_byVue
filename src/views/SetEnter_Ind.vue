@@ -27,7 +27,7 @@ export default {
         SetEnterprise,
         SetIndustry,
     },
-    deactivated(){
+    created(){
         this.name='industry'
     }
 };

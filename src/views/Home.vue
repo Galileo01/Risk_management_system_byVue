@@ -5,7 +5,7 @@
                 <div class="logo-wapper">
                     <img src="~assets/img/logo.png" alt="" class="logo" />
                     <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
-                    <h3>风险治理与管控平台</h3>
+                    <h3>重大风险隐患排查及监督治理系统</h3>
                 </div>
                 <div class="left-wapper">
                     <div class="avator" @click="goProfile">
@@ -37,7 +37,7 @@
                     ></HomeAsideMenu
                 ></el-aside>
                 <el-main>
-                    <keep-alive exclude="SetPoint,TaskLocation,TaskDetail"
+                    <keep-alive include="General"
                         ><router-view
                             @choose="chooseCompany"
                             @changeToUnchange="unchooseCompany"
@@ -117,7 +117,14 @@ export default {
     components: {
         HomeAsideMenu,
     },
-    created() {},
+    created() {
+        this.$store.dispatch('reqDangerTypes'); //获取终端人员
+        this.$store.dispatch('reqStaffs');
+    },
+    mounted() {
+        this.$store.dispatch('reqDangerTypes'); //刷新重新获取终端人员
+        this.$store.dispatch('reqStaffs');
+    },
 };
 </script>
 

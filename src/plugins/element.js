@@ -41,7 +41,9 @@ import {
     Upload,
     Alert,
     Radio,
-    RadioGroup
+    RadioGroup,
+    Timeline,
+    TimelineItem
 } from 'element-ui';
 
 Vue.use(Button);
@@ -84,6 +86,8 @@ Vue.use(Upload)
 Vue.use(Alert)
 Vue.use(Radio)
 Vue.use(RadioGroup)
+Vue.use(Timeline)
+Vue.use(TimelineItem)
 //挂载 全局的 方法
 Vue.prototype.$message = Message;
 Vue.prototype.$confirm = MessageBox.confirm;

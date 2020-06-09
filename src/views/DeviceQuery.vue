@@ -148,7 +148,7 @@ export default {
             }
         },
     },
-    activated() {
+    created() {
         this.getMenus();
         this.getDevices();
     },
