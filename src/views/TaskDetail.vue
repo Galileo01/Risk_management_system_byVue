@@ -219,7 +219,7 @@ import BaseInfo from 'components/routine_task/BaseInfo';
 import ReAllocateDia from 'components/routine_task/ReAllocateDia';
 import {
     GetTasks,
-    getTaskDevices,
+    getTaskDevices2,
     setDeviceOrder,
     examTask,
     SetTaskDevices,
@@ -287,7 +287,7 @@ export default {
             this.examInfo.auditNote = [];
             this.examInfo.auditState = [];
             //获取 设备
-            const deviceRes = await getTaskDevices(this.baseInfo.taskID);
+            const deviceRes = await getTaskDevices2(this.baseInfo.taskID);
             console.log(deviceRes);
             if (!deviceRes.flag) return this.$message.error('任务设备获取失败');
 

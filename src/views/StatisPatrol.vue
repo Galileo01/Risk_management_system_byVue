@@ -4,7 +4,10 @@
         <el-card>
             <div class="title">
                 <span>{{ showType === 'chart' ? '图形报表' : '数据表格' }}</span
-                ><el-button size="medium" type="primary" @click="changeShowForm"
+                ><el-button
+                    size="medium"
+                    type="primary"
+                    @click="changeShowForm($event)"
                     >查看{{
                         showType === 'table' ? '图形报表' : '数据表格'
                     }}</el-button
@@ -23,8 +26,15 @@
                     <el-button size="mini" type="info" @click="reset"
                         >重置输入</el-button
                     >
-                    <el-button type="success" size="medium">下载</el-button>
-                    <el-button type="primary" size="medium">查询</el-button>
+                    <el-button type="success" size="medium" @click="saveExcel"
+                        >下载</el-button
+                    >
+                    <el-button
+                        type="primary"
+                        size="medium"
+                        @click="getTableData"
+                        >查询</el-button
+                    >
                 </div>
                 <el-form
                     inline
@@ -51,49 +61,55 @@
                         >
                         </el-date-picker>
                     </el-form-item>
-                    <el-form-item label="任务类型" prop="type">
-                        <el-select v-model="queryInfo.cycle" clearable>
-                            <el-option label="日" value="1"></el-option>
-                            <el-option label="周" value="7"></el-option>
-                            <el-option label="月" value="30"></el-option>
-                            <el-option label="自定义" value="0"></el-option>
+                    <el-form-item label="任务类型" prop="cycle">
+                        <el-select
+                            v-model="queryInfo.cycle"
+                            clearable
+                            @change="getTableData"
+                        >
+                            <el-option label="不限" :value="-1"></el-option>
+                            <el-option label="日巡" :value="1"></el-option>
+                            <el-option label="周巡" :value="7"></el-option>
+                            <el-option label="月巡" :value="30"></el-option>
+                            <el-option label="自定义" :value="0"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="巡查人员" prop="staff">
-                        <el-select v-model="queryInfo.staff" clearable>
+                    <el-form-item label="巡查人员" prop="userName">
+                        <el-select
+                            v-model="queryInfo.userName"
+                            clearable
+                            @change="getTableData"
+                        >
                             <el-option
                                 v-for="(item, index) in staffs"
                                 :key="index"
-                                :label="item.label"
-                                :value="item.value"
+                                :label="item.name"
+                                :value="item.name"
                             ></el-option>
                         </el-select>
                     </el-form-item>
 
-                    <el-form-item label="任务状态" prop="state">
-                        <el-select v-model="queryInfo.state" clearable>
-                            <el-option
-                                label="待完成"
-                                value="待完成"
-                            ></el-option>
-                            <el-option
-                                label="已完成"
-                                value="已完成"
-                            ></el-option>
-                            <el-option
-                                label="不合格"
-                                value="not-pass"
-                            ></el-option>
-                            <el-option label="合格" value="pass"></el-option>
+                    <el-form-item label="任务状态" prop="taskState">
+                        <el-select
+                            v-model="queryInfo.taskState"
+                            clearable
+                            @change="getTableData"
+                        >
+                            <el-option label="待完成" value="0"></el-option>
+                            <el-option label="待审核" value="1"></el-option>
+                            <el-option label="合格" value="2"></el-option>
+                            <el-option label="不合格" value="3"></el-option>
                         </el-select>
                     </el-form-item>
                 </el-form>
-                <PatrolTable :data="tableData" @show="show" />
+                <PatrolTable :data="showData" @show="show" />
+                <!--包含所有的 数据，不显示专门用于 表格的下载-->
+                <PatrolTable :data="tableData" id="table" v-show="false" />
                 <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
                     :current-page="queryInfo.page"
-                    :page-sizes="[5, 10]"
+                    :page-sizes="[8, 10]"
                     :page-size="queryInfo.size"
                     layout="total, sizes, prev, pager, next, jumper"
                     :total="queryInfo.total"
@@ -117,6 +133,10 @@ require('echarts/lib/component/legend');
 require('echarts/lib/component/tooltip');
 require('echarts/lib/component/toolbox');
 import PatrolTable from 'components/statis/PatrolTable';
+import { getTaskDevices } from 'network/task';
+import { formatDate } from 'commonjs/utils';
+import FileSaver from 'file-saver';
+import Xlsx from 'xlsx';
 export default {
     name: 'StatisPatrol',
     data() {
@@ -127,161 +147,114 @@ export default {
             queryInfo: {
                 startTime: '',
                 endTime: '',
-                part: '', //部门
-                type: '',
-                state: '',
-                cycle: '',
-                menu: '',
+                taskState: '',
+                cycle: -1,
+                userName: '',
                 page: 1,
-                size: 10,
+                size: 8,
                 total: 0,
             },
-            staffs: [],
             tableData: [],
+            showData: [],
             dialogVisible: false,
             showComment: '',
         };
     },
+    computed: {
+        staffs() {
+            return this.$store.state.staffs;
+        },
+    },
     methods: {
-        getTableData() {
-            const staffs = [
-                {
-                    value: '01',
-                    label: '吴磊',
-                },
-                {
-                    value: '02',
-                    label: '孔容',
-                },
-                {
-                    value: '03',
-                    label: '宋飞',
-                },
-                {
-                    value: '04',
-                    label: '曾温根',
-                },
-                {
-                    value: '05',
-                    label: '李沛儒',
-                },
-            ];
-            const tableData = [
-                {
-                    deviceNum: 'R001',
-                    patrolNum: '12312',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'dasdsadadavdfbgsbgasdasdasdasdasdasdasdasdsa',
-                },
-                {
-                    deviceNum: 'P032',
-                    patrolNum: '12445657',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'lllllll',
-                },
-                {
-                    deviceNum: 'P111',
-                    patrolNum: '12312',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'kkkkkkk',
-                },
-                {
-                    deviceNum: 'R057',
-                    patrolNum: '34535',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'yyyyyyyyy',
-                },
-                {
-                    deviceNum: 'R001',
-                    patrolNum: '12312',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'hhhhhhhhhh',
-                },
-                {
-                    deviceNum: 'P032',
-                    patrolNum: '12445657',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'bbbbbbbbbbb',
-                },
-                {
-                    deviceNum: 'P111',
-                    patrolNum: '12312',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'vvvvvvvvvvvv',
-                },
-                {
-                    deviceNum: 'R057',
-                    patrolNum: '34535',
-                    deviceType: '办公楼日巡',
-                    address: '办公楼',
-                    staff: '曾温根',
-                    patrolTime: '2019-09-20 10:10:10',
-                    examState: '合格',
-                    patrolState: '正常巡查',
-                    examComment: 'sadsadasd',
-                },
-            ];
-            this.tableData = tableData;
-            this.staffs = staffs;
-        },
-        getChartData() {
-            this.drawChart();
-        },
-        handleSizeChange() {},
-        handleCurrentChange() {},
-        show(num) {
-            const { examComment } = this.tableData.find(
-                (val) => val.patrolNum === num
-            );
-            this.showComment = examComment || '';
-            console.log(examComment);
+        async getTableData() {
+            this.tableData = [];
+            const queryInfo = this.queryInfo;
+            if (queryInfo.endTime && queryInfo.startTime) {
+                queryInfo.startTime = formatDate(
+                    queryInfo.startTime,
+                    'yyyy-MM-dd hh:mm:ss'
+                );
+                queryInfo.endTime = formatDate(
+                    queryInfo.endTime,
+                    'yyyy-MM-dd hh:mm:ss'
+                );
+            }
+            const res = await getTaskDevices(queryInfo);
+            console.log(res);
+            if (!res.flag) return this.$message.error('巡查数据获取失败');
 
+            this.tableData = res.task_devices;
+            const { size, page } = this.queryInfo;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+            this.queryInfo.total = res.task_devices.length;
+            console.log(this.showData);
+        },
+        async getChartData() {
+            const res = await getTaskDevices({});
+            console.log(res);
+            if (!res.flag) return this.$message.error('巡查数据获取失败');
+            let weekly = 0;
+            let dayly = 0;
+            let monthly = 0;
+            let diy = 0;
+            const states = {};
+            for (let i = 0; i < 4; i++) {
+                states[i] = 0;
+            }
+
+            for (const item of res.task_devices) {
+                switch (item.cycle) {
+                    case 1:
+                        dayly++;
+                        break;
+                    case 7:
+                        weekly++;
+                        break;
+                    case 30:
+                        monthly++;
+                        break;
+                    case 0:
+                        diy++;
+                        break;
+                }
+                if (item.taskState) states[item.taskState]++;
+            }
+            console.log(states);
+            console.log(weekly, dayly, monthly, diy);
+
+            this.drawChart([dayly, weekly, monthly, diy], states);
+        },
+        handleSizeChange(size) {
+            this.queryInfo.size = size;
+            this.changeShowData();
+        },
+        handleCurrentChange(page) {
+            this.queryInfo.page = page;
+            this.changeShowData();
+        },
+        changeShowData() {
+            const { page, size } = this.queryInfo;
+            const offset = (page - 1) * size;
+            this.showData = this.tableData.slice(offset, offset + size);
+        },
+        show(note) {
+            this.showComment = note;
             this.dialogVisible = true;
         },
         reset() {
             this.$refs.form.resetFields();
         },
         //改变展示 数据的形势
-        changeShowForm() {
+        changeShowForm(e, type = 'switch') {
+            //表示 切换 类型  switch/choose :单纯的切换 /选中某一字段 切换
             if (this.showType === 'chart') {
-                if (this.tableData.length === 0) {
-                    this.getTableData();
+                // 如果 只是单纯的 切换，清空表单，
+                if (type === 'switch') {
+                    this.queryInfo.cycle = -1;
+                    this.queryInfo.taskState = '';
                 }
+                this.getTableData();
                 this.showType = 'table';
             } else {
                 this.showType = 'chart';
@@ -337,7 +310,7 @@ export default {
                 this.barChart.on('click', ({ dataIndex }) => {
                     const types = [1, 7, 30, 0];
                     this.queryInfo.cycle = types[dataIndex];
-                    this.changeShowForm();
+                    this.changeShowForm(null, 'choose');
                 });
                 this.pieChart = echarts.init(
                     document.querySelector('.pie-chart')
@@ -352,7 +325,8 @@ export default {
                     },
                     tooltip: {
                         formatter: '{a} <br/>{b} : {c} ({d}%)',
-                    },toolbox: {
+                    },
+                    toolbox: {
                         feature: {
                             saveAsImage: {},
                         },
@@ -368,21 +342,20 @@ export default {
                     ],
                 });
                 this.pieChart.on('click', ({ dataIndex }) => {
-                    const states = ['待完成', '已完成', '不合格', '合格'];
-                    this.queryInfo.state = states[dataIndex];
-                    this.changeShowForm();
+                    this.queryInfo.taskState = dataIndex + '';
+                    this.changeShowForm(null, 'choose');
                     //   console.log(dataIndex);
                 });
             });
         },
         //获取 数据，绘制 图表
-        drawChart() {
+        drawChart(types, states) {
             this.$nextTick(() => {
                 this.barChart.setOption({
                     series: [
                         {
                             name: '任务数量',
-                            data: [36, 10, 10, 20],
+                            data: types,
                         },
                     ],
                 });
@@ -391,11 +364,11 @@ export default {
                         {
                             name: '占比',
                             data: [
-                                { value: 60, name: '待完成' },
-                                { value: 30, name: '已完成' },
-                                { value: 20, name: '不合格' },
+                                { value: states[0], name: '待完成' },
+                                { value: states[1], name: '已完成' },
+                                { value: states[2], name: '不合格' },
                                 {
-                                    value: 40,
+                                    value: states[3],
                                     name: '合格',
                                 },
                             ],
@@ -403,6 +376,25 @@ export default {
                     ],
                 });
             });
+        },
+        //保存表格到 xlsx 文件
+        saveExcel() {
+            const wb = Xlsx.utils.table_to_book(
+                document.querySelector('#table')
+            );
+            const wbout = Xlsx.write(wb, {
+                bookType: 'xlsx',
+                bookSST: true,
+                type: 'array',
+            });
+            try {
+                FileSaver.saveAs(
+                    new Blob([wbout], { type: 'application/octet-stream' }),
+                    '巡查报表.xlsx'
+                );
+            } catch (err) {
+                console.log(err);
+            }
         },
     },
     created() {
@@ -418,7 +410,7 @@ export default {
 <style scoped lang="less">
 .statis_patrol {
     /deep/ .el-card__body {
-        padding: 10px 20px 0 20px;
+        padding: 10px 20px 10px 20px;
     }
     .title {
         display: flex;

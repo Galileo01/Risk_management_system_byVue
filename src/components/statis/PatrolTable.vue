@@ -1,27 +1,34 @@
 <template>
-    <el-table :data="data" size="mini">
+    <el-table :data="data" size="mini" >
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="巡查ID" prop="patrolNum"></el-table-column>
-        <el-table-column label="设备编号" prop="deviceNum"></el-table-column>
-        <el-table-column label="设备类型" prop="deviceType"></el-table-column>
-        <el-table-column label="安装地址" prop="address"></el-table-column>
-        <el-table-column label="巡查人员" prop="staff"></el-table-column>
+        <el-table-column label="设备名称" prop="deviceName"></el-table-column>
+        <el-table-column label="任务名称" prop="taskName"></el-table-column>
+        <el-table-column label="巡查人员" prop="userName"></el-table-column>
+
+        <el-table-column label="任务状态" prop="taskState">
+            <template v-slot="{ row }">
+                <span>{{ taskStateText(row.taskState) }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column label="任务类型" >
+            <template v-slot="{ row }">
+                <span>{{ taskTypeText(row.cycle) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column
             label="巡查时间"
-            prop="patrolTime"
-            min-width="100px"
+            prop="doneTime"
+            width="200px"
         ></el-table-column>
-        <el-table-column label="审核状态" prop="examState"></el-table-column>
-        <el-table-column label="巡查状态" prop="patrolState"></el-table-column>
-        <el-table-column label="审核备注" width="200px">
+        <el-table-column label="审核备注" width="100px">
             <template v-slot="{ row }">
-                <div class="comment">
-                    <span>{{ row.examComment }}</span>
+                <div class="auditNote">
+                    <span>{{ row.auditNote || '无' }}</span>
                     <el-button
                         icon="el-icon-view"
                         size="mini"
                         type="primary"
-                        @click="$emit('show', row.patrolNum)"
+                        @click="$emit('show', row.auditNote)"
                     ></el-button>
                 </div>
             </template>
@@ -34,8 +41,23 @@
 export default {
     name: 'PatrolTable',
     props: {
-        data: Array
-    }
+        data: Array,
+    },
+    methods: {
+        taskStateText(state) {
+            const states = ['待完成', '待审核', '合格', '不合格'];
+            return states[state];
+        },
+        taskTypeText(cycle) {
+            const obj = {
+                0: '自定义',
+                1: '日巡',
+                7: '周巡',
+                30: '月巡',
+            };
+            return obj[cycle];
+        },
+    },
 };
 </script>
 

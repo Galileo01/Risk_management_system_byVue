@@ -93,6 +93,7 @@ export default {
                 name: this.queryInfo.taskName,
                 cycle: this.queryInfo.cycle,
                 userName: this.queryInfo.staff,
+                state:'1'
             });
             // console.log(res);
 

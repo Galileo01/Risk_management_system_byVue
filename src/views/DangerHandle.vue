@@ -3,14 +3,20 @@
         <BreadNav :texts="['隐患管理', '隐患处理']" />
         <el-card>
             <div class="btns">
-                <el-button size="mini" type="info" @click="reset"
+                <el-button size="mini" type="info" @click="resetQuery"
                     >重置输入</el-button
                 >
                 <el-button type="primary" size="medium" @click="getData"
                     >查询</el-button
                 >
             </div>
-            <el-form inline label-width="100px" :model="queryInfo" ref="form">
+            <el-form
+                inline
+                label-width="100px"
+                :model="queryInfo"
+                ref="queryForm"
+                class="query"
+            >
                 <!-- <el-form-item label="来源时间(起)" prop="startTime"
                     ><el-date-picker
                         v-model="queryInfo.startTime"
@@ -30,10 +36,18 @@
                     </el-date-picker
                 ></el-form-item> -->
                 <el-form-item label="来源任务" prop="taskName">
-                    <el-input v-model="queryInfo.taskName" clearable @clear="getData"></el-input>
+                    <el-input
+                        v-model="queryInfo.taskName"
+                        clearable
+                        @clear="getData"
+                    ></el-input>
                 </el-form-item>
                 <el-form-item label="来源设备" prop="deviceName">
-                    <el-input v-model="queryInfo.deviceName" clearable @clear="getData"></el-input>
+                    <el-input
+                        v-model="queryInfo.deviceName"
+                        clearable
+                        @clear="getData"
+                    ></el-input>
                 </el-form-item>
                 <el-form-item label="隐患类型" prop="dangerType"
                     ><el-select
@@ -49,7 +63,11 @@
                         ></el-option></el-select
                 ></el-form-item>
                 <el-form-item label="风险等级" prop="level">
-                    <el-select v-model="queryInfo.level" @change="getData" clearable>
+                    <el-select
+                        v-model="queryInfo.level"
+                        @change="getData"
+                        clearable
+                    >
                         <el-option
                             v-for="number in 4"
                             :key="number"
@@ -72,7 +90,7 @@
                 :data="showData"
                 @show="show"
                 oprateType="handle"
-                @handle="handle"
+                @handle="showDealDialog"
             />
             <el-pagination
                 @size-change="handleSizeChange"
@@ -84,17 +102,48 @@
                 :total="queryInfo.total"
             ></el-pagination>
         </el-card>
-        <el-dialog :visible.sync="dialogVisible" title="隐患描述">
+
+        <MKDialog
+            :visible.sync="showDialogVisible"
+            title="隐患描述"
+            :showFooter="false"
+        >
             <p>{{ showDes }}</p>
-        </el-dialog>
+        </MKDialog>
+        <MKDialog
+            title="填写处理信息"
+            :visible.sync="dealDialogVisible"
+            @close="resetDealInfo"
+            @dialog-cancel="dealDialogVisible = false"
+            @dialog-confirm="submitDeal"
+        >
+            <el-form
+                :model="dealInfo"
+                label-width="80px"
+                size="medium"
+                ref="dealForm"
+                :rules="infoRules"
+            >
+                <el-form-item label="处理人员" prop="dealStaff">
+                    <el-input v-model="dealInfo.dealStaff"></el-input>
+                </el-form-item>
+                <el-form-item label="处理备注" prop="dealNote">
+                    <el-input
+                        v-model="dealInfo.dealNote"
+                        type="textarea"
+                    ></el-input>
+                </el-form-item>
+            </el-form>
+        </MKDialog>
     </div>
 </template>
 
 <script>
 import DangerTable from 'components/statis/DangerTable';
 import { getDangers, dealDanger } from 'network/danger';
+import MKDialog from 'components/com/MKDialog';
 export default {
-    name: 'StatisDanger',
+    name: 'DangerHandle',
     data() {
         return {
             queryInfo: {
@@ -111,7 +160,18 @@ export default {
             },
             tableData: [],
             showData: [],
-            dialogVisible: false,
+            showDialogVisible: false,
+            dealDialogVisible: false,
+            dealInfo: {
+                dealStaff: '',
+                dealNote: '',
+                riskID: 0,
+            },
+            infoRules: {
+                dealStaff: [
+                    { required: true, message: '请输入处理人员', trigger: 'blur' },
+                ],
+            },
             showDes: '',
         };
     },
@@ -156,40 +216,26 @@ export default {
 
             const { note } = this.tableData.find((val) => val.riskID === num);
             this.showDes = note || '';
-            this.dialogVisible = true;
+            this.showDialogVisible = true;
         },
-        reset() {
-            this.$refs.form.resetFields();
+        resetQuery() {
+            this.$refs.queryForm.resetFields();
         },
-        async handle(risk) {
-            const result = await this.$confirm(
-                '此操作将会设置隐患的状态为已处理, 是否继续?',
-                '提示',
-                {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning',
-                }
-            ).catch((error) => error);
-            if (result === 'cancel') {
-                this.$message.info('操作取消');
-            } else {
-                const res=await dealDanger(risk);
-                console.log(res);
-                
-                if(!res.flag) return this.$message.error('处理失败');
-                else{
-                    this.$message.success('处理成功');
-                    this.getData();
-                }
-            }
+        resetDealInfo() {
+            this.$refs.dealForm.resetFields();
         },
+        showDealDialog(riskID) {
+            this.dealInfo.riskID = riskID;
+            this.dealDialogVisible = true;
+        },
+        submitDeal() {},
     },
     created() {
         this.getData();
     },
     components: {
         DangerTable,
+        MKDialog,
     },
 };
 </script>
@@ -199,16 +245,18 @@ export default {
     /deep/ .el-card__body {
         padding: 10px 20px 10px 20px;
     }
-    .el-form-item {
-        margin-bottom: 10px;
-        width: 320px;
-        height: 30px;
-        /deep/ input {
-            width: 180px;
+    .query {
+        .el-form-item {
+            margin-bottom: 10px;
+            width: 320px;
             height: 30px;
-        }
-        /deep/ .el-input {
-            width: 180px;
+            /deep/ input {
+                width: 180px;
+                height: 30px;
+            }
+            /deep/ .el-input {
+                width: 180px;
+            }
         }
     }
 

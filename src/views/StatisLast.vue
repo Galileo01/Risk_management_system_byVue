@@ -28,42 +28,45 @@
                         <el-row type="flex">
                             <el-col :span="12">
                                 <div>
-                                    巡线顺序:<span>{{ item.patrolOrder }}</span>
+                                    设备名称:<span>{{ item.deviceName }}</span>
                                 </div>
                                 <div>
-                                    终端人员:<span>{{ item.staff }}</span>
-                                </div>
-                                <div>
-                                    执行时间:<span>{{ item.commitTime }}</span>
-                                </div>
-                                <div>
-                                    巡查状态:<span>{{
-                                        item.patrolStatus
-                                    }}</span>
+                                    巡线顺序:<span>{{ item.deviceOrder }}</span>
                                 </div>
 
                                 <div>
-                                    审核用户:<span>{{ item.examUser }}</span>
+                                    任务名称:<span>{{ item.taskName }}</span>
                                 </div>
                                 <div>
-                                    审核时间:<span>{{ item.examTime }}</span>
+                                    任务类型:<span>{{
+                                        taskTypeText(item.cycle)
+                                    }}</span>
+                                </div>
+                                <div>
+                                    完成时间:<span>{{ item.doneTime }}</span>
+                                </div>
+                                <div>
+                                    任务状态:<span>{{
+                                        taskStateText(item.taskState)
+                                    }}</span>
+                                </div>
+                                <div>
+                                    终端人员:<span>{{ item.userName }}</span>
                                 </div>
                                 <div class="supervise">
-                                    <div>
-                                        督察:<span>{{
-                                            item.superviseInfo.content
-                                        }}</span>
-                                    </div>
+                                    <div>巡查数据：</div>
                                     <i
-                                        v-for="(item, index) in item
-                                            .superviseInfo.imgs"
+                                        v-for="(item, index) in dealPath(
+                                            item.picturePath
+                                        )"
                                         :key="index"
                                         class="el-icon-picture"
                                         @click="showImg(item)"
                                     ></i>
                                     <i
-                                        v-for="(item, index) in item
-                                            .superviseInfo.videos"
+                                        v-for="(item, index) in dealPath(
+                                            item.videoPath
+                                        )"
                                         :key="10 + index"
                                         class="el-icon-video-play"
                                         @click="showVideo(item)"
@@ -72,18 +75,13 @@
                             </el-col>
                             <el-col :span="12">
                                 <div>
-                                    设备编号:
-                                    <span class="num">{{
-                                        item.deviceInfo.num
-                                    }}</span>
+                                    审核用户:<span>{{ item.auditAdmin }}</span>
                                 </div>
                                 <div>
-                                    安装地址:<span>{{
-                                        item.deviceInfo.address
-                                    }}</span>
+                                    审核时间:<span>{{ item.auditTime }}</span>
                                 </div>
                                 <div>
-                                    类型:<span>{{ item.deviceInfo.type }}</span>
+                                    审核备注:<span>{{ item.auditNote }}</span>
                                 </div>
                             </el-col></el-row
                         ></el-card
@@ -105,6 +103,8 @@
 </template>
 
 <script>
+import { getTaskDevices } from 'network/task';
+import { formatDate } from 'commonjs/utils';
 export default {
     name: 'StatisLast',
     data() {
@@ -134,492 +134,45 @@ export default {
         },
     },
     methods: {
-        getData() {
-            const data = [
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '15:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    cycle: 1,
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '10:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    cycle: 7,
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '8:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    cycle: 7,
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '7:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    cycle: 1,
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '05:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    cycle: 0,
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-            ];
-            const data2 = [
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1: sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 1,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    cycle: 7,
-                    uploadTime: '2020-05-23-15:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 0,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 7,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    cycle: 7,
-                    uploadTime: '2020-05-22-15:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '2020-05-22-15:23',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1: sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 1,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020-05-23-15:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    cycle: 30,
-                    uploadTime: '2020-05-22-15:23',
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    video:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 30,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '符合',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-                {
-                    itemID: '1',
-                    patrolOrder: 1,
-                    staff: '罗世红',
-                    commitTime: '2020-4-1:123 sdsad',
-                    uploadTime: '2020-05-22-15:23',
-                    cycle: 30,
-                    intime: true, // 是否按时完成
-                    RFIDStatus: '正常',
-                    patrolStatus: '正常巡逻', //巡查状态
-                    videoSrc:
-                        'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                    deviceInfo: {
-                        //设备信息
-                        num: 'R010',
-                        address: '阡陌道左侧',
-                        type: '巡线点3日巡',
-                    },
-                    examUser: '',
-                    examTime: '',
-                    superviseInfo: {
-                        content: '2020-05-22-15:23',
-                        imgs: [
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/deviceJob/3/1/561db3e5098f453ab8c98310c313ea8f.jpg',
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/083eef1437a04cbe987300d647ee709e.jpg',
-                        ],
-                        videos: [
-                            'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/3/2/249fa0e45c634e8b9e4d0801cd230396.mp4',
-                        ],
-                    },
-                },
-            ];
-            this.lastData.day = data;
-            this.lastData.week = [...data2,...data2,...data2];
+        async getData() {
+            const now = new Date();
+
+            const endTime = `${now.getFullYear()}-${now.getMonth() +
+                1}-${now.getDate() + 1} 00:00:00`;
+            const startTime = new Date(endTime);
+            startTime.setDate(startTime.getDate() - startTime.getDay()); //将日期设置 为本周第一天
+            console.log(startTime.toString(), endTime);
+
+            const res = await getTaskDevices({
+                endTime,
+                startTime: formatDate(startTime, 'yyyy-MM-dd hh:mm:ss'),
+            });
+            //只获取 本周的数据
+            console.log(res);
+            if (!res.flag) return this.$message.error('巡查数据获取失败');
+            // 按照时间 先后顺序排序
+            res.task_devices.sort((a, b) => {
+                return (
+                    new Date(a.doneTime).getTime() -
+                    new Date(b.doneTime).getTime()
+                );
+            });
+            // 统计今日巡查
+            const day = [];
+            for (const item of res.task_devices) {
+                const doneTime = new Date(item.doneTime);
+
+                if (
+                    now.getFullYear() === doneTime.getFullYear() &&
+                    now.getMonth() == doneTime.getMonth() &&
+                    now.getDate() === doneTime.getDate()
+                ) {
+                    day.push(item);
+                }
+            }
+
+            this.lastData.day = day;
+            this.lastData.week = res.task_devices;
         },
         showImg(src) {
             this.showType = 'img';
@@ -661,7 +214,6 @@ export default {
             if (this.showData.length < this.lastData[this.listType].length)
                 //如果当前没有显示完数据
                 this.lastData.showNum += 10; //每次多加载10 条
-             
         },
         //绑定 交叉观察器，实现无限滚动
         bindInfiniteScroll() {
@@ -673,6 +225,24 @@ export default {
                 });
                 this.IObserver.observe(this.$refs.bottom.$el);
             });
+        },
+        taskTypeText(cycle) {
+            const obj = {
+                0: '自定义',
+                1: '日巡',
+                7: '周巡',
+                30: '月巡',
+            };
+            return obj[cycle];
+        },
+        taskStateText(state) {
+            const states = ['待完成', '待审核', '合格', '不合格'];
+            return states[state];
+        },
+        //处理  路径
+        dealPath(path) {
+            if (!path) return [];
+            else return path.split(',');
         },
     },
     created() {

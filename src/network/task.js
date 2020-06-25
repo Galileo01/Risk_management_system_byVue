@@ -138,8 +138,33 @@ export function examTask({ taskID, auditState, auditNote }) {
 
 // 获取 任务 设备
 
-export function getTaskDevices(taskID) {
+export function getTaskDevices2(taskID) {
     return ins
         .get('/MT/device/queryByTaskID', { params: { taskID } })
         .catch(errFun);
+}
+
+//获取巡查设备
+export function getTaskDevices({
+    deviceID,
+    startTime,
+    endTime,
+    cycle,
+    userName,
+    taskState,
+    taskID,
+}) {
+    console.log(cycle);
+    
+    return ins.get('/task_device/queryByDeviceID', {
+        params: {
+            deviceID:deviceID||null,
+            startTime:startTime||null,
+            endTime:endTime||null,
+            cycle:cycle>=0?cycle:null,
+            userName:userName||null,
+            taskState:taskState||null,
+            taskID:taskID||null
+        },
+    });
 }

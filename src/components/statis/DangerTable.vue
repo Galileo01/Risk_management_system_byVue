@@ -37,20 +37,32 @@
         </el-table-column>
         <el-table-column label="操作" width="70px">
             <template v-slot="{ row }">
-                <el-button
-                    type="info"
-                    size="mini"
-                    icon="el-icon-printer"
+                <el-tooltip
                     v-if="oprateType === 'print'"
-                    @click="print(row.deviceName)"
-                ></el-button>
-                <el-button
+                    effect="light"
+                    placement="top"
+                    content="打印"
+                >
+                    <el-button
+                        type="info"
+                        size="mini"
+                        icon="el-icon-printer"
+                        @click="print(row.deviceName)"
+                    ></el-button>
+                </el-tooltip>
+                <el-tooltip
                     v-else
-                    type="success"
-                    size="mini"
-                    icon="el-icon-check"
-                    @click="$emit('handle', row)"
-                ></el-button>
+                    effect="light"
+                    placement="top"
+                    content="处理"
+                >
+                    <el-button
+                        type="success"
+                        size="mini"
+                        icon="el-icon-check"
+                        @click="$emit('handle', row.riskID)"
+                    ></el-button>
+                </el-tooltip>
             </template>
         </el-table-column>
     </el-table>

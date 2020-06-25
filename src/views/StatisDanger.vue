@@ -51,7 +51,9 @@
                     <el-button size="mini" type="info" @click="reset"
                         >重置输入</el-button
                     >
-                    <el-button type="success" size="medium">下载</el-button>
+                    <el-button type="success" size="medium" @click="saveExcel"
+                        >下载</el-button
+                    >
                     <el-button
                         type="primary"
                         size="medium"
@@ -134,17 +136,15 @@
                             <el-option label="已处理" value="1"></el-option>
                         </el-select>
                     </el-form-item>
-                    <!-- <el-form-item label="上报人员" prop="staff"
-                    ><el-select v-model="queryInfo.staff" clearable>
-                        <el-option
-                            v-for="(item, index) in staffs"
-                            :key="index"
-                            :label="item.label"
-                            :value="item.value"
-                        ></el-option> </el-select
-                ></el-form-item> -->
                 </el-form>
                 <DangerTable :data="showData" @show="show" :showState="true" />
+                <DangerTable
+                    :data="tableData"
+                    @show="show"
+                    :showState="true"
+                    v-show="false"
+                    id="table"
+                />
                 <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
@@ -174,6 +174,8 @@ require('echarts/lib/component/tooltip');
 require('echarts/lib/component/toolbox');
 import { getDangers } from 'network/danger';
 import { statistic } from 'commonjs/utils';
+import FileSaver from 'file-saver';
+import Xlsx from 'xlsx';
 import DangerTable from 'components/statis/DangerTable';
 export default {
     name: 'StatisDanger',
@@ -534,6 +536,24 @@ export default {
                     },
                 ],
             });
+        }, //保存表格到 xlsx 文件
+        saveExcel() {
+            const wb = Xlsx.utils.table_to_book(
+                document.querySelector('#table')
+            );
+            const wbout = Xlsx.write(wb, {
+                bookType: 'xlsx',
+                bookSST: true,
+                type: 'array',
+            });
+            try {
+                FileSaver.saveAs(
+                    new Blob([wbout], { type: 'application/octet-stream' }),
+                    '隐患数据.xlsx'
+                );
+            } catch (err) {
+                console.log(err);
+            }
         },
     },
     created() {
