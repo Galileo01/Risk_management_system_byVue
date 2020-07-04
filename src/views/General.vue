@@ -132,10 +132,19 @@
 </template>
 
 <script>
+import Amap from 'vue-amap';
+import { lazyAMapApiLoaderInstance } from 'vue-amap';
 import mapmixin from 'commonjs/mapmixin';
 import { getDangers } from 'network/danger';
 import { getDevice } from 'network/device';
 import { getCompanys } from 'network/company';
+// //初始化地图组件
+// Amap.initAMapApiLoader({
+//     // 申请的高德key
+//     key: '6e350de4372aea6e14e89161fe4816c0',
+//     // 插件集合
+//     plugin: ['ToolBar', 'MapType'],
+// });
 export default {
     name: 'General',
     mixins: [mapmixin],
@@ -298,6 +307,12 @@ export default {
     created() {
         this.getData();
         this.mountEvent('positions'); //绑定 信息窗口的 点击 事件 显示，
+        localStorage.removeItem('_AMap_raster');
+    },
+    mounted() {
+        lazyAMapApiLoaderInstance.load().then(() => {
+            localStorage.removeItem('_AMap_raster');
+        });
     },
 };
 </script>

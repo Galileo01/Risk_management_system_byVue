@@ -1,14 +1,7 @@
 <template>
     <div class="task-detail">
-        <el-container>
-            <el-header
-                ><div class="logo-wapper">
-                    <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
-                    <h3>风险治理与管控平台</h3>
-                </div></el-header
-            >
-
+        <el-container direction="vertical">
+            <GeneralHeader />
             <el-main>
                 <BreadNav
                     :texts="['日常任务', componentType]"
@@ -41,12 +34,12 @@
                     >
                         <template v-slot="{ row }">
                             <div class="table-data">
-                                <div>巡查顺序:{{ row.patrolOrder }}</div>
+                                <div>巡查顺序:{{ row.deviceOrder }}</div>
                                 <div>设备名称:{{ row.deviceName }}</div>
-                                <div>终端人员:{{ row.staff }}</div>
-                                <div>上传时间:{{ row.uploadTime }}</div>
+                                <div>终端人员:{{ row.userName }}</div>
+                                <div>上传时间:{{ row.doneTime }}</div>
 
-                                <div>RFID状态:{{ row.RFIDStatus }}</div>
+                                <!-- <div>RFID状态:{{ row.RFIDStatus }}</div> -->
 
                                 <div>
                                     巡线点视频:
@@ -55,16 +48,21 @@
                                     ></el-icon>
                                     <span
                                         class="a-style"
-                                        @click="showVideo(row.videoSrc)"
+                                        @click="showVideo(row.videoPath)"
                                         >查看</span
                                     >
                                 </div>
-                                <div>审核用户:{{ row.examUser }}</div>
-                                <div>审核时间:{{ row.examTime }}</div>
+                                <div>审核用户:{{ row.auditAdmin || '无' }}</div>
+                                <div>审核时间:{{ row.auditTime || '无' }}</div>
                                 <div>
-                                    审核状态:{{ row.examState | examState }}
+                                    审核状态:<span
+                                        :class="{ red: row.auditState !== 1 }"
+                                        >{{
+                                            getStateText(row.auditState)
+                                        }}</span
+                                    >
                                 </div>
-                                <div>审核备注:{{ row.examComment }}</div>
+                                <div>审核备注:{{ row.auditNote || '无' }}</div>
                             </div>
                         </template>
                     </el-table-column>
@@ -106,19 +104,24 @@
                         v-if="type === 'examine'"
                     >
                         <template v-slot="{ row }">
+                            <span :class="{ red: row.auditState !== 1 }"
+                                >{{
+                                    row.auditState === 1 ? '已' : '未'
+                                }}审核</span
+                            >
                             <el-button
                                 size="mini"
                                 circle
                                 icon="el-icon-check"
                                 type="primary"
-                                @click="passOne(row.patrolOrder - 1)"
+                                @click="passOne(row.deviceOrder - 1)"
                             ></el-button>
                             <el-button
                                 size="mini"
                                 circle
                                 icon="el-icon-close"
                                 type="danger"
-                                @click="dispassOne(row.patrolOrder - 1)"
+                                @click="dispassOne(row.deviceOrder - 1)"
                             ></el-button>
                             <!-- <el-button
                                 size="mini"
@@ -167,7 +170,9 @@
             </el-form>
             <span slot="footer">
                 <el-button @click="disPassVisible = false">取消</el-button>
-                <el-button type="primary" @click="submitExam">确认</el-button>
+                <el-button type="primary" @click="submitDisPass"
+                    >确认</el-button
+                >
             </span>
         </el-dialog>
         <el-dialog
@@ -216,10 +221,12 @@
 
 <script>
 import BaseInfo from 'components/routine_task/BaseInfo';
+import GeneralHeader from 'components/com/GeneralHeader';
 import ReAllocateDia from 'components/routine_task/ReAllocateDia';
 import {
     GetTasks,
     getTaskDevices2,
+    getTaskDevices,
     setDeviceOrder,
     examTask,
     SetTaskDevices,
@@ -227,6 +234,7 @@ import {
 import { getItemByDevice } from 'network/patrolitem';
 import { getDevice } from 'network/device';
 import { generateRisk } from 'network/danger';
+import { sendMessage } from 'network/message';
 export default {
     name: 'TaskDetail',
     data() {
@@ -246,7 +254,6 @@ export default {
             }, //审核信息
             examInfo: {
                 isMessage: true,
-                message: '',
                 auditState: [],
                 auditNote: [],
                 oprateIndex: 0, //正在 操作的 设备
@@ -281,50 +288,54 @@ export default {
                 limit: 9999,
             });
             if (!taskRes.flag) return this.$message.error('任务信息获取失败');
-            if (taskRes.status !== 200) {
-            }
+            console.log(taskRes);
+
             this.baseInfo = taskRes.tasks[0];
             this.examInfo.auditNote = [];
             this.examInfo.auditState = [];
-            //获取 设备
-            const deviceRes = await getTaskDevices2(this.baseInfo.taskID);
+            //获取 设备 的巡查情况
+            const deviceRes = await getTaskDevices({
+                taskID: this.baseInfo.taskID,
+            });
+
             console.log(deviceRes);
             if (!deviceRes.flag) return this.$message.error('任务设备获取失败');
 
             // 遍历数组 获取每一个设备的  检查项
             const tableData = [];
-            for (const [index, val] of deviceRes.devices.entries()) {
+            for (const val of deviceRes.task_devices) {
                 const itemRes = await getItemByDevice(val.deviceID);
+                const results = val.result; //每个设备的 巡查结果 string
                 const checkItems = [];
                 if (!itemRes.flag) return this.$message.error('巡查项获取失败');
                 else {
-                    for (const val of itemRes.checkItems) {
-                        checkItems.push({
-                            title: val.name,
-                            result: '符合 [好]',
+                    console.log(itemRes);
+
+                    for (const [index, item] of itemRes.checkItems.entries()) {
+                        let patrolInfo = {
+                            title: item.name,
+                            result: '',
                             imgSrc:
                                 'http://pic13.photophoto.cn/20091209/0038037977031807_b.jpg',
-                        });
+                        };
+                        //已经巡查并产生了巡查结果
+                        if (results) {
+                            patrolInfo.result =
+                                results.charAt(index) === '1'
+                                    ? '符合 [好]'
+                                    : '不符合';
+                        } else {
+                            patrolInfo.result = '无';
+                        }
+                        checkItems.push(patrolInfo);
                     }
                 }
-                const patrol = {
-                    itemID: index + 1,
-                    patrolOrder: index + 1,
-                    uploadTime: '2020 -4-2 10:28',
-                    staff: '打工的张三',
-                    RFIDStatus: '正常',
-                    videoSrc:
-                        'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/deviceJob/1861/33/284a73e6563c4d43bcaef06004d13c49.mp4',
-                    deviceName: val.name,
-                    examUser: '',
-                    examTime: '',
-                    examState: -1,
-                    examComment: '',
-                    checkItems,
-                };
-                tableData.push(patrol);
-                this.examInfo.auditNote.push('');
-                this.examInfo.auditState.push(-1 + '');
+
+                tableData.push({ ...val, checkItems });
+                const note = val.auditNote || '';
+                const state = val.auditState || '0';
+                this.examInfo.auditNote.push(note);
+                this.examInfo.auditState.push(state);
             }
 
             this.tableData = tableData;
@@ -396,6 +407,18 @@ export default {
             }
             this.disPassVisible = false;
         },
+        async submitDisPass() {
+            this.submitExam();
+            if (this.examInfo.isMessage) {
+                //选择给 终端人员发送信息
+                const res = await sendMessage({
+                    receiver: this.baseInfo.userName,
+                    content:`任务：${this.name}不合格;审核备注:${this.examInfo.auditNote[this.examInfo.oprateIndex]}`,
+                });
+                if (!res.flag) return this.$message.error('信息发送失败');
+            }
+        },
+
         resetDis() {
             this.$refs.disPassForm.resetFields();
         },
@@ -444,6 +467,11 @@ export default {
             }
             this.alloVisible = false;
         },
+        //审核状态的 文字展示
+        getStateText(state) {
+            if (state) return '已审核';
+            else return '未审核';
+        },
     },
     created() {
         this.getData();
@@ -451,6 +479,7 @@ export default {
     components: {
         BaseInfo,
         ReAllocateDia,
+        GeneralHeader,
     },
 };
 </script>
@@ -491,7 +520,14 @@ export default {
     /* 总体 table  */
     font-size: 13px;
     margin: 10px 0px 20px 0px;
+    .red {
+        color: #f56c6c;
+    }
+    .in-top span {
+        margin-right: 10px;
+    }
 }
+
 span.a-style {
     cursor: pointer;
     color: #409eff;

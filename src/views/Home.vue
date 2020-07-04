@@ -1,13 +1,16 @@
 <template>
     <div class="home">
-        <el-container>
-            <el-header>
-                <div class="logo-wapper">
-                    <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
-                    <h3>重大风险隐患排查及监督治理系统</h3>
-                </div>
+        <el-container direction="vertical">
+            <GeneralHeader>
                 <div class="left-wapper">
+                    <el-tooltip
+                        placement="left"
+                        content="查看消息"
+                        effect="light"
+                        ><el-icon
+                            class="el-icon-chat-dot-round message"
+                            @click.native="goMessage"
+                    /></el-tooltip>
                     <div class="avator" @click="goProfile">
                         <el-tooltip
                             effect="light"
@@ -25,7 +28,7 @@
                         >退出</el-button
                     >
                 </div>
-            </el-header>
+            </GeneralHeader>
             <el-container>
                 <el-aside :width="asideWidth"
                     ><div class="collapse" @click="collapse">
@@ -45,18 +48,23 @@
                 ></el-main>
             </el-container>
         </el-container>
+        <MessageAlert v-if="isShowAlert" @alert-close="is_show_alert = false" />
     </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import HomeAsideMenu from 'components/home/HomeAsideMenu';
+import GeneralHeader from 'components/com/GeneralHeader';
+import MessageAlert from 'components/com/MessageAlert';
+import { getMyMessages } from 'network/message';
 export default {
     name: 'Home',
     data() {
         return {
             //侧边栏 菜单
             isCollapse: false, //是否折叠
+            is_show_alert: true,
         };
     },
     computed: {
@@ -73,6 +81,10 @@ export default {
             } else {
                 return '150px';
             }
+        },
+        isShowAlert() {
+            const messageMiss = this.$store.state.messageMiss;
+            return messageMiss && this.is_show_alert;
         },
         ...mapGetters(['accountName', 'UserRole']),
     },
@@ -113,13 +125,28 @@ export default {
             // console.log(1222);
             sessionStorage.setItem('ischoose', 'false');
         },
+        //进入 消息页面
+        goMessage() {
+            this.$router.push('/message');
+        },
+        async _getMyMessage() {
+            const res = await getMyMessages({});
+            if (!res.flag) return this.$message.error('消息获取失败');
+            const find = res.messages.find((item) => item.statue === 1); //寻找 是否还有 没有确认的消息
+            if (!find) {
+                this.$store.commit('changeMiss', false);
+            }
+        },
     },
     components: {
         HomeAsideMenu,
+        GeneralHeader,
+        MessageAlert,
     },
     created() {
         this.$store.dispatch('reqDangerTypes'); //获取终端人员
         this.$store.dispatch('reqStaffs');
+        this._getMyMessage();
     },
     mounted() {
         this.$store.dispatch('reqDangerTypes'); //刷新重新获取终端人员
@@ -135,26 +162,7 @@ export default {
 .el-container {
     height: 100%;
 }
-.el-header {
-    background-color: #fefefe;
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /*文字居中*/
-    height: 50px !important;
-    border-bottom: 2px solid #008fc7;
-    .logo-wapper {
-        display: flex;
-        height: 50px;
-        align-items: center;
-    }
-    .logo {
-        height: 40px;
-        margin: 5px 0;
-    }
-    h3 {
-        margin-left: 10px;
-    }
-}
+
 .el-aside {
     background-color: #f2f2f2;
     overflow-x: hidden;
@@ -193,6 +201,11 @@ export default {
             vertical-align: middle;
             margin-right: 10px;
         }
+    }
+    .message {
+        font-size: 25px;
+        margin-right: 10px;
+        cursor: pointer;
     }
 }
 </style>

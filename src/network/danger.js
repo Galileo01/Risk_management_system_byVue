@@ -65,7 +65,8 @@ export function getDangers({
     state,
     page,
     limit,
-    riskTypeName, //参数 待添加
+    riskTypeName,
+    riskID
 }) {
     return ins.get('/risk/query', {
         params: {
@@ -77,12 +78,13 @@ export function getDangers({
             offset: (page - 1) * limit,
             limit,
             riskTypeName: riskTypeName || null,
+            riskID: riskID || null
         },
     });
 }
 
 
-export function dealDanger({ taskName, deviceName ,riskID}) {
+export function dealDanger({ taskName, deviceName, riskID }) {
     return ins
         .post(
             '/risk/update',

@@ -1,13 +1,7 @@
 <template>
     <div class="task_loction">
-        <el-container>
-            <el-header
-                ><div class="logo-wapper">
-                    <img src="~assets/img/logo.png" alt="" class="logo" />
-                    <!-- <h3>永川区非煤矿山企业安全检查监督管理平台</h3> -->
-                    <h3>重大风险隐患排查及监督治理系统</h3>
-                </div></el-header
-            >
+        <el-container direction="vertical">
+            <GeneralHeader/>
             <el-main>
                 <el-row>
                     <el-col>
@@ -56,14 +50,15 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
-import { getTaskDevices } from 'network/task';
-// import Amap from 'vue-amap';
-// Amap.initAMapApiLoader({
-//     // 申请的高德key
-//     key: '6e350de4372aea6e14e89161fe4816c0',
-//     // 插件集合
-//     plugin: ['ToolBar', 'MapType'],
-// });
+import { getTaskDevices2 } from 'network/task';
+import GeneralHeader from 'components/com/GeneralHeader';
+import Amap from 'vue-amap';
+Amap.initAMapApiLoader({
+    // 申请的高德key
+    key: '6e350de4372aea6e14e89161fe4816c0',
+    // 插件集合
+    plugin: ['ToolBar', 'MapType'],
+});
 export default {
     name: 'TaskLocation',
     mixins: [mapmixin],
@@ -90,7 +85,7 @@ export default {
     },
     methods: {
         async getTask() {
-            let res = await getTaskDevices(this.id);
+            let res = await getTaskDevices2({});
             console.log(res);
             if (!res.flag) return this.$message.error('设备获取失败');
 
@@ -116,6 +111,9 @@ export default {
             }
         },
     },
+    components:{
+        GeneralHeader
+    }, 
     created() {
         this.getTask();
         this.mountEvent('windowInfos');

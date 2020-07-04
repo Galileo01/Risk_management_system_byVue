@@ -51,7 +51,7 @@
                             }}</el-col>
                         </el-row>
                     </el-col>
-                    <el-col :span="14">
+                    <el-col :span="14" v-if="position.length != 0">
                         <el-amap
                             vid="amapDemo"
                             class="amap"
@@ -95,12 +95,22 @@
 </template>
 
 <script>
+import Amap from 'vue-amap';
+import { lazyAMapApiLoaderInstance } from 'vue-amap';
 import { formatDate } from 'commonjs/utils';
 import { getDangers } from 'network/danger';
+import { getDevice } from 'network/device';
+//初始化地图组件
+// Amap.initAMapApiLoader({
+//     // 申请的高德key
+//     key: '6e350de4372aea6e14e89161fe4816c0',
+//     // 插件集合
+//     plugin: ['ToolBar', 'MapType'],
+// });
 export default {
     name: 'DangerPrint',
     props: {
-        device: String,
+        id: String,
     },
     data() {
         return {
@@ -121,12 +131,34 @@ export default {
     },
     methods: {
         async getData() {
-            const res = await getDangers({
+            let res = await getDangers({
                 page: 1,
                 limit: 9999,
-                deviceName: this.device,
+                riskID: this.id,
             });
             console.log(res);
+            if (!res.flag) {
+                return this.$message.error('风险数据失败');
+            } else {
+                this.dangerInfo = res.risks[0];
+
+                res = await getDevice({
+                    page: 1,
+                    limit: 1,
+                    name: this.dangerInfo.deviceName,
+                });
+                console.log(res);
+
+                if (!res.flag) return this.$message.error('设备信息获取失败');
+                else {
+                    const { latitude, longitude } = res.devices[0];
+                    this.position = [
+                        parseFloat(longitude),
+                        parseFloat(latitude),
+                    ];
+                    console.log(parseFloat(longitude), parseFloat(latitude));
+                }
+            }
 
             this.dangerInfo = {
                 dangerNum: '123',
@@ -142,7 +174,7 @@ export default {
                     'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/reportInfo/283/4640e1b78dbc4d47bf938a8dd5ab3908.jpg',
                 ],
             };
-            this.position = [105.757223, 29.3326];
+            // this.position = [105.757223, 29.3326];
         },
         print() {
             window.print();
@@ -151,6 +183,13 @@ export default {
     created() {
         this.getData();
         this.now = new Date().toString();
+        localStorage.removeItem('_AMap_raster');
+    },
+    mounted() {
+        // lazyAMapApiLoaderInstance.load().then(() => {
+        //     localStorage.removeItem('_AMap_raster');
+        // });
+        localStorage.removeItem('_AMap_raster');
     },
 };
 </script>

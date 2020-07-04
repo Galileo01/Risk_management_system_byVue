@@ -147,6 +147,10 @@ export default {
                 endTime,
                 startTime: formatDate(startTime, 'yyyy-MM-dd hh:mm:ss'),
             });
+            // const res = await getTaskDevices({
+            //     endTime: '2020-06-24 00:00:00',
+            //     startTime: '2020-06-9 00:00:00',
+            // });
             //只获取 本周的数据
             console.log(res);
             if (!res.flag) return this.$message.error('巡查数据获取失败');

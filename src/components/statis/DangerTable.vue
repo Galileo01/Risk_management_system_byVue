@@ -47,7 +47,7 @@
                         type="info"
                         size="mini"
                         icon="el-icon-printer"
-                        @click="print(row.deviceName)"
+                        @click="print(row.riskID)"
                     ></el-button>
                 </el-tooltip>
                 <el-tooltip
@@ -83,9 +83,9 @@ export default {
         },
     },
     methods: {
-        print(deviceName) {
+        print(id) {
             const { href } = this.$router.resolve({
-                path: `/danger_print${deviceName}`, //进入任务详情页
+                path: `/danger_print${id}`, //进入任务详情页
             });
             window.open(href, '_blank');
         },

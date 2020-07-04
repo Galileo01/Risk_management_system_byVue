@@ -19,7 +19,8 @@
                         v-model="queryInfo.taskName"
                         class="inputInwidth"
                         clearable
-                        @clear="getList"  size="medium"
+                        @clear="getList"
+                        size="medium"
                     ></el-input
                 ></el-form-item>
 
@@ -27,7 +28,8 @@
                     <el-select
                         v-model="queryInfo.staff"
                         clearable
-                        @clear="getList"  size="medium"
+                        @clear="getList"
+                        size="medium"
                     >
                         <el-option
                             v-for="(item, index) in options"
@@ -41,14 +43,16 @@
                         v-model.number="queryInfo.cycle"
                         placeholder="输入任务的周期，单位天"
                         clearable
-                        @clear="getList"  size="medium"
+                        @clear="getList"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
                 <el-form-item label="任务状态">
                     <el-input
                         v-model="queryInfo.state"
                         clearable
-                        @clear="getList"  size="medium"
+                        @clear="getList"
+                        size="medium"
                     ></el-input>
                 </el-form-item>
             </el-form>
@@ -276,7 +280,7 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                const res = await setTask({ name: task.name, state: '待完成' });
+                const res = await setTask({ name: task.name, state: 0 });
                 console.log(res);
                 if (!res.flag) this.$message.error('操作失败');
                 this.$message.success('重置操作成功');
@@ -317,7 +321,7 @@ export default {
             if (!res.flag) return this.$message.error('修改失败');
             else {
                 this.$message.success('修改成功');
-                this.editVisible=false;
+                this.editVisible = false;
                 this.getList();
             }
         },

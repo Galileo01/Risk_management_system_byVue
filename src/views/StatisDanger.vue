@@ -539,7 +539,8 @@ export default {
         }, //保存表格到 xlsx 文件
         saveExcel() {
             const wb = Xlsx.utils.table_to_book(
-                document.querySelector('#table')
+                document.querySelector('#table'),
+                { raw: true }
             );
             const wbout = Xlsx.write(wb, {
                 bookType: 'xlsx',

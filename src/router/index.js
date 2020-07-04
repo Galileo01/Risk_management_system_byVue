@@ -27,12 +27,13 @@ const SetAccount = () => import('views/SetAccount');
 const StatisLast = () => import('views/StatisLast');
 const StatisPatrol = () => import('views/StatisPatrol');
 const StatisDanger = () => import('views/StatisDanger');
-const DangerPrint = () => import('views/DangerPrint');
+// const DangerPrint = () => import('views/DangerPrint');
+import DangerPrint from 'views/DangerPrint';
 const SetPatrolItem = () => import('views/SetPatrolItem');
 const DangerHandle = () => import('views/DangerHandle');
 const CompanyChoose = () => import('views/CompanyChoose');
 const SetEnter_Ind = () => import('views/SetEnter_Ind');
-
+const Message = () => import('views/Message');
 Vue.use(VueRouter);
 
 const routes = [
@@ -175,10 +176,15 @@ const routes = [
         meta: { title: '任务详情' },
     },
     {
-        path: '/danger_print:device',
+        path: '/danger_print:id',
         component: DangerPrint,
         props: true,
         meta: { title: '隐患打印' },
+    },
+    {
+        path: '/message',
+        component: Message,
+        meta: { title: '消息查看' },
     },
 ];
 

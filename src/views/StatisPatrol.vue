@@ -380,8 +380,9 @@ export default {
         //保存表格到 xlsx 文件
         saveExcel() {
             const wb = Xlsx.utils.table_to_book(
-                document.querySelector('#table')
-            );
+                document.querySelector('#table'),
+                { raw: true }
+            ); //只对内容进行解析，不转换格式
             const wbout = Xlsx.write(wb, {
                 bookType: 'xlsx',
                 bookSST: true,

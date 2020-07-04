@@ -136,7 +136,7 @@ export function examTask({ taskID, auditState, auditNote }) {
         .catch(errFun);
 }
 
-// 获取 任务 设备
+// 获取 任务 设备2
 
 export function getTaskDevices2(taskID) {
     return ins

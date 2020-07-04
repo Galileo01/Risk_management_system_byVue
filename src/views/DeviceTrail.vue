@@ -1,6 +1,6 @@
 <template>
     <div class="device_trail">
-        <BreadNav :texts="['人员监控', '设备访问']" />
+        <BreadNav :texts="['人员监控', '巡查轨迹']" />
         <div class="content">
             <el-amap :center="center" :plugin="plugin" :zoom="16" class="amap">
                 <el-amap-marker
@@ -85,7 +85,7 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
-import { GetTasks ,getTaskDevices} from 'network/task';
+import { GetTasks, getTaskDevices } from 'network/task';
 export default {
     name: 'DeviceTrail',
     mixins: [mapmixin],
@@ -105,7 +105,7 @@ export default {
             queryInfo: {
                 staff: '',
                 date: '',
-                taskID:'',
+                taskID: '',
             },
             taskSelections: [],
             trilInfo: [],
@@ -124,19 +124,17 @@ export default {
     },
     methods: {
         async getData() {
-            if (this.queryInfo.type === '')
-                return this.$message.error('请选择任务类型');
-            else if (this.queryInfo.staff === '')
+            if (this.queryInfo.staff === '')
                 return this.$message.error('请选择终端人员');
             else if (this.queryInfo.date === '')
                 return this.$message.error('请选择日期');
+            else if (this.queryInfo.taskID === '')
+                return this.$message.error('请选择任务');
 
             const res = await getTaskDevices(this.queryInfo.taskID);
-            if(!res.flag) return this.$message.error('任务信息获取失败');
+            if (!res.flag) return this.$message.error('任务信息获取失败');
             console.log(res);
-            
 
-            
             const data = [
                 {
                     position: [105.757243, 29.333],
@@ -189,8 +187,8 @@ export default {
                     crateTime.getFullYear() === year
                 )
                     this.taskSelections.push({
-                        name:item.name,
-                        taskID:item.taskID
+                        name: item.name,
+                        taskID: item.taskID,
                     });
             });
         },

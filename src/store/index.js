@@ -12,6 +12,7 @@ export default new Vuex.Store({
         activePath: '', //动态路由信息
         staffs: [], //巡查人员
         dangerTypes: [], //风险类型
+        messageMiss: true,//是否有消息错过
     },
     mutations: {
         getUserdata(state, payload) {
@@ -44,6 +45,9 @@ export default new Vuex.Store({
         getDangerTypes(state, dangerTypes) {
             state.dangerTypes = dangerTypes;
         },
+        changeMiss(state,value) {
+            state.messageMiss = value;
+        }
     },
     //异步的更改
     actions: {

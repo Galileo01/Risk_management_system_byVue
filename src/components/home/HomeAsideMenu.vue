@@ -11,7 +11,7 @@
     >
         <!--一级菜单-->
         <el-submenu
-            v-for="(item, index) in menulist"
+            v-for="item in menulist"
             :key="item.id"
             :index="item.id + ''"
         >
@@ -66,7 +66,6 @@ export default {
             if (activePath) this.$store.commit('changeActivePath', activePath);
         },
         getData() {
-        
             if (this.UserRole == 0) {
                 // 是 系统管理员
                 this.menulist = [
@@ -250,7 +249,7 @@ export default {
                             },
                             {
                                 id: 602,
-                                authName: '设备轨迹',
+                                authName: '巡查轨迹',
                                 path: 'device_trail',
                                 children: [],
                             },
