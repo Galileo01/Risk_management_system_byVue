@@ -592,11 +592,13 @@ export default {
     }
     .line-chart {
         width: 600px;
-        height: 400px;
+        // height: 400px;
+        height: 60vh;
     }
     .pie-wapper {
         width: calc(100% - 600px);
-        height: 400px;
+        // height: 400px;
+        height: 60vh;
     }
     .pie-chart {
         height: 400px;

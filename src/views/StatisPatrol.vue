@@ -426,8 +426,10 @@ export default {
     }
     .bar-chart,
     .pie-chart {
-        width: 600px;
-        height: 400px;
+        // width: 600px;
+        // height: 400px;
+        height:60vh;
+        width:40vw;
     }
     .el-form-item {
         margin-bottom: 10px;

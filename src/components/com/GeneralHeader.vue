@@ -23,6 +23,7 @@ export default {
     justify-content: space-between;
     align-items: center; /*文字居中*/
     height: 50px !important;
+    min-width: 580px;
     border-bottom: 2px solid #008fc7;
     .logo-wapper {
         display: flex;

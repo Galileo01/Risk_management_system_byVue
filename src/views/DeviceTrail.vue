@@ -206,7 +206,7 @@ export default {
     display: flex;
 }
 .amap {
-    height: 620px;
+    height: calc(100vh - 60px - 30px - 20px);
     width: calc(100% - 300px);
     .window-info {
         font-size: 13px;

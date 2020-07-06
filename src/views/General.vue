@@ -139,12 +139,12 @@ import { getDangers } from 'network/danger';
 import { getDevice } from 'network/device';
 import { getCompanys } from 'network/company';
 // //初始化地图组件
-// Amap.initAMapApiLoader({
-//     // 申请的高德key
-//     key: '6e350de4372aea6e14e89161fe4816c0',
-//     // 插件集合
-//     plugin: ['ToolBar', 'MapType'],
-// });
+Amap.initAMapApiLoader({
+    // 申请的高德key
+    key: '6e350de4372aea6e14e89161fe4816c0',
+    // 插件集合
+    plugin: ['ToolBar', 'MapType'],
+});
 export default {
     name: 'General',
     mixins: [mapmixin],
@@ -307,7 +307,7 @@ export default {
     created() {
         this.getData();
         this.mountEvent('positions'); //绑定 信息窗口的 点击 事件 显示，
-        localStorage.removeItem('_AMap_raster');
+        // localStorage.removeItem('_AMap_raster');
     },
     mounted() {
         lazyAMapApiLoaderInstance.load().then(() => {
@@ -322,6 +322,7 @@ export default {
     padding-left: 20px;
     .record {
         width: 800px;
+        height: 80px;
         margin: 0 auto;
         h2 {
             text-align: center;
@@ -384,8 +385,8 @@ export default {
         }
     }
     .amap {
-        height: 520px;
-        // width: 1160px;
+        // height: 520px;
+        height: calc(100vh - 60px - 30px - 80px - 20px);
         width: calc(100% - 10px);
 
         .window {
