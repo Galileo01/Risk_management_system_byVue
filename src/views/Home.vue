@@ -106,6 +106,7 @@ export default {
             } else {
                 sessionStorage.clear();
                 localStorage.clear();
+                this.$store.commit('clearState');
                 this.$router.push('/login');
                 this.$message.success('成功退出');
             }
@@ -115,6 +116,7 @@ export default {
         },
         goProfile() {
             this.$router.push(`/home/person_info`);
+            this.$store.commit('changeActivePath', '');//取消 侧边栏的选中
         },
         chooseCompany() {
             this.$refs.asidemenu.changeToChoosed();
@@ -144,13 +146,13 @@ export default {
         MessageAlert,
     },
     created() {
-        this.$store.dispatch('reqDangerTypes'); //获取终端人员
-        this.$store.dispatch('reqStaffs');
         this._getMyMessage();
     },
     mounted() {
-        this.$store.dispatch('reqDangerTypes'); //刷新重新获取终端人员
+        //页面刷新后 同时也刷新vuex 的状态
+        this.$store.dispatch('reqDangerTypes');
         this.$store.dispatch('reqStaffs');
+        this.$store.dispatch('reqEnterpriseLocation');
     },
 };
 </script>

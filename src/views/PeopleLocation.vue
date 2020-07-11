@@ -69,8 +69,8 @@ export default {
             points: [],
             showPoints: [],
             imgs: {
-                offline: require('../assets/img/offline.png'),
-                online: require('../assets/img/online.png'),
+                offline: require('../assets/img/point_red.png'),
+                online: require('../assets/img/point_green.png'),
             },
         };
     },

@@ -23,6 +23,9 @@
                     :key="index"
                     :events="events"
                     :vid="index + ''"
+                    :icon="marker.checked ? imgs.checked : imgs.uncheck"
+                    :offset="[-15, -34]"
+                    :title="marker.checked ? '已巡查' : '未巡查'"
                 ></el-amap-marker>
                 <el-amap-info-window
                     v-for="(item, index) in trilInfo"
@@ -31,9 +34,12 @@
                     :visible="item.visible"
                 >
                     <div class="window-info">
-                        <p>设备编号：{{ item.num }}</p>
+                        <p>设备名称：{{ item.num }}</p>
                         <p>执行时间：{{ item.updataTime }}</p>
-                        <p>RFID状态：{{ item.status }}</p>
+                        <p>
+                            巡查状态: {{ item.checked ? '已巡查' : '未巡查' }}
+                        </p>
+                        <p>巡查结果: {{ item.result }}</p>
                     </div></el-amap-info-window
                 >
                 <el-amap-polyline :path="path" />
@@ -85,13 +91,17 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
-import { GetTasks, getTaskDevices } from 'network/task';
+import {
+    GetTasks,
+    getTaskDevices,
+    getDeviceBaseinfoByTaskID,
+} from 'network/task';
 export default {
     name: 'DeviceTrail',
     mixins: [mapmixin],
     data() {
         return {
-            center: [105.757223, 29.33282],
+            center: this.$store.state.enterpriseLocation,
             plugin: [
                 {
                     pName: 'ToolBar',
@@ -111,6 +121,10 @@ export default {
             trilInfo: [],
             path: [],
             windows: [],
+            imgs: {
+                uncheck: require('../assets/img/point_red.png'),
+                checked: require('../assets/img/point_blue.png'),
+            },
         };
     },
     computed: {
@@ -131,46 +145,51 @@ export default {
             else if (this.queryInfo.taskID === '')
                 return this.$message.error('请选择任务');
 
-            const res = await getTaskDevices(this.queryInfo.taskID);
-            if (!res.flag) return this.$message.error('任务信息获取失败');
-            console.log(res);
-
-            const data = [
-                {
-                    position: [105.757243, 29.333],
-                    num: 'R10',
-                    status: '正常',
-                    updataTime: '2020-03-30 23:07:49',
-                    visible: false,
-                },
-                {
-                    position: [105.757223, 29.334],
-                    num: 'R16',
-                    status: '正常',
-                    updataTime: '2020-04-08 23:07:49',
-                    visible: false,
-                },
-                {
-                    position: [105.758523, 29.3355],
-                    num: 'R18',
-                    status: '正常',
-                    updataTime: '2020-03-27 23:07:49',
-                    visible: false,
-                },
-            ];
-            this.$message.success('查询成功');
-
-            this.trilInfo = data;
+            // const res = await getDeviceBaseinfoByTaskID(this.queryInfo.taskID);
+            const [res1, res2] = await Promise.all([
+                getTaskDevices({ taskID: this.queryInfo.taskID }),
+                getDeviceBaseinfoByTaskID(this.queryInfo.taskID),
+            ]);
+            if (!res1.flag || !res2.flag)
+                return this.$message.error('任务信息获取失败');
+            console.log(res1, res2);
             this.path = [];
-            data.forEach((val) => {
-                this.path.push(val.position);
+
+            const data = res1.task_devices.map((item, index) => {
+                const { longitude, latitude } = res2.devices[index];
+                const itemsResult = item.result;
+                //  console.log(itemsResult);
+                let checked = false,
+                    result = '无';
+                if (itemsResult) {
+                    checked = true;
+                    if (itemsResult.includes('0'))
+                        //该设备的某一个检查项 存在不合格的情况
+                        result = '不合格';
+                    else result = '合格';
+                }
+                const position = [longitude, latitude];
+                this.path.push(position);
+                return {
+                    position,
+                    num: item.deviceName,
+                    updataTime: item.doneTime,
+                    visible: false,
+                    checked,
+                    result,
+                };
             });
+            console.log(data);
+            this.$message.success('查询成功');
+            this.trilInfo = data;
+            //移动 地图中心
+            this.center = data[parseInt(data.length / 2)].position;
         },
         async _getTasks() {
             const res = await GetTasks({ userName: this.queryInfo.staff });
             if (!res.flag) return this.$message.error('任务信息获取失败');
             this.tasks = res.tasks;
-            this.filterSelection();
+            // this.filterSelection();
         },
         //过滤数据
         filterSelection() {
@@ -196,6 +215,8 @@ export default {
     created() {
         this.mountEvent('trilInfo');
         this.queryInfo.date = new Date().toString(); // 设置默认的时间
+        // if (this.center.length === 0)
+        //     this.$store.dispatch('reqEnterpriseLocation');
     },
 };
 </script>

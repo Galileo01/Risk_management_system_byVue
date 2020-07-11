@@ -13,14 +13,14 @@ Vue.component('BreadNav', BreadNav);
 
 Vue.config.productionTip = false;
 
-// Vue.use(Amap);
+Vue.use(Amap);
 
-// Amap.initAMapApiLoader({
-//     // 申请的高德key
-//     key: '6e350de4372aea6e14e89161fe4816c0',
-//     // 插件集合
-//     plugin: ['ToolBar', 'MapType'],
-// });
+Amap.initAMapApiLoader({
+    // 申请的高德key
+    key: '6e350de4372aea6e14e89161fe4816c0',
+    // 插件集合
+    plugin: ['ToolBar', 'MapType'],
+});
 
 
 

@@ -1,4 +1,5 @@
 import { errFun, ins } from './index';
+import axios from 'axios'
 import qs from 'qs';
 //登录函数
 export function logReq(account, password) {
@@ -75,7 +76,7 @@ export function getUsers({
         .catch(errFun);
 }
 
-// 修改 用户信息
+// 修改 用户基础信息
 export function updateAccount({
     name,
     permission,
@@ -83,7 +84,7 @@ export function updateAccount({
     Email,
     address,
     position,
-    enterpriseName,
+    sex
 }) {
     return ins
         .post(
@@ -95,12 +96,32 @@ export function updateAccount({
                 Email,
                 address,
                 position,
-                enterpriseName,
+                enterpriseName: localStorage.getItem('enterpriseName'),
                 address,
+                sex
             })
         )
         .catch(errFun);
 }
+
+//更新用户 头像
+export function updateAvatar(avatar) {
+    const instance = axios.create({
+        baseURL: 'http://139.224.68.137:8081',
+        timeout: 5000,
+        headers: {
+            // 'Content-Type': 'multipart/form-data',
+            token: localStorage.getItem('token')
+        }
+    });
+    console.log(avatar.get('file'));
+    instance.interceptors.response.use((res) => {
+        return { ...res.data, status: res.status };
+    });
+    return instance.post('/user/avatarUpload', avatar)
+        .catch(errFun)
+
+};
 
 export function deleteUser(enterpriseName, name) {
     return ins
@@ -112,4 +133,16 @@ export function deleteUser(enterpriseName, name) {
             })
         )
         .catch(errFun);
+}
+
+//更改密码
+export function updatePass({
+    userID, beforePassword, afterPassword
+}) {
+
+    return ins.post('/user/updatePassword', qs.stringify({
+        userID, beforePassword,
+        afterPassword
+    }))
+        .catch(errFun)
 }

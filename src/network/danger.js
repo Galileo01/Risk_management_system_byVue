@@ -98,3 +98,13 @@ export function dealDanger({ taskName, deviceName, riskID }) {
         )
         .catch(errFun);
 }
+
+//根据 riskID 获取 设备信息
+export function getDeviceByriskID(riskID){
+    return ins.get('/risk/queryDeviceLatitude',{
+        params:{
+            riskID
+        }
+    })
+    .catch(errFun)
+}

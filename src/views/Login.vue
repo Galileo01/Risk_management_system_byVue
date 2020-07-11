@@ -58,6 +58,7 @@
 
 <script>
 import { log } from 'util';
+import md5 from 'js-md5';
 import SIdentify from 'components/com/identify';
 import { logReq, checkToken } from 'network/account';
 export default {
@@ -112,6 +113,7 @@ export default {
                                 token,
                                 enterpriseName,
                                 industryName,
+                                userName: username,
                             } = res;
                             window.localStorage.setItem('token', token);
                             localStorage.setItem(
@@ -121,8 +123,10 @@ export default {
                             this.$store.commit('getUserdata', {
                                 token,
                                 role,
-                                username: this.formData.username,
+                                accountName: this.formData.username,
+                                username,
                                 industryName: industryName,
+                                password: md5(this.formData.password),
                             });
                             if (industryName)
                                 localStorage.setItem(
@@ -144,12 +148,14 @@ export default {
                                     'company_choose'
                                 );
                             } //企业管理员 进入 企业履历
-                            else {
+                            else if (role === 2) {
                                 this.$router.push('/home/general');
                                 this.$store.commit(
                                     'changeActivePath',
                                     'general'
                                 );
+                            } else if (role === 3) {
+                               return this.$message.error('权限过低，无法登录系统');
                             }
                             this.$message.success('登录成功');
                         } else {
@@ -204,6 +210,7 @@ export default {
     },
     created() {
         this.autoLogin();
+        console.log(this.$store.state);
     },
     components: {
         's-identify': SIdentify,

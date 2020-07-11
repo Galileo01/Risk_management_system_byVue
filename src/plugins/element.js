@@ -43,7 +43,8 @@ import {
     Radio,
     RadioGroup,
     Timeline,
-    TimelineItem
+    TimelineItem,
+    Image
 } from 'element-ui';
 
 Vue.use(Button);
@@ -88,6 +89,7 @@ Vue.use(Radio)
 Vue.use(RadioGroup)
 Vue.use(Timeline)
 Vue.use(TimelineItem)
+Vue.use(Image)
 //挂载 全局的 方法
 Vue.prototype.$message = Message;
 Vue.prototype.$confirm = MessageBox.confirm;

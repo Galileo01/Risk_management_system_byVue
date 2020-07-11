@@ -1,10 +1,13 @@
 <template>
     <div class="task_loction">
         <el-container direction="vertical">
-            <GeneralHeader/>
+            <GeneralHeader />
             <el-main>
                 <el-row>
-                    <el-col>
+                    <el-col :span="1">
+                        任务名称:
+                    </el-col>
+                    <el-col :span="2">
                         {{ name }}
                     </el-col>
                 </el-row>
@@ -12,20 +15,19 @@
                     vid="amapDemo"
                     class="amap"
                     :center="center"
-                    :zoom="16"
+                    :zoom="17"
                     ref="amap"
                     :plugin="plugin"
                     ><div v-if="windowInfos.length !== 0">
-                        <el-amap-circle-marker
-                            v-for="(item, index) in this.windowInfos"
-                            :center="item.point"
-                            :radius="10"
-                            :fill-color="item.pointColor"
+                        <el-amap-marker
+                            v-for="(item, index) in windowInfos"
+                            :position="item.point"
                             :key="index"
-                            :strokeWeight="1"
                             :events="events"
                             :vid="index + ''"
-                        />
+                            :offset="[-15, -34]"
+                            :title="item.num"
+                        ></el-amap-marker>
                         <el-amap-info-window
                             v-for="(item, index) in this.windowInfos"
                             :position="item.point"
@@ -34,7 +36,7 @@
                         >
                             <div class="info-window">
                                 <p>
-                                    设备编号: <span>{{ item.num }}</span>
+                                    设备名称: <span>{{ item.num }}</span>
                                 </p>
                                 <p>
                                     安装地址: <span>{{ item.location }}</span>
@@ -50,20 +52,21 @@
 
 <script>
 import mapmixin from 'commonjs/mapmixin';
-import { getTaskDevices2 } from 'network/task';
+import { getTaskDevices2, getDeviceBaseinfoByTaskID } from 'network/task';
 import GeneralHeader from 'components/com/GeneralHeader';
 import Amap from 'vue-amap';
-Amap.initAMapApiLoader({
-    // 申请的高德key
-    key: '6e350de4372aea6e14e89161fe4816c0',
-    // 插件集合
-    plugin: ['ToolBar', 'MapType'],
-});
+// Amap.initAMapApiLoader({
+//     // 申请的高德key
+//     key: '6e350de4372aea6e14e89161fe4816c0',
+//     // 插件集合
+//     plugin: ['ToolBar', 'MapType'],
+// });
 export default {
     name: 'TaskLocation',
     mixins: [mapmixin],
     data() {
         return {
+            id: sessionStorage.getItem('taskID'),
             taskInfo: {},
             events: {},
             windowInfos: [],
@@ -76,7 +79,6 @@ export default {
                     defaultType: 0,
                 },
             ],
-            id: parseInt(sessionStorage.getItem('taskID')),
             center: [],
         };
     },
@@ -85,7 +87,8 @@ export default {
     },
     methods: {
         async getTask() {
-            let res = await getTaskDevices2({});
+            // let res = await getTaskDevices2({});
+            let res = await getDeviceBaseinfoByTaskID(this.id);
             console.log(res);
             if (!res.flag) return this.$message.error('设备获取失败');
 
@@ -111,9 +114,9 @@ export default {
             }
         },
     },
-    components:{
-        GeneralHeader
-    }, 
+    components: {
+        GeneralHeader,
+    },
     created() {
         this.getTask();
         this.mountEvent('windowInfos');
@@ -122,34 +125,18 @@ export default {
 </script>
 
 <style scoped lang="less">
-.el-header {
-    background-color: #fefefe;
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /*文字居中*/
-    height: 50px !important;
-    border-bottom: 2px solid #008fc7;
-    .logo-wapper {
-        display: flex;
-        height: 50px;
-        align-items: center;
-    }
-    .logo {
-        height: 40px;
-        margin: 5px 0;
-    }
-    h3 {
-        margin-left: 10px;
-    }
-}
-.amap {
-    margin-top: 10px;
-    height: 600px;
-    width: 100%;
-    .info-window {
-        font-size: 13px;
-        span {
-            margin-left: 3px;
+.task_loction {
+    font-size: 14px;
+    .amap {
+        margin-top: 10px;
+        // height: 600px;
+        height: calc(100vh - 60px - 60px);
+        width: 100%;
+        .info-window {
+            font-size: 13px;
+            span {
+                margin-left: 3px;
+            }
         }
     }
 }

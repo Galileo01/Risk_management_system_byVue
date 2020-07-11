@@ -155,16 +155,24 @@ export function getTaskDevices({
     taskID,
 }) {
     console.log(cycle);
-    
+
     return ins.get('/task_device/queryByDeviceID', {
         params: {
-            deviceID:deviceID||null,
-            startTime:startTime||null,
-            endTime:endTime||null,
-            cycle:cycle>=0?cycle:null,
-            userName:userName||null,
-            taskState:taskState||null,
-            taskID:taskID||null
+            deviceID: deviceID || null,
+            startTime: startTime || null,
+            endTime: endTime || null,
+            cycle: cycle >= 0 ? cycle : null,
+            userName: userName || null,
+            taskState: taskState || null,
+            taskID: taskID || null
         },
-    });
+    }).catch(errFun)
+}
+//根据 任务id 返回 设备的基础信息
+export function getDeviceBaseinfoByTaskID(taskID) {
+    return ins.get('/task/queryDeviceLatitude', {
+        params: {
+            taskID
+        }
+    }).catch(errFun)
 }

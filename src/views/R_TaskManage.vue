@@ -173,7 +173,6 @@ export default {
                 userName: this.queryInfo.staff,
                 state: this.queryInfo.state,
             });
-            // console.log(res);
 
             if (!res.flag) return this.$message.error('任务列表获取失败');
 

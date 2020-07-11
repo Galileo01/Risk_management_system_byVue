@@ -42,11 +42,11 @@
                                 <!-- <div>RFID状态:{{ row.RFIDStatus }}</div> -->
 
                                 <div>
-                                    巡线点视频:
+                                    设备视频:
                                     <el-icon
                                         class="el-icon-caret-right"
                                     ></el-icon>
-                                    <span
+                                    <span v-if="row.videoPath"
                                         class="a-style"
                                         @click="showVideo(row.videoPath)"
                                         >查看</span
@@ -88,6 +88,7 @@
                                     class-name="a-style"
                                     ><template v-slot="{ row }">
                                         <span
+                                            v-if="row.imgSrc"
                                             class="a-style"
                                             @click="showImg(row.imgSrc)"
                                             >查看</span
@@ -140,6 +141,7 @@
             :visible.sync="imgVisible"
             width="60%"
             top="50px"
+            title="巡查图片"
         >
             <img :src="showingImg" alt="" />
         </el-dialog>
@@ -148,8 +150,11 @@
             :visible.sync="videoVisible"
             width="40%"
             top="50px"
+            title="设备视频"
+            @open="videoDialogOpen"
+            @close="videoDialogClose"
         >
-            <video :src="showingVideo" controls></video>
+            <video :src="showingVideo" controls ref="video"></video>
         </el-dialog>
         <!--某个巡查项 不合格 ，展示的 对话框-->
         <el-dialog
@@ -272,13 +277,6 @@ export default {
             return this.type === 'manage' ? '任务详情' : '任务审核';
         },
     },
-    filters: {
-        examState(val) {
-            if (val === 1) return '合格';
-            else if (val === 0) return '不合格';
-            else return '未审核';
-        },
-    },
     methods: {
         async getData() {
             //获取 任务数据
@@ -290,7 +288,9 @@ export default {
             if (!taskRes.flag) return this.$message.error('任务信息获取失败');
             console.log(taskRes);
 
-            this.baseInfo = taskRes.tasks[0];
+            this.baseInfo = taskRes.tasks.find(
+                (item) => item.name === this.name
+            );
             this.examInfo.auditNote = [];
             this.examInfo.auditState = [];
             //获取 设备 的巡查情况
@@ -306,18 +306,34 @@ export default {
             for (const val of deviceRes.task_devices) {
                 const itemRes = await getItemByDevice(val.deviceID);
                 const results = val.result; //每个设备的 巡查结果 string
+                const pictures = val.picturePath
+                    ? val.picturePath.split(',')
+                    : []; //设备巡查的图片
+                let videoPath = val.videoPath;
+                //拼接 视频地址
+                if (videoPath) {
+                    val.videoPath =
+                        sessionStorage.getItem('baseURL') + videoPath.slice(49);
+                }
                 const checkItems = [];
                 if (!itemRes.flag) return this.$message.error('巡查项获取失败');
                 else {
-                    console.log(itemRes);
-
                     for (const [index, item] of itemRes.checkItems.entries()) {
+                        //处理 图片地址
+                        const imgSrc =
+                            pictures.length !== 0
+                                ? sessionStorage.getItem('baseURL') +
+                                  pictures[index].slice(49)
+                                : '';
+
                         let patrolInfo = {
                             title: item.name,
                             result: '',
-                            imgSrc:
-                                'http://pic13.photophoto.cn/20091209/0038037977031807_b.jpg',
+                            imgSrc,
                         };
+
+                        console.log('imgSrc', imgSrc);
+
                         //已经巡查并产生了巡查结果
                         if (results) {
                             patrolInfo.result =
@@ -413,7 +429,9 @@ export default {
                 //选择给 终端人员发送信息
                 const res = await sendMessage({
                     receiver: this.baseInfo.userName,
-                    content:`任务：${this.name}不合格;审核备注:${this.examInfo.auditNote[this.examInfo.oprateIndex]}`,
+                    content: `任务：${this.name}不合格;审核备注:${
+                        this.examInfo.auditNote[this.examInfo.oprateIndex]
+                    }`,
                 });
                 if (!res.flag) return this.$message.error('信息发送失败');
             }
@@ -471,6 +489,16 @@ export default {
         getStateText(state) {
             if (state) return '已审核';
             else return '未审核';
+        },
+        videoDialogOpen() {
+            //等待 视频加载完成，dom 更新 就自动播放
+            this.$nextTick(() => {
+                this.$refs.video.play();
+            });
+        },
+        videoDialogClose() {
+            this.$refs.video.pause();
+            this.showingVideo = '';
         },
     },
     created() {
@@ -533,9 +561,6 @@ span.a-style {
     color: #409eff;
 }
 
-.img-dialog img {
-    width: 100%;
-}
 .video-dialog video {
     width: 300px;
     margin: 0 auto;
@@ -544,5 +569,12 @@ span.a-style {
 
 /deep/ .el-dialog__footer {
     padding: 0px 20px 10px !important;
+}
+/deep/ .img-dialog .el-dialog__body {
+    height: 80vh;
+    img {
+        width: 90%;
+        height: 100%;
+    }
 }
 </style>

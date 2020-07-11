@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-bind="$attrs" v-on="$listeners">
+    <el-dialog v-bind="$attrs" v-on="$listeners" class="MK-dialog">
         <slot>对话框没有内容</slot>
         <!--向父组件暴露 footer 插槽-->
         <slot name="footer" v-if="showFooter">
@@ -12,7 +12,7 @@
                     type="primary"
                     @click="$emit('dialog-confirm')"
                     size="medium"
-                    >确 定</el-button
+                    >{{ confirmText }}</el-button
                 >
             </span>
         </slot>
@@ -27,6 +27,10 @@ export default {
         showFooter: {
             type: Boolean,
             default: true,
+        },
+        confirmText: {
+            type: String,
+            default: '确定',
         },
     },
     data() {
