@@ -102,6 +102,8 @@ export default new Vuex.Store({
             if (!res.flag) return console.log('企业信息地理位置失败');
             console.log(res);
             const { longitude, latitude } = res.enterprises[0];
+            localStorage.setItem('longitude', longitude);
+            localStorage.setItem('latitude', latitude);
             commit('getEnterpriseLocation', [longitude, latitude]);
         }
     },
@@ -122,5 +124,8 @@ export default new Vuex.Store({
                 localStorage.getItem('accountName')
             );
         },
+        enterpriseLocation(state) {
+            return state.enterpriseLocation;
+        }
     },
 });

@@ -116,11 +116,14 @@ export default {
         },
         goProfile() {
             this.$router.push(`/home/person_info`);
-            this.$store.commit('changeActivePath', '');//取消 侧边栏的选中
+            this.$store.commit('changeActivePath', ''); //取消 侧边栏的选中
         },
         chooseCompany() {
             this.$refs.asidemenu.changeToChoosed();
             sessionStorage.setItem('ischoose', 'true');
+            this.$store.dispatch('reqDangerTypes');
+            this.$store.dispatch('reqStaffs');
+            this.$store.dispatch('reqEnterpriseLocation');
         },
         unchooseCompany() {
             this.$refs.asidemenu.changeToUnchoose();
@@ -153,6 +156,7 @@ export default {
         this.$store.dispatch('reqDangerTypes');
         this.$store.dispatch('reqStaffs');
         this.$store.dispatch('reqEnterpriseLocation');
+        // console.log('mounted');
     },
 };
 </script>

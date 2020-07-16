@@ -18,7 +18,7 @@
                     :zoom="17"
                     ref="amap"
                     :plugin="plugin"
-                    ><div v-if="windowInfos.length !== 0">
+                    ><div v-if="isshowMap">
                         <el-amap-marker
                             v-for="(item, index) in windowInfos"
                             :position="item.point"
@@ -79,11 +79,19 @@ export default {
                     defaultType: 0,
                 },
             ],
-            center: [],
+            center: [
+                localStorage.getItem('longitude'),
+                localStorage.getItem('latitude'),
+            ],
         };
     },
     props: {
         name: String,
+    },
+    computed: {
+        isshowMap() {
+            return this.windowInfos.length !== 0;
+        },
     },
     methods: {
         async getTask() {

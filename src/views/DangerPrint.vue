@@ -38,14 +38,12 @@
                         </el-row>
                         <el-row>
                             <el-col :span="4">位置描述 :</el-col>
-                            <el-col :span="20">{{
-                                deviceInfo.address
-                            }}</el-col>
+                            <el-col :span="20">{{ deviceInfo.address }}</el-col>
                         </el-row>
                         <el-row>
                             <el-col :span="4">隐患描述 :</el-col>
                             <el-col :span="20">{{
-                                dangerInfo.note||'无'
+                                dangerInfo.note || '无'
                             }}</el-col>
                         </el-row>
                     </el-col>
@@ -116,7 +114,10 @@ export default {
     data() {
         return {
             dangerInfo: {},
-            position: [],
+            position: [
+                localStorage.getItem('longitude'),
+                localStorage.getItem('latitude'),
+            ],
             now: '',
             isPositionGet: false, //标记位置信息是否 通过
             deviceInfo: {},
@@ -155,11 +156,10 @@ export default {
         print() {
             window.print();
         },
-        stateText(state)
-        {
-            const texts=['未处理','已处理'];
+        stateText(state) {
+            const texts = ['未处理', '已处理'];
             return texts[state];
-        }
+        },
     },
     created() {
         this.getData();

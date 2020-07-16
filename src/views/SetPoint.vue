@@ -48,12 +48,13 @@
                     >
                 </el-tab-pane>
                 <el-tab-pane label="图文导航" name="navImgs" class="navimg">
-                    <el-button type="primary" @click="showAddDialog"
-                        >添加图片</el-button
+                    <el-button
+                        type="primary"
+                        @click="showOprateDialog('add')"
+                        size="medium"
+                        >添加导航图文</el-button
                     >
-                    <el-button type="danger" @click="submitBaseInfoEdit"
-                        >提交设置</el-button
-                    >
+
                     <div class="imgs">
                         <div
                             v-for="(img, index) in navImgs"
@@ -64,13 +65,13 @@
                             <img :src="img" alt="" />
                             <div class="btns">
                                 <el-button
-                                    size="medium"
-                                    @click="showRepDialog(index)"
+                                    size="small"
+                                    @click="showOprateDialog('replace', index)"
                                     >替换</el-button
                                 >
                                 <el-button
                                     type="danger"
-                                    size="medium"
+                                    size="small"
                                     @click="removeImg(index)"
                                     >删除</el-button
                                 >
@@ -101,7 +102,7 @@
                         <el-col :span="3" :offset="14"
                             ><el-button
                                 type="warning"
-                                size="medium"
+                                size="samll"
                                 @click="ChangeItemsTabType"
                                 >取消选择</el-button
                             ></el-col
@@ -132,28 +133,29 @@
                     ></el-pagination>
                 </el-tab-pane>
             </el-tabs>
-            <!--添加图片 对话框-->
-            <el-dialog
-                :visible.sync="addImgVisible"
-                title="添加图片导航"
-                class="adddia"
+
+            <!--图文导航 操作对话框-->
+            <MKDialog
+                :title="imgDialogTitle"
+                :visible.sync="oprateDialogVisible"
+                class="dialog"
+                @close="resetOprateInfo"
+                @dialog-confirm="submitUploadNav"
             >
                 <el-row class="ali-c"
                     ><el-col :span="6"
-                        ><span>此图片作为导航的步数</span></el-col
+                        ><span>此图片作为导航的步数 :</span></el-col
                     >
                     <el-col :span="5"
-                        ><el-input
-                            v-model="addImgInfo.step"
-                            size="mini"
-                        ></el-input> </el-col
-                ></el-row>
+                        ><span>{{ oprateImgInfo.step + 1 }}</span></el-col
+                    ></el-row
+                >
                 <el-row>
                     <el-col :span="6">
                         <div class="img-preview">
                             <img
-                                v-if="addImgInfo.src"
-                                :src="addImgInfo.src"
+                                v-if="oprateImgInfo.src"
+                                :src="oprateImgInfo.src"
                                 class="avatar"
                             />
                             <i
@@ -163,74 +165,37 @@
                         </div>
                     </el-col>
                     <el-col :span="4" :offset="2">
-                        <el-upload
-                            action="https://jsonplaceholder.typicode.com/posts/"
-                            :on-success="handleSuccess"
+                        <el-button
+                            size="medium"
+                            type="primary"
+                            @click="inputClick"
+                            >选择图片</el-button
                         >
-                            <el-button
-                                size="medium"
-                                type="primary"
-                                @click="test"
-                                >选择图片</el-button
-                            ></el-upload
-                        >
+                        <input
+                            type="file"
+                            ref="fileInput"
+                            v-show="false"
+                            @change="fileChange"
+                        />
                     </el-col>
                 </el-row>
-
-                <span slot="footer">
-                    <el-button @click="addImgVisible = false">取消</el-button>
-                    <el-button type="primary" @click="subAdd">确认</el-button>
-                </span>
-            </el-dialog>
-            <!-- 替换 图片 对话框 -->
-            <el-dialog
-                title="替换图片"
-                :visible.sync="replaceVisible"
-                class="repdia"
-            >
-                <el-row>
-                    <el-col :span="6">
-                        <div class="img-preview">
-                            <img
-                                v-if="replaceImgInfo.src"
-                                :src="replaceImgInfo.src"
-                                class="avatar"
-                            />
-                            <i
-                                v-else
-                                class="el-icon-plus avatar-uploader-icon"
-                            ></i>
-                        </div>
-                    </el-col>
-                    <el-col :span="4" :offset="2">
-                        <el-upload
-                            action="https://jsonplaceholder.typicode.com/posts/"
-                            :on-success="handleSuccess"
-                        >
-                            <el-button
-                                size="medium"
-                                type="primary"
-                                @click="test"
-                                >选择图片</el-button
-                            ></el-upload
-                        >
-                    </el-col>
-                </el-row>
-                <span slot="footer">
-                    <el-button @click="replaceVisible = false">取消</el-button>
-                    <el-button type="primary" @click="subReplace"
-                        >确认</el-button
-                    >
-                </span>
-            </el-dialog>
+            </MKDialog>
         </el-card>
     </div>
 </template>
 
 <script>
 import ItemTable from 'components/setting/ItemTable';
-import { getDevice, setDevicePatrolItem, updateDevice } from 'network/device';
+import MKDialog from 'components/com/MKDialog';
+import {
+    getDevice,
+    setDevicePatrolItem,
+    updateDevice,
+    uploadNavgation,
+    deleteNavigation,
+} from 'network/device';
 import { getItems, getItemByDevice } from 'network/patrolitem';
+import { getStaticUrl } from 'commonjs/utils';
 export default {
     name: 'SetPoint',
     props: {
@@ -251,6 +216,14 @@ export default {
                 step: 0,
                 newRrc: '',
             },
+            //导航图文 操作信息
+            oprateImgInfo: {
+                type: 'add', //当前操作类型：
+                step: 0,
+                src: '',
+                file: null,
+            },
+            oprateDialogVisible: false,
             replaceVisible: false,
             showVisible: false,
             showItem: {},
@@ -285,9 +258,17 @@ export default {
             }
         },
     },
+    computed: {
+        //导航图文 标题
+        imgDialogTitle() {
+            return this.oprateImgInfo.type === 'add'
+                ? '添加图文导航'
+                : '替换图片';
+        },
+    },
     methods: {
         getData(cate) {
-            if (cate === 'baseInfo') this.getBaeInfo();
+            if (cate === 'baseInfo') this.getBaseInfo();
             else if (cate === 'navImgs') this.getNavImgs();
             else {
                 this.getItems();
@@ -295,24 +276,27 @@ export default {
 
             console.log(cate);
         },
-        async getBaeInfo() {
+        async getBaseInfo() {
             const res = await getDevice({ name: this.name, page: 1, limit: 1 });
             console.log(res);
             if (!res.flag) return this.$message.error('设备信息获取失败');
 
             this.baseInfo = res.devices[0];
+            this.getNavImgs();
         },
         getNavImgs() {
-            const navmgs = [
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/d4fed3a81dd84fa2b689420ca64ed0be_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/75a96784e09e4965b1b372cdbc8407d8_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/5ace41339f184023bd53231faf5821a7_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/4f17ea34abb748ab90bba9ada3f11b6a_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/e60c145bf7c24d02b57ff61899000dbf_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/34ee640cafe441cb878fe8a90b16ac80_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/10a9511bc4b841e3bb8e0071b7050dae_1909071031tuya.jpg',
-            ];
+            console.log(this.baseInfo.navigation);
+            if (!this.baseInfo.navigation) return;
+            const navmgs = this.baseInfo.navigation
+                .split(',')
+                .filter((item) => item)
+                .map((item) => {
+                    return getStaticUrl(item);
+                });
+            console.log(navmgs);
             this.navImgs = navmgs;
+            //设置添加的 步骤数目
+            this.addImgInfo.step = navmgs.length + 1;
         },
         async getItems() {
             const res = await getItemByDevice(this.baseInfo.deviceID);
@@ -323,6 +307,7 @@ export default {
 
             this.showItems = this.items.slice(0, 10);
         },
+        //移除某一个 图片导航
         async removeImg(index) {
             const result = await this.$confirm(
                 '此操作将从导航中删除此图片, 是否继续?',
@@ -336,32 +321,18 @@ export default {
             if (result === 'cancel') {
                 this.$message.info('操作取消');
             } else {
-                this.navImgs.splice(index, 1);
+                const res = await deleteNavigation(
+                    this.baseInfo.deviceID,
+                    index
+                );
+                console.log(res);
+                if (!res.flag) return this.$message.error('删除失败');
+
                 this.$message.success('删除成功');
+                this.getBaseInfo();
             }
         },
-        showAddDialog() {
-            this.addImgVisible = true;
-        },
-        handleSuccess() {},
-        //MARK:  测试函数
-        test() {
-            this.addImgInfo.src =
-                'https://note.youdao.com/yws/api/image/normal/1576755416467?userId=1354541676%40qq.com';
-        },
-        subAdd() {
-            this.$message.success('图片上传成功');
-            this.navImgs.push(this.addImgInfo.src);
-            this.addImgVisible = false;
-        },
-        showRepDialog(index) {
-            this.replaceVisible = true;
-            this.replaceImgInfo.step = index;
-        },
-        subReplace() {
-            this.$message.success('图片替换成功');
-            this.replaceVisible = false;
-        },
+
         handleSizeChange(size) {
             this.query.size = size;
             this.changeShowData();
@@ -394,7 +365,7 @@ export default {
             if (!res.flag) return this.$message.error('修改失败');
             else {
                 this.$message.success('基础信息修改成功');
-                this.getBaeInfo();
+                this.getBaseInfo();
             }
         },
         tabClick() {
@@ -509,6 +480,48 @@ export default {
                 } else this.$message.error('删除失败');
             }
         },
+        inputClick() {
+            this.$refs.fileInput.click();
+        },
+        resetOprateInfo() {
+            this.oprateImgInfo.file = null;
+            this.oprateImgInfo.src = '';
+        },
+        //选中 图片文件
+        fileChange(event) {
+            const file = event.target.files[0];
+            this.oprateImgInfo.file = file;
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                // console.log(reader.result);
+                this.oprateImgInfo.src = reader.result;
+            };
+        },
+        showOprateDialog(type, index) {
+            this.oprateDialogVisible = true;
+            this.oprateImgInfo.type = type;
+            if (type === 'add') {
+                console.log(this.navImgs.length);
+                this.oprateImgInfo.step = this.navImgs.length;
+            } else {
+                this.oprateImgInfo.step = index;
+            }
+        },
+        async submitUploadNav() {
+            const { step: navigationNO, file } = this.oprateImgInfo;
+            const formData = new FormData();
+            formData.append('navigation', file);
+            formData.append('deviceID', this.baseInfo.deviceID);
+            formData.append('navigationNO', this.oprateImgInfo.step);
+            const res = await uploadNavgation(formData);
+            console.log(res);
+            if (!res.flag) return this.$message.error('上传失败');
+            this.$message.success('上传成功');
+            this.oprateDialogVisible = false;
+            //刷新数据
+            this.getBaseInfo();
+        },
     },
 
     created() {
@@ -516,6 +529,7 @@ export default {
     },
     components: {
         ItemTable,
+        MKDialog,
     },
 };
 </script>
@@ -556,7 +570,8 @@ export default {
     }
 
     .adddia,
-    .repdia {
+    .repdia,
+    .dialog {
         .el-row {
             margin-bottom: 15px;
         }

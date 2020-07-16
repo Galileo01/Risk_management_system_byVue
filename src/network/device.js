@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { ins, errFun } from './index';
 import qs from 'qs';
 //查询 所有设备册
@@ -136,4 +137,26 @@ export function updateDevice({
             })
         )
         .catch(errFun);
+}
+
+//设置设备的图文导航
+export function uploadNavgation(formData) {
+    const instance = axios.create({
+        baseURL: 'http://139.224.68.137:8081',
+        timeout: 5000,
+        headers: {
+            token: localStorage.getItem('token')
+        }
+    });
+    instance.interceptors.response.use((res) => {
+        return { ...res.data, status: res.status };
+    });
+    return instance.post('/device/navigationUpdate', formData).catch(errFun)
+
+}
+//删除设备导航
+export function deleteNavigation(deviceID, navigationNO) {
+    return ins.post('/device/navigationDelete', qs.stringify({
+        deviceID, navigationNO
+    })).catch(errFun)
 }

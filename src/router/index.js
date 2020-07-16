@@ -5,6 +5,7 @@ const Login = () => import('views/Login');
 const Home = () => import('views/Home');
 const DeviceQuery = () => import('views/DeviceQuery');
 const General = () => import('views/General');
+
 const R_TaskAllocate = () => import('views/R_TaskAllocate');
 const R_TaskManage = () => import('views/R_TaskManage');
 const R_TaskExam = () => import('views/R_TaskExam');

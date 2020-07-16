@@ -110,11 +110,9 @@ export function updateAvatar(avatar) {
         baseURL: 'http://139.224.68.137:8081',
         timeout: 5000,
         headers: {
-            // 'Content-Type': 'multipart/form-data',
             token: localStorage.getItem('token')
         }
     });
-    console.log(avatar.get('file'));
     instance.interceptors.response.use((res) => {
         return { ...res.data, status: res.status };
     });

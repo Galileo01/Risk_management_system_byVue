@@ -79,7 +79,7 @@ export function statistic(data) {
             //去年数据
             monthDis = curMonth + 12 - createTime.getMonth();
         }
-        const yearDis = curYear - createTime.getFullYear(); 
+        const yearDis = curYear - createTime.getFullYear();
         //统计周数据
         if (dayDis >= 0) {
             //dayDis为正，说明是 本周的数据
@@ -109,4 +109,10 @@ export function statistic(data) {
         }
     }
     return lineData;
+}
+
+
+//获取 服务器上的 静态资源的url 
+export function getStaticUrl(path) {
+    return sessionStorage.getItem('baseURL') + path.slice(49);
 }

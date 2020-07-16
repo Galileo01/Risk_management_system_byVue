@@ -51,7 +51,11 @@
             prop="cycle"
             label="任务周期(天)"
             v-if="taskType === 'r'"
-        ></el-table-column>
+        >
+        <template v-slot="{row}">
+            {{Math.abs(row.cycle)}}
+        </template>
+        </el-table-column>
         <el-table-column prop="note" label="备注"></el-table-column>
         <el-table-column
             label="操作"

@@ -97,8 +97,14 @@
                         </el-table>
                     </el-popover>
                 </div>
-                <el-amap class="amap" :center="center" :zoom="17" ref="amap">
-                    <div v-if="positions.length !== 0">
+                <el-amap
+                    class="amap"
+                    :center="center"
+                    :zoom="17"
+                    ref="amap"
+                    v-if="isShowAmap"
+                >
+                    <div>
                         <el-amap-circle-marker
                             v-for="(item, index) in positions"
                             :center="item.position"
@@ -138,7 +144,7 @@ import mapmixin from 'commonjs/mapmixin';
 import { getDangers } from 'network/danger';
 import { getDevice } from 'network/device';
 import { getCompanys } from 'network/company';
-// //初始化地图组件
+//初始化地图组件
 // Amap.initAMapApiLoader({
 //     // 申请的高德key
 //     key: '6e350de4372aea6e14e89161fe4816c0',
@@ -153,7 +159,7 @@ export default {
             record: {},
             tableData: [],
             positions: [],
-            center: [105.757223, 29.33282],
+            center: this.$store.getters.enterpriseLocation,
             // events: {},
             boxVisible: true,
         };
@@ -163,7 +169,13 @@ export default {
             return (val * 100).toFixed() + '%';
         },
     },
-    computed: {},
+    computed: {
+        isShowAmap() {
+            console.log('change');
+            this.center = this.$store.getters.enterpriseLocation;
+            return this.$store.getters.enterpriseLocation.length !== 0;
+        },
+    },
     components: {},
     methods: {
         async getData() {
@@ -307,7 +319,7 @@ export default {
     created() {
         this.getData();
         this.mountEvent('positions'); //绑定 信息窗口的 点击 事件 显示，
-        // localStorage.removeItem('_AMap_raster');
+        console.log(this.center);
     },
     mounted() {
         // lazyAMapApiLoaderInstance.load().then(() => {

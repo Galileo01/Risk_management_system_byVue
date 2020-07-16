@@ -136,6 +136,8 @@ import {
     updateAvatar,
 } from 'network/account';
 import MKDialog from 'components/com/MKDialog';
+import { getStaticUrl } from 'commonjs/utils';
+//自定义的 校验器
 const oldPassCheck = (rule, value, callback) => {
     if (!value) callback(new Error('请输入旧密码'));
     if (md5(value) === localStorage.getItem('password')) return callback();
@@ -177,7 +179,7 @@ export default {
             else {
                 let avatar = this.userInfo.avatar;
                 console.log(avatar);
-                avatar = sessionStorage.getItem('baseURL') + avatar.slice(49);
+                avatar = getStaticUrl(avatar);
                 console.log(avatar);
                 return avatar;
             }

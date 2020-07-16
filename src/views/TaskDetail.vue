@@ -46,7 +46,8 @@
                                     <el-icon
                                         class="el-icon-caret-right"
                                     ></el-icon>
-                                    <span v-if="row.videoPath"
+                                    <span
+                                        v-if="row.videoPath"
                                         class="a-style"
                                         @click="showVideo(row.videoPath)"
                                         >查看</span
@@ -240,6 +241,7 @@ import { getItemByDevice } from 'network/patrolitem';
 import { getDevice } from 'network/device';
 import { generateRisk } from 'network/danger';
 import { sendMessage } from 'network/message';
+import { getStaticUrl } from 'commonjs/utils';
 export default {
     name: 'TaskDetail',
     data() {
@@ -312,8 +314,7 @@ export default {
                 let videoPath = val.videoPath;
                 //拼接 视频地址
                 if (videoPath) {
-                    val.videoPath =
-                        sessionStorage.getItem('baseURL') + videoPath.slice(49);
+                    val.videoPath = getStaticUrl(val.videoPath);
                 }
                 const checkItems = [];
                 if (!itemRes.flag) return this.$message.error('巡查项获取失败');
@@ -322,8 +323,7 @@ export default {
                         //处理 图片地址
                         const imgSrc =
                             pictures.length !== 0
-                                ? sessionStorage.getItem('baseURL') +
-                                  pictures[index].slice(49)
+                                ? getStaticUrl(pictures[index])
                                 : '';
 
                         let patrolInfo = {

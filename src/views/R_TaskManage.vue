@@ -2,9 +2,17 @@
     <div class="r_task_manage">
         <BreadNav :texts="['日常任务', '任务管理']" />
         <el-card>
-            <el-row>
-                <el-col :span="4" :offset="20"
-                    ><el-button type="primary" @click="getList" size="medium"
+            <el-row class="ali-c">
+                <el-col :span="4" :offset="16">
+                    <el-switch
+                        active-text="模板任务"
+                        inactive-text="普通任务"
+                        v-model="isModelType"
+                        @change="changeisModelType"
+                    ></el-switch>
+                </el-col>
+                <el-col :span="4">
+                    <el-button type="primary" @click="getList" size="medium"
                         >查询</el-button
                     >
 
@@ -148,7 +156,9 @@ export default {
                 total: 0,
                 state: '',
             },
-            tasklist: [],
+            isModelType: false, // dmodel/common
+            tasklist: [], //普通任务模板
+            tasklist_M: [], //模板任务列表
             showData: [],
             trans_to_staff: '',
             tran_taskID: 0,
@@ -166,6 +176,7 @@ export default {
         //获取任务列表
         async getList() {
             this.tasklist = [];
+            this.tasklist_M=[];
             const res = await GetTasks({
                 enterpriseName: sessionStorage.getItem('enterpriseName'),
                 name: this.queryInfo.taskName,
@@ -179,19 +190,32 @@ export default {
             res.tasks.forEach((val) => {
                 if (val.cycle !== 0) {
                     //只显示 日常任务
-                    this.tasklist.push({
-                        ...val,
-                        checked: false,
-                    });
+
+                    if (val.cycle < 0) {
+                        this.tasklist.push({
+                            ...val,
+                            checked: false,
+                        });
+                    } else if (val.cycle > 0) {
+                        this.tasklist_M.push({
+                            ...val,
+                            checked: false,
+                        });
+                    }
                 }
             });
 
-            console.log(res.tasks, this.tasklist);
+            console.log(res.tasks, this.tasklist, this.tasklist_M);
 
             const { pageSize: size, page } = this.queryInfo;
             const offset = (page - 1) * size;
-            this.showData = this.tasklist.slice(offset, offset + size);
-            this.queryInfo.total = this.tasklist.length;
+            if (!this.isModelType) {
+                this.showData = this.tasklist.slice(offset, offset + size);
+                this.queryInfo.total = this.tasklist.length;
+            } else {
+                this.showData = this.tasklist_M.slice(offset, offset + size);
+                this.queryInfo.total = this.tasklist_M.length;
+            }
         },
         handleSizeChange(size) {
             this.queryInfo.pageSize = size;
@@ -204,13 +228,9 @@ export default {
         changeShowData() {
             const { page, pageSize: size } = this.queryInfo;
             const offset = (page - 1) * size;
-            console.log(
-                offset,
-                size + offset,
-                this.tasklist.slice(offset, offset + size)
-            );
-
-            this.showData = this.tasklist.slice(offset, offset + size);
+            if (this.isModelType) {
+                this.showData = this.tasklist_M.slice(offset, offset + size);
+            } else this.showData = this.tasklist.slice(offset, offset + size);
         },
         getChecked() {
             return this.showData.filter((val) => val.checked);
@@ -323,6 +343,20 @@ export default {
                 this.editVisible = false;
                 this.getList();
             }
+        },
+        //切换展示模式  模板/普通
+        changeisModelType() {
+            this.queryInfo.page = 1;
+            const { pageSize: size, page } = this.queryInfo;
+            const offset = (page - 1) * size;
+            if (!this.isModelType) {
+                this.showData = this.tasklist.slice(offset, offset + size);
+                this.queryInfo.total = this.tasklist.length;
+            } else {
+                this.showData = this.tasklist_M.slice(offset, offset + size);
+                this.queryInfo.total = this.tasklist_M.length;
+            }
+            console.log(this.showData);
         },
     },
     created() {

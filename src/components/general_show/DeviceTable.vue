@@ -10,10 +10,16 @@
         <el-table-column type="index"></el-table-column>
         <el-table-column prop="name" label="设备名称">
             <template v-slot="{ row }">
-                <a
-                    :class="{ num: numCanClick }"
-                    @click="$emit('showdetail', row.name)"
-                    >{{ row.name }}</a
+                <el-tooltip
+                    content="点击进一步操作"
+                    effect="light"
+                    placement="right"
+                >
+                    <a
+                        :class="{ num: numCanClick }"
+                        @click="$emit('showdetail', row.name)"
+                        >{{ row.name }}</a
+                    ></el-tooltip
                 >
             </template>
         </el-table-column>

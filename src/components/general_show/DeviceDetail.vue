@@ -16,9 +16,7 @@
                 <el-row class="marks">
                     <el-col :span="10">特殊标记</el-col>
                     <el-col :span="14"
-                        ><el-tag
-                            >{{ info.lable }}</el-tag
-                        ></el-col
+                        ><el-tag>{{ info.lable }}</el-tag></el-col
                     >
                 </el-row>
                 <el-row>
@@ -28,7 +26,7 @@
                 <el-row class="status">
                     <el-col :span="10">设备状态</el-col>
                     <el-col :span="14">
-                        <el-tag>{{info.state}}</el-tag></el-col
+                        <el-tag>{{ info.state }}</el-tag></el-col
                     >
                 </el-row>
                 <el-row>
@@ -38,7 +36,9 @@
 
                 <el-row>
                     <el-col :span="10">经纬度</el-col>
-                    <el-col :span="14">{{ info.longitude}},{{info.latitude}}</el-col>
+                    <el-col :span="14"
+                        >{{ info.longitude }},{{ info.latitude }}</el-col
+                    >
                 </el-row>
                 <el-row>
                     <el-col :span="10">安装日期</el-col>
@@ -49,56 +49,75 @@
                     <el-col :span="14">{{ info.manu }}</el-col>
                 </el-row>
             </el-tab-pane>
-            <el-tab-pane label="导航图文" name="navi" 
-                ><el-carousel arrow="always" :autoplay="false"  height="520px" trigger="click" class="steps"> 
-                    <el-carousel-item  v-for="(item,index) in naviImgs" :key="index"  :label="index+1">
-                      <div>  <h4 class="step_text">第{{index+1}}步</h4>
-                      <img :src="item" ></div>
-                    </el-carousel-item>
-                </el-carousel></el-tab-pane
+            <el-tab-pane label="导航图文" name="navi"
+                ><el-carousel
+                    arrow="always"
+                    :autoplay="false"
+                    height="520px"
+                    trigger="click"
+                    class="steps"
+                    ref="swipper"
+                    v-if="naviImgs.length!==0"
+                >
+                    <el-carousel-item
+                        v-for="(item, index) in naviImgs"
+                        :key="index"
+                        :label="index + 1"
+                    >
+                        <div>
+                            <h4 class="step_text">第{{ index + 1 }}步</h4>
+                            <img :src="item" />
+                        </div>
+                    </el-carousel-item> </el-carousel
             >
+            <el-tag v-else type="warning">图文导航为空</el-tag>
+            </el-tab-pane>
         </el-tabs>
     </el-dialog>
 </template>
 
 <script>
+import { getStaticUrl } from 'commonjs/utils';
 export default {
     name: 'DeviceDetail',
     data() {
         return {
             curTab: 'base',
-            naviImgs:[]
+            naviImgs: [],
         };
     },
     props: {
         dialogVisible: Boolean,
-        info:{
-            type:Object,
-            default(){
-                return {}
-            }
-        }
+        info: {
+            type: Object,
+            default() {
+                return {};
+            },
+        },
     },
     methods: {
         closeHandle() {
             this.$emit('update:visible', false);
         },
         getData() {
-            this.naviImgs=[
-                'http://wf.zlcdgroup.cn/NDMMSKQ/image/ndmmsImage/navigation/D002/2fc0ca4606d34421999cc004f0027c97_1909071359copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/75a96784e09e4965b1b372cdbc8407d8_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/5ace41339f184023bd53231faf5821a7_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/4f17ea34abb748ab90bba9ada3f11b6a_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/e60c145bf7c24d02b57ff61899000dbf_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/34ee640cafe441cb878fe8a90b16ac80_1909071031copy.jpg',
-                'http://118.190.1.65/NDMMSKQ/image/ndmmsImage/navigation/D001/10a9511bc4b841e3bb8e0071b7050dae_1909071031tuya.jpg'
-            ]
+            if (!this.info.navigation) return;
+            const navmgs = this.info.navigation
+                .split(',')
+                .filter((item) => item)
+                .map((item) => {
+                    return getStaticUrl(item);
+                });
+            console.log(navmgs);
+            this.naviImgs = navmgs;
         },
-        closeHandle(){
+        closeHandle() {
             // this.naviImgs=[];
-            this.curTab='base';
-        }
-    }
+            this.curTab = 'base';
+            this.naviImgs = [];
+            //滚动到 第一张
+            this.$refs.swipper.activeIndex = 0;
+        },
+    },
 };
 </script>
 
@@ -119,14 +138,14 @@ export default {
         margin-right: 5px;
     }
 }
-.steps{
-     img{
-         height: 500px;
-         width: 100%;
-     }
-   .step_text{
-         margin: 4px auto;
-         width: 50px;
-     }
+.steps {
+    img {
+        height: 500px;
+        width: 100%;
+    }
+    .step_text {
+        margin: 4px auto;
+        width: 50px;
+    }
 }
 </style>
