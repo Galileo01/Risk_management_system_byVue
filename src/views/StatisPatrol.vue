@@ -136,7 +136,7 @@ import PatrolTable from 'components/statis/PatrolTable';
 import { getTaskDevices } from 'network/task';
 import { formatDate } from 'commonjs/utils';
 import FileSaver from 'file-saver';
-import Xlsx from 'xlsx';
+import XLSX from 'xlsx';
 export default {
     name: 'StatisPatrol',
     data() {
@@ -379,15 +379,17 @@ export default {
         },
         //保存表格到 xlsx 文件
         saveExcel() {
-            const wb = Xlsx.utils.table_to_book(
+            console.log(XLSX);
+            const wb = XLSX.utils.table_to_book(
                 document.querySelector('#table'),
                 { raw: true }
             ); //只对内容进行解析，不转换格式
-            const wbout = Xlsx.write(wb, {
+            const wbout = XLSX.write(wb, {
                 bookType: 'xlsx',
                 bookSST: true,
                 type: 'array',
             });
+            console.log(wb,wbout,FileSaver);
             try {
                 FileSaver.saveAs(
                     new Blob([wbout], { type: 'application/octet-stream' }),
