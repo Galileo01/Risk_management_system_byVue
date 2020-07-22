@@ -126,14 +126,14 @@
                             ></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="隐患状态" prop="state">
+                    <el-form-item label="隐患状态" prop="repairedFlag">
                         <el-select
-                            v-model="queryInfo.state"
+                            v-model="queryInfo.repairedFlag"
                             @change="getTableData"
                             clearable
                         >
-                            <el-option label="未处理" value="0"></el-option>
-                            <el-option label="已处理" value="1"></el-option>
+                            <el-option label="未处理" :value="0"></el-option>
+                            <el-option label="已处理" :value="1"></el-option>
                         </el-select>
                     </el-form-item>
                 </el-form>
@@ -156,8 +156,15 @@
                 ></el-pagination>
             </section>
         </el-card>
-        <el-dialog :visible.sync="dialogVisible" title="隐患描述">
-            <p>{{ showDes }}</p>
+        <el-dialog
+            :visible.sync="dialogVisible"
+            title="隐患信息"
+            class="more-info"
+            @close="resetMoreInfo"
+        >
+            <p><span>隐患描述：</span>{{ moreInfo.showDes }}</p>
+            <p><span>处理人员：</span>{{ moreInfo.repairStaff }}</p>
+            <p><span>处理备注：</span>{{ moreInfo.repairNote }}</p>
         </el-dialog>
     </div>
 </template>
@@ -196,7 +203,7 @@ export default {
                 deviceName: '', //来源设备
                 riskTypeName: '',
                 level: '',
-                state: '',
+                repairedFlag: null,
                 page: 1,
                 size: 5,
                 total: 0,
@@ -205,6 +212,11 @@ export default {
             tableData: [],
             dialogVisible: false,
             showDes: '',
+            moreInfo: {
+                showDes: '',
+                repairNote: '',
+                repairStaff: '',
+            },
         };
     },
     computed: {
@@ -284,8 +296,12 @@ export default {
             this.showData = this.tableData.slice(offset, offset + size);
         },
         show(num) {
-            const { note } = this.tableData.find((val) => val.riskID === num);
-            this.showDes = note || '';
+            const { note, repairNote, repairStaff } = this.tableData.find(
+                (val) => val.riskID === num
+            );
+            this.moreInfo.showDes = note || '';
+            this.moreInfo.repairNote = repairNote;
+            this.moreInfo.repairStaff = repairStaff;
             this.dialogVisible = true;
         },
         reset() {
@@ -556,6 +572,10 @@ export default {
                 console.log(err);
             }
         },
+        resetMoreInfo() {
+            this.moreInfo.showDes = this.moreInfo.repairStaff = this.moreInfo.repairNote =
+                '';
+        },
     },
     created() {
         this.prepareChart();
@@ -629,6 +649,11 @@ export default {
         display: flex;
         justify-content: flex-end;
         padding-right: 30px;
+    }
+    .more-info {
+        span {
+            margin-right: 10px;
+        }
     }
 }
 </style>

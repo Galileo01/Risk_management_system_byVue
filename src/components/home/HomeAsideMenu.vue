@@ -237,16 +237,16 @@ export default {
                     },
                     {
                         id: 600,
-                        authName: '人员监控',
+                        authName: '设备监控',
                         icon: 'jiankong',
                         path: '',
                         children: [
-                            {
-                                id: 601,
-                                authName: '人员定位',
-                                path: 'people_location',
-                                children: [],
-                            },
+                            // {
+                            //     id: 601,
+                            //     authName: '人员定位',
+                            //     path: 'people_location',
+                            //     children: [],
+                            // },
                             {
                                 id: 602,
                                 authName: '巡查轨迹',
@@ -440,16 +440,16 @@ export default {
                 },
                 {
                     id: 600,
-                    authName: '人员监控',
+                    authName: '设备监控',
                     icon: 'jiankong',
                     path: '',
                     children: [
-                        {
-                            id: 601,
-                            authName: '人员定位',
-                            path: 'people_location',
-                            children: [],
-                        },
+                        // {
+                        //     id: 601,
+                        //     authName: '人员定位',
+                        //     path: 'people_location',
+                        //     children: [],
+                        // },
                         {
                             id: 602,
                             authName: '设备轨迹',

@@ -76,15 +76,6 @@
                         ></el-option>
                     </el-select>
                 </el-form-item>
-                <!-- <el-form-item label="上报人员" prop="staff"
-                    ><el-select v-model="queryInfo.staff" clearable>
-                        <el-option
-                            v-for="(item, index) in staffs"
-                            :key="index"
-                            :label="item.label"
-                            :value="item.value"
-                        ></el-option> </el-select
-                ></el-form-item> -->
             </el-form>
             <DangerTable
                 :data="showData"
@@ -169,7 +160,11 @@ export default {
             },
             infoRules: {
                 dealStaff: [
-                    { required: true, message: '请输入处理人员', trigger: 'blur' },
+                    {
+                        required: true,
+                        message: '请输入处理人员',
+                        trigger: 'blur',
+                    },
                 ],
             },
             showDes: '',
@@ -186,7 +181,7 @@ export default {
             const res = await getDangers({
                 ...this.queryInfo,
                 limit: 9999,
-                state: '0',
+                repairedFlag: 0,
             });
             console.log(res);
             if (!res.flag) return this.$message.error('风险获取失败');
@@ -228,7 +223,18 @@ export default {
             this.dealInfo.riskID = riskID;
             this.dealDialogVisible = true;
         },
-        submitDeal() {},
+        async submitDeal() {
+            const res = await dealDanger(
+                this.dealInfo.dealNote,
+                this.dealInfo.dealStaff,
+                this.dealInfo.riskID
+            );
+            console.log(res);
+            if (!res.flag) return this.$message.error('处理失败');
+            this.$message.success('处理成功');
+            this.dealDialogVisible = false;
+            this.getData();
+        },
     },
     created() {
         this.getData();

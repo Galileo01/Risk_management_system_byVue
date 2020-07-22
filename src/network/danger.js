@@ -62,7 +62,7 @@ export function getDangers({
     taskName,
     deviceName,
     level,
-    state,
+    repairedFlag,
     page,
     limit,
     riskTypeName,
@@ -74,7 +74,7 @@ export function getDangers({
             taskName: taskName || null, //去掉 空字符串
             deviceName: deviceName || null,
             level: level || null,
-            state: state || null,
+            repairedFlag,
             offset: (page - 1) * limit,
             limit,
             riskTypeName: riskTypeName || null,
@@ -83,28 +83,31 @@ export function getDangers({
     });
 }
 
-
-export function dealDanger({ taskName, deviceName, riskID }) {
-    return ins
-        .post(
-            '/risk/update',
-            qs.stringify({
-                enterpriseName: localStorage.getItem('enterpriseName'),
-                taskName,
-                riskID,
-                deviceName,
-                state: '1', //状态改为 已处理
-            })
-        )
-        .catch(errFun);
+//处理风险
+// export function dealDanger({ taskName, deviceName, riskID }) {
+//     return ins
+//         .post(
+//             '/risk/update',
+//             qs.stringify({
+//                 enterpriseName: localStorage.getItem('enterpriseName'),
+//                 taskName,
+//                 riskID,
+//                 deviceName,
+//                 state: '1', //状态改为 已处理
+//             })
+//         )
+//         .catch(errFun);
+// }
+export function dealDanger( repairNote, repairStaff, riskID ) {
+    return ins.post('/risk/repairUpdate', qs.stringify({ repairNote, repairStaff, riskID })).catch(errFun)
 }
 
 //根据 riskID 获取 设备信息
-export function getDeviceByriskID(riskID){
-    return ins.get('/risk/queryDeviceLatitude',{
-        params:{
+export function getDeviceByriskID(riskID) {
+    return ins.get('/risk/queryDeviceLatitude', {
+        params: {
             riskID
         }
     })
-    .catch(errFun)
+        .catch(errFun)
 }

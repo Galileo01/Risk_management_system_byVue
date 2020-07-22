@@ -12,7 +12,7 @@
         </el-table-column>
         <el-table-column label="隐患状态" v-if="showState">
             <template v-slot="{ row }">
-                {{ row.state === '1' ? '已处理' : '未处理' }}
+                {{ row.repairedFlag === 1 ? '已处理' : '未处理' }}
             </template>
         </el-table-column>
         <el-table-column label="风险等级" prop="level"></el-table-column>
