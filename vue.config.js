@@ -1,22 +1,29 @@
 module.exports = {
-    chainWebpack: config => {
-        if (process.env.NODE_ENV === 'production') {
-            // config.set('externals', {
-            //     vue:'Vue',
-            //     axios:'axios',
-            //     'vue-router':'VueRouter',
-            // })
+    configureWebpack: config => {
 
-
-        } else {
-
+        let configuration={
+            resolve : {
+                alias: {   //@ 已经在 目录中被定义 ，定义为src
+                    'assets': '@/assets',
+                    'commonjs': '@/commonjs',
+                    'components': '@/components',
+                    'network': '@/network',
+                    'views': '@/views'
+                }
+            },
+            externals : {
+                'vue': 'Vue',
+                // 'element-ui': 'element-ui',
+                'axios': 'axios',
+                'vue-router': 'VueRouter',
+                'xlsx':'xlsx',
+            }
+        };
+        if(process.env.NODE_ENV === 'production')//生产环境下使用对应入口文件
+        {
+            configuration.entry='./src/main-prod.js';
         }
-        config.resolve.alias
-            .set('assets', '@/assets')
-            .set('commonjs', '@/commonjs')
-            .set('components','@/components')
-            .set('network', '@/network')
-            .set('views', '@/views')
+        return configuration;
     },
     publicPath: "./",
     devServer: {
