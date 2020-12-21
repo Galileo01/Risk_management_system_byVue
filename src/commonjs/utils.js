@@ -1,4 +1,8 @@
 export function formatDate(str, fmt) {
+
+    function padLeftZero(str) {
+        return ('00' + str).substr(str.length);
+    }
     const date = new Date(str);
     if (/(y+)/.test(fmt)) {
         fmt = fmt.replace(
@@ -25,9 +29,6 @@ export function formatDate(str, fmt) {
     return fmt;
 }
 
-function padLeftZero(str) {
-    return ('00' + str).substr(str.length);
-}
 //统计函数
 export function statistic(data) {
     //风险等级 曲线变化 数据

@@ -49,19 +49,19 @@
                         <h3>各种隐患的个数</h3>
                         <p>
                             隐患总数<span class="danger_total">{{
-                                record.total
+                                record.total||0
                             }}</span>
                             个
                         </p>
                         <p>
                             已治理的隐患<span class="danger_solved">{{
-                                record.solved
+                                record.solved||0
                             }}</span>
                             个
                         </p>
                         <p>
                             未治理的隐患<span class="danger_unso">{{
-                                record.total - record.solved
+                                (record.total - record.solved)||0
                             }}</span>
                             个
                         </p>

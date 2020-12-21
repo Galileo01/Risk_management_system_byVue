@@ -1,7 +1,7 @@
 <template>
     <div class="login">
         <!-- <h1 class="title">永川区非煤矿山企业安全检查监督管理平台</h1> -->
-        <h1 class="title">重大风险隐患排查及监督治理系统</h1>
+        <h1 class="title">风险隐患排查及监督治理系统</h1>
         <div class="form-wapper">
             <div class="avator">
                 <img src="~assets/img/login.png" alt="" />

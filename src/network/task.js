@@ -155,6 +155,15 @@ export function getTaskDevices({
     taskID,
 }) {
     console.log(cycle);
+    console.log(
+        deviceID,
+        startTime,
+        endTime,
+        cycle,
+        userName,
+        taskState,
+        taskID,
+    );
 
     return ins.get('/task_device/queryByDeviceID', {
         params: {
